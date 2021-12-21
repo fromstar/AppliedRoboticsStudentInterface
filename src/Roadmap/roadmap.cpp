@@ -34,7 +34,7 @@ void points_map::add_obstacle(polygon *ob){
 };
 
 void points_map::print_info(){
-  cout<<"Robot location: " << robot->x << "- "<< robot->y <<endl;
+  cout<<"Robot location: " << robot->x << " - "<< robot->y <<endl;
 };
 
 Mat points_map::plot_arena(){

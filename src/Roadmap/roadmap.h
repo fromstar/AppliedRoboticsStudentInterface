@@ -2,6 +2,7 @@
 #define __ROADMAP_H__
 
 #include "../Dubins/dubins.h"
+#include "../Utils/utils.h"
 #include <iostream>
 #include <stdio.h>
 
