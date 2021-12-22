@@ -1,5 +1,5 @@
 #include "Roadmap/roadmap.h"
-#include "clipper/cpp/clipper.hpp"
+//#include "clipper/cpp/clipper.hpp"
 //#include "../../simulator/src/9_project_interface/include/utils.hpp"
 
 using namespace std;
@@ -25,7 +25,7 @@ int main(){
     Mat img_arena = map.plot_arena();
     imshow("Arena", img_arena);
 	waitKey(0);*/
-	test();
+	//test();
 	return 0;
 };
 
@@ -61,6 +61,7 @@ void test()
     pol->add_node(new point_node(-0.9,-2.25));
     test_map.add_obstacle(new polygon(pol,2));
     
+    
     pol = new point_list;
     pol->add_node(new point_node(2,-4));
     pol->add_node(new point_node(3,-4));
@@ -69,10 +70,10 @@ void test()
     test_map.add_gate(new polygon(pol,2));	
 
     pol = new point_list;
-    pol->add_node(new point_node(-1,0));
     pol->add_node(new point_node(-1,-1));
-    pol->add_node(new point_node(-0.5,-1));
+    pol->add_node(new point_node(-1,-1));
     pol->add_node(new point_node(-0.5,0));
+    pol->add_node(new point_node(-0.5,-1));
     test_map.add_gate(new polygon(pol,2));	
     Mat img_arena = test_map.plot_arena();
     
