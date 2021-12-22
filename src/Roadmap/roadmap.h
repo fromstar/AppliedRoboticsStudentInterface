@@ -21,8 +21,10 @@ typedef struct Robot{
 typedef struct polygon{
 	point_list *pl;
 	polygon *pnext = NULL;
-	polygon(point_list* pls){
+  double offset;
+	polygon(point_list* pls, double ofs){
 		pl = pls;
+    offset = ofs;
 	};
 }polygon;
 

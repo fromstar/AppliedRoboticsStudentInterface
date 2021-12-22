@@ -5,7 +5,7 @@
 #include <tuple>
 #include <cmath>
 #include <string>
-#include <assert.h>
+#include <assert.h>	
 #include "../clipper/cpp/clipper.hpp"
 #include "../Utils/utils.h"
 
