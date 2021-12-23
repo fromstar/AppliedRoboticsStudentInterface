@@ -1,7 +1,6 @@
 #ifndef __ROADMAP_H__
 #define __ROADMAP_H__
 
-#include "../Dubins/dubins.h"
 #include "../Utility/utility.h"
 #include <iostream>
 #include <stdio.h>
@@ -54,7 +53,6 @@ typedef struct points_map {
   Mat plot_arena();
   void del_map();
   // void ~points_map();
-  void test();
 } points_map;
 
 #endif

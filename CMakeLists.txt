@@ -17,6 +17,9 @@ include_directories(
 ## CREATE EXECUTABLE LIBRARY
 add_library(student SHARED
    src/student_interface.cpp
+   src/Roadmap/roadmap.cpp
+   src/Utility/utility.cpp
+   src/Dubins/dubins.cpp
 )
 
 target_link_libraries(student

@@ -58,8 +58,3 @@ Mat points_map::plot_arena(){
 	
 	return img_arena;
 }
-
-void points_map::test()
-{
-	cout << "DORCO PIO\n";
-}
