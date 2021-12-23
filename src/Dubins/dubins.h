@@ -7,7 +7,7 @@
 #include <string>
 #include <assert.h>	
 #include "../clipper/cpp/clipper.hpp"
-#include "../Utils/utils.h"
+#include "../Utility/utility.h"
 
 /*
  * Compile command:

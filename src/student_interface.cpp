@@ -49,17 +49,19 @@ void unwarp(const cv::Mat& img_in, cv::Mat& img_out, const cv::Mat& transf,
 
   bool planPath(const Polygon& borders, const std::vector<Polygon>& obstacle_list, const std::vector<Polygon>& gate_list, const std::vector<float> x, const std::vector<float> y, const std::vector<float> theta, std::vector<Path>& path, const std::string& config_folder)
   {
-    //throw std::logic_error( "STUDENT FUNCTION - PLAN PATH - NOT IMPLEMENTED" )
-    /*points_map arena;
+    //throw std::logic_error( "STUDENT FUNCTION - PLAN PATH - NOT IMPLEMENTED" );
+    points_map arena;
     point_list *arena_limits = new point_list;
-    cout <<"cazzo1";
+    cout <<"1-CAZZOOOOOOOOO\n";
     for(int i=0;i<borders.size();i++)
     {
-      arena_limits->add_node(new point_node(borders[i].x,borders[i].y));
+      arena.test();
+      //arena_limits->add_node(new point_node(2.0,3.0));
+      //arena_limits->add_node(new point_node(borders[i].x,borders[i].y));
     }
-    arena.add_arena_points(arena_limits);
-    cout <<"cazzo2";
-    point_list *pol;
+    //arena.add_arena_points(arena_limits);
+    cout <<"2-CAZZOOOOOOOO\n";
+    /*point_list *pol;
     for(int i = 0; i < obstacle_list.size();i++)
     {
       pol = new point_list;
