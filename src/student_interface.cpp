@@ -64,7 +64,7 @@ void unwarp(const cv::Mat& img_in, cv::Mat& img_out, const cv::Mat& transf,
       for(int j=0;j<obstacle_list[i].size();j++)
       {
         pol->add_node(new point_node(obstacle_list[i][j].x,obstacle_list[i][j].y));
-        arena.add_obstacle(new polygon(pol,2));
+        arena.add_obstacle(new polygon(pol));
       }
     }
     for(int i = 0; i < gate_list.size();i++)
@@ -73,7 +73,7 @@ void unwarp(const cv::Mat& img_in, cv::Mat& img_out, const cv::Mat& transf,
       for(int j=0;j<gate_list[i].size();j++)
       {
         pol->add_node(new point_node(gate_list[i][j].x,gate_list[i][j].y));
-        arena.add_gate(new polygon(pol,2));
+        arena.add_gate(new polygon(pol));
       }
     }
     Mat img_arena = arena.plot_arena();

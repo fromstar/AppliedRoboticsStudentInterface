@@ -46,8 +46,21 @@ void point_list::add_node(point_node *node)
 	{
 		head = node;
 		tail = head;
+		x_min = node->x;
+		x_max = x_min;
+		y_min = node->y;
+		y_max = y_min;
 		return;
 	}
+	if(node->x < x_min)
+		x_min = node->x;
+	else if(node->x > x_max)
+		x_max = node->x;
+	if(node->y < y_min)
+		y_min = node->y;
+	else if(node->y > y_max)
+		y_max = node->y;
+		
 	tail->pnext = node;
 	tail = tail->pnext;
 }

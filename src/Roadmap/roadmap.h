@@ -4,6 +4,7 @@
 #include "../Utility/utility.h"
 #include <iostream>
 #include <stdio.h>
+#include <stdexcept>
 
 typedef struct Robot{
 	char *ID = NULL;
@@ -20,16 +21,20 @@ typedef struct Robot{
 typedef struct polygon{
 	point_list *pl;
 	polygon *pnext = NULL;
-  double offset;
-	polygon(point_list* pls, double ofs){
-		pl = pls;
-    offset = ofs;
+	polygon(point_list* pls){
+    pl = pls;
+    /*if(pls->size >=3)
+		  pl = pls;
+    else
+      throw std::invalid_argument( "Error: A polygon can't have less than 3 points.\n");*/
 	};
+  void add_offset(double offset);
 }polygon;
 
 typedef struct list_of_obstacles {
   polygon *head = NULL;
   polygon *tail = NULL;
+  double offset = 0.3;
 }list_of_obstacles;
 
 typedef struct list_of_gates{

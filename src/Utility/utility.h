@@ -43,6 +43,8 @@ struct point_node{
 struct point_list{
 	point_node *head = NULL;
 	point_node *tail = NULL;
+	double x_min, y_min;
+	double x_max,y_max;
 	int size = 0;
 	
 	void add_node(point_node *);
