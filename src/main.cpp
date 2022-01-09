@@ -6,6 +6,7 @@ using namespace std;
 void test();
 
 int main(){
+    //point_list * p = new point_list;
 	test();
 	return 0;
 };
@@ -42,6 +43,13 @@ void test()
     pol->add_node(new point_node(-0.9,-2.25));
     test_map.add_obstacle(new polygon(pol));
     
+
+    pol = new point_list;
+    pol->add_node(new point_node(2,-1.2));
+    pol->add_node(new point_node(0.5,-1.2));
+    pol->add_node(new point_node(0.5,-1.8));
+    pol->add_node(new point_node(2,-1.8));
+    test_map.add_obstacle(new polygon(pol));
     
     pol = new point_list;
     pol->add_node(new point_node(2,-4));

@@ -49,10 +49,24 @@ struct point_list{
 	
 	void add_node(point_node *);
 	void print_list();
-	void delete_list();
-	
+	void delete_list();	
 }typedef point_list;
 
+
+typedef struct polygon{
+	point_list *pl;
+	polygon *pnext = NULL;
+	polygon(point_list* pls){
+    if(pls->size >=3)
+		  pl = pls;
+    else
+    {
+      throw std::invalid_argument( "Error: A polygon can't have less than 3 points.\n");
+      exit(-1);
+    }
+	};
+  polygon* add_offset(double offset);
+}polygon;
 
 double sinc(double);
 double mod2pi(double);
@@ -60,5 +74,6 @@ double rangeSymm(double);
 bool check(double, double, double, double, double, double, double, double);
 Mat plot_points(point_list *,Mat,Scalar,bool);
 void sort(double_list *, point_list *);
+tuple <double, double> get_new_point(double,double,double,double);
 
 #endif

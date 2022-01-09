@@ -18,23 +18,12 @@ typedef struct Robot{
 	}
 } Robot;
 
-typedef struct polygon{
-	point_list *pl;
-	polygon *pnext = NULL;
-	polygon(point_list* pls){
-    pl = pls;
-    /*if(pls->size >=3)
-		  pl = pls;
-    else
-      throw std::invalid_argument( "Error: A polygon can't have less than 3 points.\n");*/
-	};
-  void add_offset(double offset);
-}polygon;
-
 typedef struct list_of_obstacles {
   polygon *head = NULL;
   polygon *tail = NULL;
-  double offset = 0.3;
+  polygon *offset_head = NULL;
+  polygon *offset_tail = NULL;
+  double offset = 0.04;
 }list_of_obstacles;
 
 typedef struct list_of_gates{
