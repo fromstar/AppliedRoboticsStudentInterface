@@ -57,14 +57,17 @@ typedef struct polygon{
 	point_list *pl;
 	polygon *pnext = NULL;
 	polygon(point_list* pls){
-    if(pls->size >=3)
-		  pl = pls;
-    else
-    {
-      throw std::invalid_argument( "Error: A polygon can't have less than 3 points.\n");
-      exit(-1);
-    }
-	};
+		if(pls->size >=3)
+			pl = pls;
+		else
+		{
+			throw std::invalid_argument( "Error: A polygon can't have less than 3 points.\n");
+			exit(-1);
+		}
+	}
+	~polygon(){
+		pl->delete_list();
+	}
   polygon* add_offset(double offset);
 }polygon;
 

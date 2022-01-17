@@ -279,8 +279,8 @@ polygon * polygon::add_offset(double offset){
 		{
 			m = std::numeric_limits<double>::infinity();
 			// If m=inf the line is vertical -> x = k
-			qp1 = x1 + offset;
-			qp2 = x1 - offset;
+			qp1 = xm + offset;
+			qp2 = xm - offset;
 
 			d1 = abs(qp1 - center_x);
 			d2 = abs(qp2 - center_x);

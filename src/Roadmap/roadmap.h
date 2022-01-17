@@ -23,7 +23,26 @@ typedef struct list_of_obstacles {
   polygon *tail = NULL;
   polygon *offset_head = NULL;
   polygon *offset_tail = NULL;
-  double offset = 0.04;
+  double offset = 0.105;
+
+  ~list_of_obstacles(){
+    polygon *tmp = head;
+    polygon *otmp = offset_head;
+    while(head!=NULL)
+    {
+      tmp = head;
+      head = head->pnext;
+      delete tmp;
+    }
+    while(offset_head!=NULL)
+    {
+      tmp = offset_head;
+      offset_head = offset_head->pnext;
+      delete tmp;
+    }
+  }
+  void merge_polygons();
+  int size;
 }list_of_obstacles;
 
 typedef struct list_of_gates{

@@ -50,6 +50,9 @@ void test()
     pol->add_node(new point_node(0.5,-1.8));
     pol->add_node(new point_node(2,-1.8));
     test_map.add_obstacle(new polygon(pol));
+
+    cout<<"Number of polygons: "<<test_map.obstacles->size<<endl;
+    test_map.obstacles->merge_polygons();
     
     pol = new point_list;
     pol->add_node(new point_node(2,-4));

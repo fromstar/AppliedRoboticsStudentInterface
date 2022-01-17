@@ -12,6 +12,7 @@ include_directories(
  include 
  ${OpenCV_INCLUDE_DIRS}
  ${project_interface_INCLUDE_DIRS}
+ Boost
 )
 
 ## CREATE EXECUTABLE LIBRARY
