@@ -60,8 +60,8 @@ void points_map::print_info(){
   cout<<"Robot location: " << robot->x << " - "<< robot->y <<endl;
 };
 
-Mat points_map::plot_arena(){
-	Mat img_arena(1200,1200, CV_8UC3, Scalar(255, 255, 255));
+Mat points_map::plot_arena(int x_dim, int y_dim){
+	Mat img_arena(x_dim, y_dim, CV_8UC3, Scalar(255, 255, 255));
 	
 	img_arena = plot_points(arena, img_arena, Scalar(0,0,0),true);
 	
@@ -99,7 +99,7 @@ void list_of_obstacles::merge_polygons()
 
  	polygon *pol_iter = offset_head;
 
-	// Convert polygons int Boost polygon object
+	// Convert polygons in Boost polygon object
 	while(pol_iter != NULL)
 	{
 		point_node *pn = pol_iter->pl->head;
@@ -119,7 +119,8 @@ void list_of_obstacles::merge_polygons()
 		Polygon p;
 		boost::geometry::read_wkt(pts,p);
 		if(!boost::geometry::is_valid(p))
-		//Funzione importante per fare il merge ma fa sbarellare un immagine nella funzione di test. Vedere perchè
+		// Funzione importante per fare il merge ma fa sbarellare un immagine
+		// nella funzione di test. Vedere perchè
 			boost::geometry::correct(p);
 
 		polys.push_back(p);

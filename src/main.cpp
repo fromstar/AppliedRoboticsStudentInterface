@@ -51,8 +51,8 @@ void test()
     pol->add_node(new point_node(2,-1.8));
     test_map.add_obstacle(new polygon(pol));
 
-    cout<<"Number of polygons: "<<test_map.obstacles->size<<endl;
-    test_map.obstacles->merge_polygons();
+    cout << "Number of polygons: " << test_map.obstacles -> size << endl;
+    test_map.obstacles -> merge_polygons();
     
     pol = new point_list;
     pol->add_node(new point_node(2,-4));
@@ -67,7 +67,7 @@ void test()
     pol->add_node(new point_node(-0.5,0));
     pol->add_node(new point_node(-0.5,-1));
     test_map.add_gate(new polygon(pol));	
-    Mat img_arena = test_map.plot_arena();
+    Mat img_arena = test_map.plot_arena(800, 800);
     
     imshow("Arena", img_arena);
 	waitKey(0);

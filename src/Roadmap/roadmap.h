@@ -64,7 +64,7 @@ typedef struct points_map {
   void add_obstacle(polygon* ob);
   void add_gate(polygon *gt);
   void print_info();
-  Mat plot_arena();
+  Mat plot_arena(int, int);
   void del_map();
   // void ~points_map();
 } points_map;
