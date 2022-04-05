@@ -184,7 +184,8 @@ Edge_list::~Edge_list(){
 };
 
 
-Mat plot_points(point_list * pl, Mat arena, Scalar colorline, bool isPolygon)
+Mat plot_points(point_list * pl, Mat arena, Scalar colorline, bool isPolygon,
+				int thickness)
  {
 	 if(pl != NULL)
 	 {
@@ -195,7 +196,7 @@ Mat plot_points(point_list * pl, Mat arena, Scalar colorline, bool isPolygon)
 			n2 = n1->pnext;
 			Point pt1((n1->x*SCALE_1)+SCALE_2,(n1->y*-SCALE_1)+SCALE_2);
 			Point pt2((n2->x*SCALE_1)+SCALE_2,(n2->y*-SCALE_1)+SCALE_2);
-			line(arena,pt1,pt2,colorline,1);
+			line(arena, pt1, pt2, colorline, thickness);
 			/*cout<<"P1 x: " << n1->x<<" y: " <<n1->y <<endl;
 			cout<<"P2 x: " << n2->x<<" y: " <<n2->y <<endl;
 			cout<<"Line drawed\n";*/
@@ -206,7 +207,8 @@ Mat plot_points(point_list * pl, Mat arena, Scalar colorline, bool isPolygon)
 			line(arena, Point((n1->x * SCALE_1) + SCALE_2,
 				 (n1->y * -SCALE_1) + SCALE_2),
 				 Point( (pl->head->x * SCALE_1) + SCALE_2,
-					    (pl->head->y * -SCALE_1) + SCALE_2), colorline, 1);
+					    (pl->head->y * -SCALE_1) + SCALE_2),
+				 		colorline, thickness);
 	 }
 	return arena;
  }
@@ -483,6 +485,30 @@ polygon * polygon::add_offset(double offset){
 	new_pol->add_node(new point_node(x,y));
 
 	return new polygon(new_pol);
+};
+
+
+Polygon polygon::to_boost_polygon(){
+
+	point_node *pn = pl->head;
+	string pts = "POLYGON((";
+	while(pn != NULL)
+	{
+		pts.append(to_string(pn->x));
+		pts.append(" ");
+		pts.append(to_string(pn->y));
+		pts.append(",");
+
+		pn=pn->pnext;
+	}
+	pts.append("))");
+
+	Polygon p;
+	boost::geometry::read_wkt(pts, p);
+	if(!boost::geometry::is_valid(p)){
+	  boost::geometry::correct(p); // Fixes edge order -> e.g. clockwise
+	};
+	return p;
 };
 
 void polygon::concatenate(polygon *p){

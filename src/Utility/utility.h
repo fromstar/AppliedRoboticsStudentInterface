@@ -6,6 +6,12 @@
 #include <opencv2/opencv.hpp>
 #include <cmath>
 
+#include <boost/geometry.hpp>
+#include <string.h>
+
+using pt = boost::geometry::model::d2::point_xy<double>;
+using Polygon = boost::geometry::model::polygon<pt>;
+
 using namespace cv;
 using namespace std;
 
@@ -99,8 +105,9 @@ typedef struct polygon{
 
 	// Methods
 	Edge_list* edgify();
-  	polygon* add_offset(double offset);
+  	polygon* add_offset(double offset);  // Our polygon class
   	void concatenate(polygon *p);
+	Polygon to_boost_polygon();  // Polygon of boost lybrary
   	void info();
 }polygon;
 
@@ -108,7 +115,7 @@ double sinc(double);
 double mod2pi(double);
 double rangeSymm(double);
 bool check(double, double, double, double, double, double, double, double);
-Mat plot_points(point_list *, Mat, Scalar, bool);
+Mat plot_points(point_list *, Mat, Scalar, bool, int thickness=1);
 void sort(double_list *, point_list *);
 tuple <double, double> get_new_point(double,double,double,double);
 

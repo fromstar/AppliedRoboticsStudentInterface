@@ -38,7 +38,7 @@ void test2(){
 	map -> add_obstacle(p);
 	map -> add_obstacle(p_2);
 
-	map -> obstacles -> merge_polygons();
+	map -> merge_obstacles();
 
 	Mat map_show = map -> plot_arena(800, 800);
 	imshow("Test_2",map_show);
@@ -59,6 +59,7 @@ void test()
     test_map.add_arena_points(map_limits);
     
 	// Add obstacles
+	/*
     point_list *pol = new point_list;
     pol->add_node(new point_node(0.0,0.0));
     pol->add_node(new point_node(1.0,0.0));
@@ -71,8 +72,9 @@ void test()
     pol->add_node(new point_node(2.5,-2.25));
     pol->add_node(new point_node(2.0,-0.0));
     test_map.add_obstacle(new polygon(pol));
-    
-	pol = new point_list;
+    */
+
+	point_list* pol = new point_list;
     pol->add_node(new point_node(-0.5,-3.5));
     pol->add_node(new point_node(1.0,-3.5));
     pol->add_node(new point_node(1.5,-2.25));
@@ -80,16 +82,15 @@ void test()
     pol->add_node(new point_node(-0.9,-2.25));
     test_map.add_obstacle(new polygon(pol));
     
-
+	/*
     pol = new point_list;
     pol->add_node(new point_node(2,-1.2));
     pol->add_node(new point_node(0.5,-1.2));
     pol->add_node(new point_node(0.5,-1.8));
     pol->add_node(new point_node(2,-1.8));
     test_map.add_obstacle(new polygon(pol));
-
+	*/
     cout << "Number of polygons: " << test_map.obstacles -> size << endl;
-    test_map.obstacles -> merge_polygons();
 
 	// Add gates
     pol = new point_list;
@@ -105,9 +106,12 @@ void test()
     pol->add_node(new point_node(-0.5,0));
     pol->add_node(new point_node(-0.5,-1));
     test_map.add_gate(new polygon(pol));	
-    Mat img_arena = test_map.plot_arena(800, 800);
     
-	test_map.set_robot_position(11.3, 22.4);
+	test_map.merge_obstacles();
+   
+	test_map.set_robot_position(1, -2);
+    
+	Mat img_arena = test_map.plot_arena(800, 800);
 
     imshow("Arena", img_arena);
 	waitKey(0);

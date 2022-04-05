@@ -11,6 +11,7 @@ typedef struct Robot{
 	double x;
 	double y;
 	double max_curvature_angle;
+	double offset = 1;
 
 	Robot(){
 		x = 0.0;
@@ -26,24 +27,9 @@ typedef struct list_of_obstacles {
   double offset = 0.105;
   int size = 0;
   int offset_size = 0;
-
-  ~list_of_obstacles(){
-    polygon *tmp = head;
-    polygon *otmp = offset_head;
-    while(head!=NULL)
-    {
-      tmp = head;
-      head = head->pnext;
-      delete tmp;
-    }
-    while(offset_head!=NULL)
-    {
-      tmp = offset_head;
-      offset_head = offset_head->pnext;
-      delete tmp;
-    }
-  }
-  void merge_polygons();
+	
+  ~list_of_obstacles();
+  void delete_offsetted_list();
 }list_of_obstacles;
 
 typedef struct list_of_gates{
@@ -63,6 +49,7 @@ typedef struct points_map {
   void set_robot_position(double x, double y);
   void add_obstacle(polygon* ob);
   void add_gate(polygon *gt);
+  void merge_obstacles();
   void print_info();
   Mat plot_arena(int, int);
   void del_map();

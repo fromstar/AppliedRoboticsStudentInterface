@@ -19,6 +19,35 @@ using pt         = bgm::d2::point_xy<double>;
 using Polygon       = bgm::polygon<pt>;
 using Multi_Polygon = bgm::multi_polygon<Polygon>;
 
+
+list_of_obstacles::~list_of_obstacles(){
+    polygon *tmp = head;
+    polygon *otmp = offset_head;
+    while(head!=NULL)
+    {
+      tmp = head;
+      head = head->pnext;
+      delete tmp;
+    }
+    while(offset_head!=NULL)
+    {
+      tmp = offset_head;
+      offset_head = offset_head->pnext;
+      delete tmp;
+    }
+  };
+
+void list_of_obstacles::delete_offsetted_list(){
+	polygon *tmp;
+	while (offset_head != NULL)
+	{
+		tmp = offset_head;
+		offset_head=offset_head->pnext;
+		delete tmp;
+	}
+	offset_size=0;
+};
+
 void points_map::add_arena_points(point_list *ArenaPoints){
 	arena = ArenaPoints;
 };
@@ -67,6 +96,7 @@ Mat points_map::plot_arena(int x_dim, int y_dim){
 	
 	img_arena = plot_points(arena, img_arena, Scalar(0,0,0),true);
 	
+	// Plot obstacles as they are
 	polygon *tmp = obstacles->head;
 	while(tmp != NULL)
 	{
@@ -74,13 +104,15 @@ Mat points_map::plot_arena(int x_dim, int y_dim){
 		tmp = tmp->pnext;
 	}
 	
+	// Plot obstacles enlarged
 	tmp = obstacles->offset_head;
 	while(tmp != NULL)
 	{
 		img_arena = plot_points(tmp->pl,img_arena,Scalar(0,0,255),true);
 		tmp = tmp->pnext;
 	}
-
+	
+	// plot gates
 	tmp = gates->head;
 	while(tmp != NULL)
 	{
@@ -88,101 +120,36 @@ Mat points_map::plot_arena(int x_dim, int y_dim){
 		tmp = tmp->pnext;
 	}
 	
+	// plot robots
+	point_list *robot_loc = new point_list;
+	robot_loc -> add_node(new point_node(robot->x, robot->y));
+	robot_loc -> add_node(new point_node(robot->x, robot->y));
+	img_arena = plot_points(robot_loc, img_arena, Scalar(210, 26, 198),
+							false, 5);
+
 	return img_arena;
 }
 
-/*
-void list_of_obstacles::merge_polygons(){
-	if (size < 2){  // only 1 obstacle -> unnecessary call to function
-					// Not true! it may collide with gates or the arena itself
-		return;
-	};
-
-	// Must optimize, it is suboptimal to search among all the existing polys
-	// Search is quadratic in size -> maybe use distance among centroids
-	// Idea is to use a nested while cycle that works on each polygon twice,
-	// It checks collisions among a pair of polygons and the result is
-	// added to the list to be checked against other polygons.
-	
-	point_list *new_pol_list = new point_list;
-
-	Edge_list *pol_outer = offset_head->edgify();
-	Edge_list *pol_inner = offset_head->pnext->edgify();
-	
-	Edge *iter_outer = pol_outer->head;
-	Edge *iter_inner = pol_inner->head;
-	int collisions = 0;
-
-	while (iter_outer != NULL){
-		while (iter_inner != NULL){
-			point_node *intersect = iter_outer->intersection(iter_inner);
-			if (intersect != NULL){
-				collisions++;
-				new_pol_list->add_node(intersect);
-				// Edge *temp_iter = iter_outer;
-				// iter_outer = iter_inner;
-				// iter_inner = temp_iter;
-			};
-			iter_inner = iter_inner -> next;
-		};
-		
-		if (collisions == 0){
-			new_pol_list->append_list(iter_outer -> points);
-		};
-		iter_outer = iter_outer -> next;
-	};
-	offset_head = new polygon(new_pol_list);
-};
-*/
-
 // Use boost library to merge polygons
-void list_of_obstacles::merge_polygons()
+void points_map::merge_obstacles()
 {
-	if(size < 2)
-		return;
+	// if(obstacles->size < 2)
+	// 	return;
 
 	std::vector<Polygon> polys;
 
- 	polygon *pol_iter = offset_head;
+ 	polygon *pol_iter = obstacles->offset_head;
 
 	// Convert polygons in Boost polygon object
 	while(pol_iter != NULL)
 	{
-		point_node *pn = pol_iter->pl->head;
-
-		string pts = "POLYGON((";
-		while(pn != NULL)
-		{
-			pts.append(to_string(pn->x));
-			pts.append(" ");
-			pts.append(to_string(pn->y));
-			pts.append(",");
-
-			pn=pn->pnext;
-		}
-		pts.append("))");
-
-		Polygon p;
-		boost::geometry::read_wkt(pts, p);
-		if(!boost::geometry::is_valid(p)){
-		  boost::geometry::correct(p); // Fixes edge order -> e.g. clockwise
-		  polys.push_back(p);
-		  pol_iter = pol_iter->pnext;
-		}
+		polys.push_back(pol_iter->to_boost_polygon());
+		pol_iter = pol_iter->pnext;
 	}
 
-	// Delete the offsetted list
-	polygon *tmp;
-	while (offset_head != NULL)
-	{
-		tmp = offset_head;
-		offset_head=offset_head->pnext;
-		delete tmp;
-	}
-	offset_size=0;
-
+	// check which polygons intersect
 	vector<Polygon> output;
-	int i=0;
+	int i=0; // number of polygons present
 	double psize = polys.size();
 	while(i < psize)
 	{
@@ -196,12 +163,29 @@ void list_of_obstacles::merge_polygons()
 				polys.erase(polys.begin() + j);
 				polys.push_back(output[output.size()-1]);
 				psize = polys.size();
-				i=0,j=1;
+				i=0, j=1;
 			}
 			j++;
 		}
 		i++;
 	}
+	
+	// Check intersections with arena
+	if(arena != NULL){
+		polygon *arena_pol = new polygon(arena);
+		Polygon _arena = arena_pol->to_boost_polygon();
+		vector<Polygon> tmp_pols;
+
+		for (int k=0; k<i; k++){
+			if (boost::geometry::intersects(_arena, polys[k])){
+				boost::geometry::intersection(polys[k],_arena, tmp_pols);
+				polys[k] = tmp_pols[tmp_pols.size()-1];
+			};
+		};
+	};
+	
+	// Delete the offsetted list
+	obstacles->delete_offsetted_list();
 
 	// Repopulate with updatate offsetted polygons
 	for(i=0; i < polys.size(); i++)
@@ -215,17 +199,19 @@ void list_of_obstacles::merge_polygons()
 			
 			pl->add_node(new point_node(x,y));
 		}
-		pl->print_list();
-		if(offset_head == NULL)
+
+		// pl->print_list();
+
+		if(obstacles->offset_head == NULL)
 		{
-			offset_head = new polygon(pl);
-			offset_tail = offset_head;
+			obstacles->offset_head = new polygon(pl);
+			obstacles->offset_tail = obstacles->offset_head;
 		}
 		else
 		{
-			offset_tail->pnext = new polygon(pl);
-			offset_tail = offset_tail->pnext;
+			obstacles->offset_tail->pnext = new polygon(pl);
+			obstacles->offset_tail = obstacles->offset_tail->pnext;
 		}
-		offset_size++;
+		obstacles->offset_size++;
 	}
 }
