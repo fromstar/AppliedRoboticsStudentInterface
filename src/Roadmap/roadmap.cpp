@@ -1,12 +1,14 @@
 #include "roadmap.h"
 #include <vector>
 
+
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
 #include <boost/geometry/io/wkt/wkt.hpp>
 
 #include <boost/foreach.hpp>
+
 #include <string.h>
 
 namespace bg = boost::geometry;
@@ -89,6 +91,50 @@ Mat points_map::plot_arena(int x_dim, int y_dim){
 	return img_arena;
 }
 
+/*
+void list_of_obstacles::merge_polygons(){
+	if (size < 2){  // only 1 obstacle -> unnecessary call to function
+					// Not true! it may collide with gates or the arena itself
+		return;
+	};
+
+	// Must optimize, it is suboptimal to search among all the existing polys
+	// Search is quadratic in size -> maybe use distance among centroids
+	// Idea is to use a nested while cycle that works on each polygon twice,
+	// It checks collisions among a pair of polygons and the result is
+	// added to the list to be checked against other polygons.
+	
+	point_list *new_pol_list = new point_list;
+
+	Edge_list *pol_outer = offset_head->edgify();
+	Edge_list *pol_inner = offset_head->pnext->edgify();
+	
+	Edge *iter_outer = pol_outer->head;
+	Edge *iter_inner = pol_inner->head;
+	int collisions = 0;
+
+	while (iter_outer != NULL){
+		while (iter_inner != NULL){
+			point_node *intersect = iter_outer->intersection(iter_inner);
+			if (intersect != NULL){
+				collisions++;
+				new_pol_list->add_node(intersect);
+				// Edge *temp_iter = iter_outer;
+				// iter_outer = iter_inner;
+				// iter_inner = temp_iter;
+			};
+			iter_inner = iter_inner -> next;
+		};
+		
+		if (collisions == 0){
+			new_pol_list->append_list(iter_outer -> points);
+		};
+		iter_outer = iter_outer -> next;
+	};
+	offset_head = new polygon(new_pol_list);
+};
+*/
+
 // Use boost library to merge polygons
 void list_of_obstacles::merge_polygons()
 {
@@ -117,19 +163,17 @@ void list_of_obstacles::merge_polygons()
 		pts.append("))");
 
 		Polygon p;
-		boost::geometry::read_wkt(pts,p);
-		if(!boost::geometry::is_valid(p))
-		// Funzione importante per fare il merge ma fa sbarellare un immagine
-		// nella funzione di test. Vedere perchè
-			boost::geometry::correct(p);
-
-		polys.push_back(p);
-		pol_iter = pol_iter->pnext;
+		boost::geometry::read_wkt(pts, p);
+		if(!boost::geometry::is_valid(p)){
+		  boost::geometry::correct(p); // Fixes edge order -> e.g. clockwise
+		  polys.push_back(p);
+		  pol_iter = pol_iter->pnext;
+		}
 	}
 
 	// Delete the offsetted list
 	polygon *tmp;
-	while (offset_head!=NULL)
+	while (offset_head != NULL)
 	{
 		tmp = offset_head;
 		offset_head=offset_head->pnext;
@@ -137,17 +181,15 @@ void list_of_obstacles::merge_polygons()
 	}
 	offset_size=0;
 
-
 	vector<Polygon> output;
 	int i=0;
 	double psize = polys.size();
-	while(i<psize)
+	while(i < psize)
 	{
-		int j=i+1;
-		while(j<psize)
+		int j = i+1;
+		while(j < psize)
 		{
 			if(boost::geometry::intersects(polys[i],polys[j])){
-				boost::geometry::union_(polys[i], polys[j], output);
 				// Update the polygon list
 				boost::geometry::union_(polys[i], polys[j], output);
 				polys.erase(polys.begin() + i);
@@ -162,10 +204,11 @@ void list_of_obstacles::merge_polygons()
 	}
 
 	// Repopulate with updatate offsetted polygons
-	point_list *pl = new point_list();
-	for(i=0;i<polys.size();i++)
+	for(i=0; i < polys.size(); i++)
 	{
-		for(auto it = boost::begin(boost::geometry::exterior_ring(polys[i])); it != boost::end(boost::geometry::exterior_ring(polys[i])); ++it)
+		point_list *pl = new point_list();
+		for(auto it = boost::begin(boost::geometry::exterior_ring(polys[i]));
+			it != boost::end(boost::geometry::exterior_ring(polys[i])); ++it)
 		{
 			double x = bg::get<0>(*it);
 			double y = bg::get<1>(*it);
@@ -180,7 +223,7 @@ void list_of_obstacles::merge_polygons()
 		}
 		else
 		{
-			offset_tail->pnext=new polygon(pl);
+			offset_tail->pnext = new polygon(pl);
 			offset_tail = offset_tail->pnext;
 		}
 		offset_size++;

@@ -38,6 +38,7 @@ struct point_node{
 		x=a;
 		y=b;
 		}
+	void Print();
 }typedef point_node;
 
 struct point_list{
@@ -48,34 +49,66 @@ struct point_list{
 	int size = 0;
 	
 	void add_node(point_node *);
+	void append_list(point_list *e);
 	void print_list();
 	void delete_list();	
 }typedef point_list;
 
+typedef struct Edge{
+	/**
+	 * Edge class. Represents the edges inside a polygon.
+	 * Attributes:
+	 * @param points : pointer of type point_list. Contains two points of the
+	 * 				   edge.
+	 * @param next : pointer of type Edge. Points to the next instance.
+	 * @param slope : pointer of type double. The slope of the edge.
+	 */
+	point_list* points;
+	double *slope = new double;
+	Edge *next = NULL;
+
+	// constructors
+	Edge(point_node *p_1, point_node *p_2);
+
+	// methods
+	void info();
+	void draw(cv::Mat img, cv::Scalar color=cv::Scalar(255, 255, 255),
+			  int thickness=1);
+	point_node* intersection(Edge *e);
+	~Edge();
+}Edge;
+
+typedef struct Edge_list{
+	//Edge *edge = NULL;
+	Edge *head = NULL;
+	Edge *tail = NULL;
+
+	void add_edge(Edge *e);
+	void info();
+	~Edge_list();
+}Edge_list;
 
 typedef struct polygon{
-	point_list *pl;
+	point_list *pl = NULL;
+	point_node *centroid = NULL;
 	polygon *pnext = NULL;
-	polygon(point_list* pls){
-		if(pls->size >=3)
-			pl = pls;
-		else
-		{
-			throw std::invalid_argument( "Error: A polygon can't have less than 3 points.\n");
-			exit(-1);
-		}
-	}
-	~polygon(){
-		pl->delete_list();
-	}
-  polygon* add_offset(double offset);
+	
+	// constructor
+	polygon(point_list* pls);
+	~polygon();
+
+	// Methods
+	Edge_list* edgify();
+  	polygon* add_offset(double offset);
+  	void concatenate(polygon *p);
+  	void info();
 }polygon;
 
 double sinc(double);
 double mod2pi(double);
 double rangeSymm(double);
 bool check(double, double, double, double, double, double, double, double);
-Mat plot_points(point_list *,Mat,Scalar,bool);
+Mat plot_points(point_list *, Mat, Scalar, bool);
 void sort(double_list *, point_list *);
 tuple <double, double> get_new_point(double,double,double,double);
 

@@ -39,6 +39,10 @@ void double_list::delete_list()
 	size = 0;
 }
 
+void point_node::Print(){
+		printf("%0.4f,%0.4f\n", x, y);
+	};
+
 void point_list::add_node(point_node *node)
 {
 	size++;
@@ -52,6 +56,7 @@ void point_list::add_node(point_node *node)
 		y_max = y_min;
 		return;
 	}
+	/*
 	if(node->x < x_min)
 		x_min = node->x;
 	else if(node->x > x_max)
@@ -60,10 +65,21 @@ void point_list::add_node(point_node *node)
 		y_min = node->y;
 	else if(node->y > y_max)
 		y_max = node->y;
-		
+	*/
+
+	x_min = std::min(x_min, node->x);
+	x_max = std::max(x_max, node->x);
+	y_min = std::min(y_min, node->y);
+	y_max = std::max(y_max, node->y);
+
 	tail->pnext = node;
 	tail = tail->pnext;
 }
+
+void point_list::append_list(point_list *e){
+	tail->pnext = e -> head;
+	tail = e -> tail;
+};
 
 void point_list::print_list()
 {
@@ -91,7 +107,84 @@ void point_list::delete_list()
 }
 
 
- Mat plot_points(point_list * pl, Mat arena, Scalar colorline, bool isPolygon)
+Edge::Edge(point_node *p_1, point_node *p_2){
+	/**
+	 * @param p_1 : pointer of type point_node.
+	 * @param p_2 : pointer of type point_node.
+	 */
+
+	points = new point_list;
+	points -> add_node(new point_node(p_1->x, p_1->y));
+	points -> add_node(new point_node(p_2->x, p_2->y));
+	*slope = (p_2->y - p_1->y) / (p_2->x - p_1->x);
+};
+
+Edge::~Edge(){
+	points->delete_list();
+};
+
+point_node* Edge::intersection(Edge *e){
+	// given the slope, the equation of a line is y-y1 = m(x-x1).
+	if (*slope == *e->slope){
+		return NULL;
+	};
+	point_node *start = points->head;
+	point_node *end = points->tail;
+	point_node *e_start = e->points->head;
+	point_node *e_end = e->points->tail;
+
+	double x_int = (e_start->y - start->y + (start->x * *slope) -
+				   (e_start->x * *e->slope)) /
+				   (*slope - *e->slope);
+	double y_int = (*slope * (x_int - start->x) + start->y);
+	
+	// Check intersection point to avoid that relies over the segments
+	if (x_int < min(points->x_min, e->points->x_min) ||
+		x_int > max(points->x_max, e->points->x_max) ||
+	    y_int < min(points->y_min, e->points->y_min) ||
+		y_int > max(points->y_max, e->points->y_max)){
+		return NULL;
+	};
+
+	point_node* intersection = new point_node(x_int, y_int);
+	return intersection;
+};
+
+void Edge::info(){
+	points->print_list();
+	printf("Slope: %f\n", *slope);
+};
+
+void Edge_list::add_edge(Edge *e){
+	if (head == NULL){
+		head = e;
+		tail = head;
+		return;
+	};
+
+	tail->next = e;
+	tail = tail->next;
+};
+
+void Edge_list::info(){
+	Edge *tmp = head;
+	while (tmp != NULL){
+		tmp -> info();
+		tmp = tmp->next;
+	};
+};
+
+Edge_list::~Edge_list(){
+	Edge *tmp = NULL;
+	while (head != NULL){
+		tmp = head;
+		head = head -> next;
+		delete tmp;
+	};
+};
+
+
+Mat plot_points(point_list * pl, Mat arena, Scalar colorline, bool isPolygon)
  {
 	 if(pl != NULL)
 	 {
@@ -110,7 +203,10 @@ void point_list::delete_list()
 		}
 		
 		if (isPolygon) //close the polygon connecting the last point with the firts one
-			line(arena,Point((n1->x*SCALE_1)+SCALE_2,(n1->y*-SCALE_1)+SCALE_2),Point((pl->head->x*SCALE_1)+SCALE_2,(pl->head->y*-SCALE_1)+SCALE_2),colorline,1);
+			line(arena, Point((n1->x * SCALE_1) + SCALE_2,
+				 (n1->y * -SCALE_1) + SCALE_2),
+				 Point( (pl->head->x * SCALE_1) + SCALE_2,
+					    (pl->head->y * -SCALE_1) + SCALE_2), colorline, 1);
 	 }
 	return arena;
  }
@@ -231,6 +327,44 @@ tuple <double,double> get_new_point(double m1, double m2, double q1, double q2)
 	return make_tuple(x,y);
 }
 
+polygon::polygon(point_list *pls){
+		if(pls->size >= 3){
+			pl = pls;
+			point_node *tmp = pl->head;
+			double x_sum = 0;
+			double y_sum = 0;
+			while (tmp != NULL){
+				x_sum += tmp->x;
+				y_sum += tmp->y;
+				tmp = tmp->pnext;
+			};
+			centroid = new point_node(x_sum/pl->size, y_sum/pl->size);
+		}
+		else
+		{
+			throw std::invalid_argument( "Error: A polygon can't have less"
+										 "than 3 points.\n");
+			exit(-1);
+		}
+};
+
+polygon::~polygon(){
+	pl -> delete_list();
+};
+
+Edge_list* polygon::edgify(){
+	point_node * tmp = pl->head;
+	Edge_list *edges = new(Edge_list);
+	while (tmp -> pnext != NULL){
+		Edge *e_temp = new Edge(tmp, tmp->pnext);
+		edges->add_edge(e_temp);
+		tmp = tmp -> pnext;
+	};
+	Edge *last_edge = new Edge(tmp, pl->head);
+	edges->add_edge(last_edge);
+	return edges;
+};
+
 polygon * polygon::add_offset(double offset){
 
 	/* The idea is to calculate the lines coefficients in order to have the 
@@ -240,7 +374,9 @@ polygon * polygon::add_offset(double offset){
 	point_node * p1 = pl->head;
 	point_node * p2 = p1->pnext;
 
-	// A matrix that contains in x the angular coefficient and in y the ordinates value of the lines offsetted
+	// A matrix that contains in x the angular coefficient and in y the
+	// ordinates value of the lines offsetted
+
 	double 	coeff [pl->size][2];
 
 	double x,y;
@@ -313,7 +449,9 @@ polygon * polygon::add_offset(double offset){
 
 		}
 		coeff[i][0] = m;
-		// If the distance from the center of gravity of the firs lines is bigger than the second I have to take it.
+		// If the distance from the center of gravity of the firs lines is
+		// bigger than the second I have to take it.
+
 		if (d1>d2){
 			coeff[i][1] = qp1;
 		}
@@ -345,4 +483,18 @@ polygon * polygon::add_offset(double offset){
 	new_pol->add_node(new point_node(x,y));
 
 	return new polygon(new_pol);
+};
+
+void polygon::concatenate(polygon *p){
+	if (pl == NULL){
+		pl = p->pl;
+	}else{
+		pnext = p;
+	};
+};
+
+void polygon::info(){
+	pl -> print_list();
+	printf("Polygon centroid: ");
+	centroid -> Print();
 };
