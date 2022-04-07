@@ -5,6 +5,10 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdexcept>
+#include <boost/geometry.hpp>
+
+using pt         = boost::geometry::model::d2::point_xy<double>;
+using Polygon       = boost::geometry::model::polygon<pt>;
 
 typedef struct Robot{
 	char *ID = NULL;
@@ -56,4 +60,5 @@ typedef struct points_map {
   // void ~points_map();
 } points_map;
 
+point_list* boost_polygon_to_point_list(Polygon p);
 #endif

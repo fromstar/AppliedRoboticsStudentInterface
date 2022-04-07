@@ -130,6 +130,21 @@ Mat points_map::plot_arena(int x_dim, int y_dim){
 	return img_arena;
 }
 
+
+point_list* boost_polygon_to_point_list(Polygon p){
+	point_list *pl = new point_list();
+	for(auto it = boost::begin(boost::geometry::exterior_ring(p));
+		it != boost::end(boost::geometry::exterior_ring(p)); ++it)
+	{
+		double x = bg::get<0>(*it);
+		double y = bg::get<1>(*it);
+		
+		pl->add_node(new point_node(x,y));
+	}
+	return pl;
+};
+
+
 // Use boost library to merge polygons
 void points_map::merge_obstacles()
 {
@@ -182,23 +197,44 @@ void points_map::merge_obstacles()
 				polys[k] = tmp_pols[tmp_pols.size()-1];
 			};
 		};
+	}else{
+		printf("No arena points setted. Unable to check intersections.");
 	};
 	
+	// Check intersections with gates
+	if (gates != NULL){
+		polygon* tmp_gate = gates->head;
+		gates = NULL;  // Delete old gates list
+		vector<Polygon> tmp_new_gates;
+		points_map* tmp_map = new points_map;
+
+		while (tmp_gate != NULL){
+			Polygon _gate = tmp_gate -> to_boost_polygon();
+			for (int k=0; k<i; k++){
+				if (boost::geometry::intersects(_gate, polys[k])){
+					boost::geometry::difference(_gate, polys[k],
+												  tmp_new_gates);
+					point_list* pl = boost_polygon_to_point_list(
+									 tmp_new_gates[tmp_new_gates.size()-1]
+									 );
+					polygon *new_gate = new polygon(pl);
+					new_gate->pnext = tmp_gate->pnext;
+					tmp_gate = new_gate;
+				};
+			};
+			tmp_map->add_gate(tmp_gate);
+			tmp_gate = tmp_gate->pnext;
+		};
+		gates = tmp_map->gates;
+	};
+
 	// Delete the offsetted list
 	obstacles->delete_offsetted_list();
 
 	// Repopulate with updatate offsetted polygons
 	for(i=0; i < polys.size(); i++)
 	{
-		point_list *pl = new point_list();
-		for(auto it = boost::begin(boost::geometry::exterior_ring(polys[i]));
-			it != boost::end(boost::geometry::exterior_ring(polys[i])); ++it)
-		{
-			double x = bg::get<0>(*it);
-			double y = bg::get<1>(*it);
-			
-			pl->add_node(new point_node(x,y));
-		}
+		point_list *pl = boost_polygon_to_point_list(polys[i]);
 
 		// pl->print_list();
 
