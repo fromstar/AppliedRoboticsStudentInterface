@@ -11,17 +11,27 @@ using pt         = boost::geometry::model::d2::point_xy<double>;
 using Polygon       = boost::geometry::model::polygon<pt>;
 
 typedef struct Robot{
+	// Take into account orientation -> Changes the available movements
 	char *ID = NULL;
 	double x;
 	double y;
 	double max_curvature_angle;
 	double offset = 1;
+	Robot* next = NULL;
 
 	Robot(){
 		x = 0.0;
 		y = 0.0;
 	}
 } Robot;
+
+typedef struct list_of_robots{
+	Robot* head = NULL;
+	Robot* tail = NULL;
+
+	~list_of_robots();
+	void add_robot(Robot* r);
+}list_of_robots;
 
 typedef struct list_of_obstacles {
   polygon *head = NULL;
@@ -36,17 +46,16 @@ typedef struct list_of_obstacles {
   void delete_offsetted_list();
 }list_of_obstacles;
 
-typedef struct list_of_gates{
+typedef struct list_of_polygons{
 	polygon *head = NULL;
 	polygon *tail = NULL;
-}list_of_gates;
+}list_of_polygons;
 
 typedef struct points_map {
   // Lists of points belonging respectively to the arena and the obstacles
-  // Supposed that the points are in clockwise or counterclockwise order
-  point_list *arena = NULL;
+  point_list *arena = NULL;  // If the robots touches the wall Game Over -> Inflate the arena
   list_of_obstacles *obstacles = new list_of_obstacles;
-  list_of_gates *gates = new list_of_gates;
+  list_of_polygons *gates = new list_of_polygons;
   Robot *robot = NULL;
   
   void add_arena_points(point_list *ArenaPoints);
@@ -57,8 +66,10 @@ typedef struct points_map {
   void print_info();
   Mat plot_arena(int, int);
   void del_map();
+  void reduce_arena();
   // void ~points_map();
 } points_map;
 
+// outsider functions
 point_list* boost_polygon_to_point_list(Polygon p);
 #endif

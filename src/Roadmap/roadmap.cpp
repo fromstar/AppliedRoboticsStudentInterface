@@ -3,9 +3,9 @@
 
 
 #include <boost/geometry.hpp>
-#include <boost/geometry/geometries/point_xy.hpp>
-#include <boost/geometry/geometries/polygon.hpp>
-#include <boost/geometry/io/wkt/wkt.hpp>
+// #include <boost/geometry/geometries/point_xy.hpp>
+// #include <boost/geometry/geometries/polygon.hpp>
+// #include <boost/geometry/io/wkt/wkt.hpp>
 
 #include <boost/foreach.hpp>
 
@@ -19,6 +19,25 @@ using pt         = bgm::d2::point_xy<double>;
 using Polygon       = bgm::polygon<pt>;
 using Multi_Polygon = bgm::multi_polygon<Polygon>;
 
+
+list_of_robots::~list_of_robots(){
+	Robot* tmp = head;
+	while(tmp != NULL){
+		Robot* deleter = tmp;
+		tmp = tmp -> next;
+		delete deleter;
+	};
+};
+
+void list_of_robots::add_robot(Robot* r){
+	if (head == NULL){
+		head = r;
+		tail = head;
+	}else{
+		tail->next = r;
+		tail = tail->next;
+	};
+};
 
 list_of_obstacles::~list_of_obstacles(){
     polygon *tmp = head;
@@ -91,6 +110,12 @@ void points_map::print_info(){
   cout<<"Robot location: " << robot->x << " - "<< robot->y <<endl;
 };
 
+void points_map::reduce_arena(){
+	polygon *copy_arena = new polygon(arena);
+	copy_arena = copy_arena -> add_offset(-0.1);
+	arena = copy_arena -> pl;
+};
+
 Mat points_map::plot_arena(int x_dim, int y_dim){
 	Mat img_arena(x_dim, y_dim, CV_8UC3, Scalar(255, 255, 255));
 	
@@ -148,9 +173,6 @@ point_list* boost_polygon_to_point_list(Polygon p){
 // Use boost library to merge polygons
 void points_map::merge_obstacles()
 {
-	// if(obstacles->size < 2)
-	// 	return;
-
 	std::vector<Polygon> polys;
 
  	polygon *pol_iter = obstacles->offset_head;
