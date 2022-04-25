@@ -350,6 +350,51 @@ list_of_polygons* subset_polygon(polygon* p, int levels){
 	return subset_list;
 };
 
+
+/**
+ * Subtract a vector o polygons from another one.
+ * @param arena: vector<Polygon>. Is the vector of polygons from which
+ * the other polygons will be subtracted.
+ * @param obstacles: vector<Polygon>. Is the vector of polygons that will
+ * be subtracted.
+ */
+vector<Polygon> difference_of_vectors(vector<Polygon> arena,
+									  vector<Polygon> obstacles){
+	vector<Polygon> output;
+	vector<Polygon> tmp_output;
+
+	int prev_output = 0;
+	int arena_size = arena.size();
+	int arena_ob_size = obstacles.size();
+	for (int i=0; i<arena_size; i++){
+		for (int j=0; j<arena_ob_size; j++){
+			if (bg::intersects(arena[i], obstacles[j])){
+				bg::difference(arena[i], obstacles[j], output);
+				int diff = output.size() - prev_output;
+				prev_output = output.size();
+
+				// printf("Polygon %d and obstacle %d intersects", i, j);
+				// printf(" -> %d new cells\n", diff);
+
+				arena[i] = output[output.size()-1];
+				if (diff > 1){
+					tmp_output = arena;
+					for(int k=1; k < diff; k++){
+						int output_idx = output.size()-1-k;
+						vector<Polygon>::iterator it;
+						it = tmp_output.begin();
+						tmp_output.insert(it+i+k, output[output_idx]);
+						arena_size += 1;
+					};
+					arena = tmp_output;
+				};
+			};
+		};
+	};
+	return arena;
+};
+
+
 void points_map::make_free_space_cells(int res){
 	// Subset arena -> free space idealization
 	polygon* _arena = new polygon(arena);
@@ -378,35 +423,14 @@ void points_map::make_free_space_cells(int res){
 
 	// Remove the obstacles from the free space and compute the new shapes
 	if (arena_obstacles.size() > 0){
+		// Remove obstacles from the sectors of the arena.
+		arena_polys = difference_of_vectors(arena_polys, arena_obstacles);
+		
+		// Remove occlusions caused by the free space with themselves
 		int prev_output = output.size();
 		int arena_size = arena_polys.size();
 		int arena_ob_size = arena_obstacles.size();
-		for (int i=0; i<arena_size; i++){
-			for (int j=0; j<arena_ob_size; j++){
-				if (bg::intersects(arena_polys[i], arena_obstacles[j])){
-					bg::difference(arena_polys[i], arena_obstacles[j], output);
-					int diff = output.size() - prev_output;
-					prev_output = output.size();
 
-					// printf("Polygon %d and obstacle %d intersects", i, j);
-					// printf(" -> %d new cells\n", diff);
-
-					arena_polys[i] = output[output.size()-1];
-					if (diff > 1){
-						tmp_output = arena_polys;
-						for(int k=1; k < diff; k++){
-							int output_idx = output.size()-1-k;
-							vector<Polygon>::iterator it;
-							it = tmp_output.begin();
-							tmp_output.insert(it+i+k, output[output_idx]);
-							arena_size += 1;
-						};
-						arena_polys = tmp_output;
-					};
-				};
-			};
-		};
-		// Remove superimposing cells
 		output.clear();
 		tmp_output.clear();
 		prev_output = 0;
@@ -452,49 +476,3 @@ void points_map::make_free_space_cells(int res){
 	printf("Free space generated\n");
 };
 
-/*
-void points_map::make_free_space_cells(){
-	using v_diagram = boost::polygon::voronoi_diagram<double>; 
-	list_of_polygons *new_free_space;
-
-	boost::polygon::voronoi_builder<int> voronoi_arena;
-	boost::polygon::voronoi_diagram<double> voronoi_output;
-
-	point_node * tmp_point = arena -> head;
-	while(tmp_point != NULL){
-		voronoi_arena.insert_point(int(tmp_point->x), int(tmp_point->y));
-		tmp_point = tmp_point -> pnext;
-	};
-	voronoi_arena.construct(&voronoi_output);
-	int cell_id = 0;
-	for (boost::polygon::voronoi_diagram<double>::const_cell_iterator it =
-		 voronoi_output.cells().begin();
-		 it != voronoi_output.cells().end();
-		 ++it){
-		point_list* tmp_cell_points = new point_list;
-		// cell as polygon code
-		const v_diagram::cell_type &cell = *it;
-    	const v_diagram::edge_type *edge =  cell.incident_edge();
-		do {
-      		if (edge->is_primary()){
-				const v_diagram::vertex_type *v_vertex_1 = edge->vertex0();
-				// const v_diagram::vertex_type *v_vertex_2 = edge->vertex1();
-
-				point_node *p_start = new point_node(v_vertex_1->x(),
-													 v_vertex_1->y());
-				// point_node *p_start = new point_node(v_vertex_2->x(),
-				//									 v_vertex_2->y());
-				tmp_cell_points->add_node(p_start);
-				printf("Added point %0.2f-%0.2f to cell %d", p_start->x,
-															 p_start->y,
-															 cell_id);
-			};
-      		edge = edge->next();
-    	   } while (edge != cell.incident_edge());
-		cell_id += 1;
-		if (tmp_cell_points->size >= 3){
-			free_space->add_polygon(new polygon(tmp_cell_points));
-		};
-	};
-};
-*/

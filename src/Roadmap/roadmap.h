@@ -79,4 +79,6 @@ typedef struct points_map {
 // outsider functions
 point_list* boost_polygon_to_point_list(Polygon p);
 list_of_polygons* subset_polygon(polygon* p, int levels=1);
+vector<Polygon> difference_of_vectors(vector<Polygon> arena,
+									  vector<Polygon> obstacles);
 #endif
