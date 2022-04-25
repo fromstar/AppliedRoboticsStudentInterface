@@ -49,6 +49,10 @@ typedef struct list_of_obstacles {
 typedef struct list_of_polygons{
 	polygon *head = NULL;
 	polygon *tail = NULL;
+	int size = 0;
+
+	void add_polygon(polygon* p);
+	void append_other_list(list_of_polygons* p);
 }list_of_polygons;
 
 typedef struct points_map {
@@ -56,15 +60,17 @@ typedef struct points_map {
   point_list *arena = NULL;  // If the robots touches the wall Game Over -> Inflate the arena
   list_of_obstacles *obstacles = new list_of_obstacles;
   list_of_polygons *gates = new list_of_polygons;
-  Robot *robot = NULL;
-  
+  list_of_polygons *free_space = new list_of_polygons;
+  Robot *robot = NULL; // to update using list_of_robots
+
   void add_arena_points(point_list *ArenaPoints);
-  void set_robot_position(double x, double y);
+  void set_robot_position(double x, double y);  // To update using list
   void add_obstacle(polygon* ob);
   void add_gate(polygon *gt);
   void merge_obstacles();
+  void make_free_space_cells(int res=2);
   void print_info();
-  Mat plot_arena(int, int);
+  Mat plot_arena(int x_dim, int y_dim, bool show_original_polygons=true);
   void del_map();
   void reduce_arena();
   // void ~points_map();
@@ -72,4 +78,5 @@ typedef struct points_map {
 
 // outsider functions
 point_list* boost_polygon_to_point_list(Polygon p);
+list_of_polygons* subset_polygon(polygon* p, int levels=1);
 #endif

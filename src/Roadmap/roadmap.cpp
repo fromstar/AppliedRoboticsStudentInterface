@@ -8,7 +8,8 @@
 // #include <boost/geometry/io/wkt/wkt.hpp>
 
 #include <boost/foreach.hpp>
-
+#include <boost/polygon/voronoi_builder.hpp>
+#include <boost/polygon/voronoi_diagram.hpp>
 #include <string.h>
 
 namespace bg = boost::geometry;
@@ -54,7 +55,7 @@ list_of_obstacles::~list_of_obstacles(){
       offset_head = offset_head->pnext;
       delete tmp;
     }
-  };
+};
 
 void list_of_obstacles::delete_offsetted_list(){
 	polygon *tmp;
@@ -77,15 +78,31 @@ void points_map::set_robot_position(double x, double y){
   robot -> y = y;
 };
 
-void points_map::add_gate(polygon *gt){
-	if(gates->head == NULL)
+void list_of_polygons::add_polygon(polygon *p){
+	if(head == NULL)
 	{
-		gates->head = gt;
-		gates->tail = gates->head;
+		head = p;
+		tail = head;
 		return;
 	}
-	gates->tail->pnext = gt;
-	gates->tail = gates->tail->pnext;
+	tail->pnext = p;
+	tail = tail->pnext;
+	size += 1;
+};
+
+void list_of_polygons::append_other_list(list_of_polygons* p){
+	if (head == NULL){
+		head = p -> head;
+		tail = p -> tail;
+	}else{
+		tail -> pnext = p -> head;
+		tail = p -> tail;
+	};
+	size += p->size;
+};
+
+void points_map::add_gate(polygon* gt){ // is a shortcut
+	gates -> add_polygon(gt);
 };
 
 void points_map::add_obstacle(polygon *ob){
@@ -116,24 +133,28 @@ void points_map::reduce_arena(){
 	arena = copy_arena -> pl;
 };
 
-Mat points_map::plot_arena(int x_dim, int y_dim){
+Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons){
 	Mat img_arena(x_dim, y_dim, CV_8UC3, Scalar(255, 255, 255));
 	
 	img_arena = plot_points(arena, img_arena, Scalar(0,0,0),true);
 	
-	// Plot obstacles as they are
-	polygon *tmp = obstacles->head;
-	while(tmp != NULL)
-	{
-		img_arena = plot_points(tmp->pl,img_arena,Scalar(255,0,0),true);
-		tmp = tmp->pnext;
-	}
-	
+	polygon* tmp = NULL;
+
+	if(show_original_polygons){
+		// Plot obstacles as they are
+		tmp = obstacles->head;
+		while(tmp != NULL)
+		{
+			img_arena = plot_points(tmp->pl, img_arena, Scalar(255,0,0), true);
+			tmp = tmp->pnext;
+		}
+	};
+
 	// Plot obstacles enlarged
 	tmp = obstacles->offset_head;
 	while(tmp != NULL)
 	{
-		img_arena = plot_points(tmp->pl,img_arena,Scalar(0,0,255),true);
+		img_arena = plot_points(tmp->pl, img_arena, Scalar(0,0,255), true);
 		tmp = tmp->pnext;
 	}
 	
@@ -141,10 +162,18 @@ Mat points_map::plot_arena(int x_dim, int y_dim){
 	tmp = gates->head;
 	while(tmp != NULL)
 	{
-		img_arena = plot_points(tmp->pl,img_arena,Scalar(0,255,0),true);
+		img_arena = plot_points(tmp->pl, img_arena, Scalar(0,255,0), true);
 		tmp = tmp->pnext;
 	}
 	
+	// plot free_space
+	tmp = free_space -> head;
+	while(tmp != NULL){
+		img_arena = plot_points(tmp->pl, img_arena, Scalar(0, 255, 255),
+								true, 2);
+		tmp = tmp->pnext;
+	};
+
 	// plot robots
 	point_list *robot_loc = new point_list;
 	robot_loc -> add_node(new point_node(robot->x, robot->y));
@@ -273,3 +302,199 @@ void points_map::merge_obstacles()
 		obstacles->offset_size++;
 	}
 }
+
+list_of_polygons* subset_polygon(polygon* p, int levels){
+	list_of_polygons* subset_list = new list_of_polygons;
+
+	point_node* tmp_point_start = p -> pl -> head;
+
+	while(tmp_point_start->pnext != NULL){
+		point_list* tmp_point_list = new point_list;
+		
+		double s_x = tmp_point_start -> x;
+		double s_y = tmp_point_start -> y;
+		double e_x = tmp_point_start -> pnext -> x;
+		double e_y = tmp_point_start -> pnext -> y;
+
+		tmp_point_list -> add_node(new point_node(s_x, s_y));
+		tmp_point_list -> add_node(new point_node(e_x, e_y));
+		tmp_point_list -> add_node(p->centroid);
+		
+		subset_list -> add_polygon(new polygon(tmp_point_list));
+		tmp_point_start = tmp_point_start -> pnext;
+
+		if (tmp_point_start -> pnext == NULL){
+			tmp_point_list = new point_list;
+			
+			double s_x = tmp_point_start -> x;
+			double s_y = tmp_point_start -> y;
+			double e_x = p -> pl -> head -> x;
+			double e_y = p -> pl -> head -> y;
+
+			tmp_point_list -> add_node(new point_node(s_x, s_y));
+			tmp_point_list -> add_node(new point_node(e_x, e_y));
+			tmp_point_list -> add_node(p -> centroid);
+			subset_list -> add_polygon(new polygon(tmp_point_list));
+		};
+	};
+	for(int i=0; i<levels-1; i++){
+		polygon* tmp_pol = subset_list -> head;
+		list_of_polygons* new_subset_list = new list_of_polygons;
+		while(tmp_pol != NULL){
+			polygon* tmp_list = new polygon(tmp_pol -> pl);
+			new_subset_list->append_other_list(subset_polygon(tmp_list));
+			tmp_pol = tmp_pol -> pnext;
+		};
+		subset_list = new_subset_list;
+	};
+	return subset_list;
+};
+
+void points_map::make_free_space_cells(int res){
+	// Subset arena -> free space idealization
+	polygon* _arena = new polygon(arena);
+	list_of_polygons* _arena_subset = subset_polygon(_arena, res);
+	
+
+	// Arena subsets to boost::polygons;
+	vector<Polygon> arena_polys;
+	vector<Polygon> arena_obstacles;
+	vector<Polygon> output;
+	vector<Polygon> tmp_output;
+
+	polygon* pol = _arena_subset -> head;
+	while(pol != NULL){
+		arena_polys.push_back(pol->to_boost_polygon());
+		pol = pol -> pnext;
+	};
+	printf("Arena converted to boost\n");
+
+	pol = obstacles -> offset_head;
+	while(pol != NULL){
+		arena_obstacles.push_back(pol->to_boost_polygon());
+		pol = pol -> pnext;
+	};
+	printf("Obstacles converted to boost\n");
+
+	// Remove the obstacles from the free space and compute the new shapes
+	if (arena_obstacles.size() > 0){
+		int prev_output = output.size();
+		int arena_size = arena_polys.size();
+		int arena_ob_size = arena_obstacles.size();
+		for (int i=0; i<arena_size; i++){
+			for (int j=0; j<arena_ob_size; j++){
+				if (bg::intersects(arena_polys[i], arena_obstacles[j])){
+					bg::difference(arena_polys[i], arena_obstacles[j], output);
+					int diff = output.size() - prev_output;
+					prev_output = output.size();
+
+					// printf("Polygon %d and obstacle %d intersects", i, j);
+					// printf(" -> %d new cells\n", diff);
+
+					arena_polys[i] = output[output.size()-1];
+					if (diff > 1){
+						tmp_output = arena_polys;
+						for(int k=1; k < diff; k++){
+							int output_idx = output.size()-1-k;
+							vector<Polygon>::iterator it;
+							it = tmp_output.begin();
+							tmp_output.insert(it+i+k, output[output_idx]);
+							arena_size += 1;
+						};
+						arena_polys = tmp_output;
+					};
+				};
+			};
+		};
+		// Remove superimposing cells
+		output.clear();
+		tmp_output.clear();
+		prev_output = 0;
+		for (int i=0; i<arena_size; i++){
+			for (int j=0; j<arena_size; j++){
+				if (i != j){
+					if (bg::overlaps(arena_polys[i], arena_polys[j])){
+						bg::difference(arena_polys[i], arena_polys[j], output);
+						int diff = output.size() - prev_output;
+						prev_output = output.size();
+
+						// printf("Polygon %d and polygon %d intersects", i, j);
+						// printf(" -> %d new cells\n", diff);
+
+						arena_polys[i] = output[output.size()-1];
+						if (diff > 1){
+							tmp_output = arena_polys;
+							for(int k=1; k < diff; k++){
+								int output_idx = output.size()-1-k;
+								vector<Polygon>::iterator it;
+								it = tmp_output.begin();
+								tmp_output.insert(it+i+k, output[output_idx]);
+								arena_size += 1;
+							};
+							arena_polys = tmp_output;
+						};
+					};
+				};
+			};
+		};
+	};
+
+	// printf("Obstacles removed\n");
+	output = arena_polys;
+	// cout << "Found " << output.size() << " cells" << endl;
+
+	// convert boost polygons to polygons and update free space variable
+	for(int i=0; i<output.size(); i++){
+		point_list* new_space_points = boost_polygon_to_point_list(output[i]);
+		polygon* new_space = new polygon(new_space_points);
+		free_space->add_polygon(new_space);
+	};
+	printf("Free space generated\n");
+};
+
+/*
+void points_map::make_free_space_cells(){
+	using v_diagram = boost::polygon::voronoi_diagram<double>; 
+	list_of_polygons *new_free_space;
+
+	boost::polygon::voronoi_builder<int> voronoi_arena;
+	boost::polygon::voronoi_diagram<double> voronoi_output;
+
+	point_node * tmp_point = arena -> head;
+	while(tmp_point != NULL){
+		voronoi_arena.insert_point(int(tmp_point->x), int(tmp_point->y));
+		tmp_point = tmp_point -> pnext;
+	};
+	voronoi_arena.construct(&voronoi_output);
+	int cell_id = 0;
+	for (boost::polygon::voronoi_diagram<double>::const_cell_iterator it =
+		 voronoi_output.cells().begin();
+		 it != voronoi_output.cells().end();
+		 ++it){
+		point_list* tmp_cell_points = new point_list;
+		// cell as polygon code
+		const v_diagram::cell_type &cell = *it;
+    	const v_diagram::edge_type *edge =  cell.incident_edge();
+		do {
+      		if (edge->is_primary()){
+				const v_diagram::vertex_type *v_vertex_1 = edge->vertex0();
+				// const v_diagram::vertex_type *v_vertex_2 = edge->vertex1();
+
+				point_node *p_start = new point_node(v_vertex_1->x(),
+													 v_vertex_1->y());
+				// point_node *p_start = new point_node(v_vertex_2->x(),
+				//									 v_vertex_2->y());
+				tmp_cell_points->add_node(p_start);
+				printf("Added point %0.2f-%0.2f to cell %d", p_start->x,
+															 p_start->y,
+															 cell_id);
+			};
+      		edge = edge->next();
+    	   } while (edge != cell.incident_edge());
+		cell_id += 1;
+		if (tmp_cell_points->size >= 3){
+			free_space->add_polygon(new polygon(tmp_cell_points));
+		};
+	};
+};
+*/

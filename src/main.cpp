@@ -1,5 +1,6 @@
 #include "Roadmap/roadmap.h"
 //#include "../../simulator/src/9_project_interface/include/utils.hpp"
+#include <time.h>
 
 using namespace std;
 
@@ -40,13 +41,14 @@ void test2(){
 
 	map -> merge_obstacles();
 
-	Mat map_show = map -> plot_arena(800, 800);
+	Mat map_show = map -> plot_arena(800, 800, false);
 	imshow("Test_2",map_show);
 	waitKey(0);
 };
 
 void test()
-{
+{	
+	printf("Code started\n");
 	points_map test_map;
 	
 	// Define arena limits
@@ -57,40 +59,38 @@ void test()
 	map_limits->add_node(new point_node(4.0,1.0));
 	map_limits->add_node(new point_node(4.0,-4.0));
     test_map.add_arena_points(map_limits);
-    
+
 	// Add obstacles
-	/*
     point_list *pol = new point_list;
-    pol->add_node(new point_node(0.0,0.0));
+
+	pol->add_node(new point_node(-0.5,0.0));
     pol->add_node(new point_node(1.0,0.0));
     pol->add_node(new point_node(0.5,-1.0));
     test_map.add_obstacle(new polygon(pol));
-    
-    pol = new point_list;
+		
+	pol = new point_list;
     pol->add_node(new point_node(3.0,-1.0));
     pol->add_node(new point_node(3.5,-2.5));
     pol->add_node(new point_node(2.5,-2.25));
     pol->add_node(new point_node(2.0,-0.0));
     test_map.add_obstacle(new polygon(pol));
-    */
 
-	point_list* pol = new point_list;
+	pol = new point_list;
     pol->add_node(new point_node(-0.5,-3.5));
     pol->add_node(new point_node(1.0,-3.5));
     pol->add_node(new point_node(1.5,-2.25));
     pol->add_node(new point_node(0.0,-2.0));
     pol->add_node(new point_node(-0.9,-2.25));
     test_map.add_obstacle(new polygon(pol));
-    
-	/*
+
     pol = new point_list;
     pol->add_node(new point_node(2,-1.2));
     pol->add_node(new point_node(0.5,-1.2));
     pol->add_node(new point_node(0.5,-1.8));
     pol->add_node(new point_node(2,-1.8));
     test_map.add_obstacle(new polygon(pol));
-	*/
-    cout << "Number of polygons: " << test_map.obstacles -> size << endl;
+
+    cout << "Number of obstacles: " << test_map.obstacles -> size << endl;
 
 	// Add gates
     pol = new point_list;
@@ -108,11 +108,14 @@ void test()
     test_map.add_gate(new polygon(pol));	
     
 	test_map.merge_obstacles();
-   
-	test_map.set_robot_position(1, -2);
-    
-	Mat img_arena = test_map.plot_arena(800, 800);
 
+   	test_map.make_free_space_cells();
+
+	test_map.set_robot_position(1, -2);
+	// test_map.reduce_arena();
+
+	Mat img_arena = test_map.plot_arena(800, 800, true);
+	
     imshow("Arena", img_arena);
 	waitKey(0);
 	
