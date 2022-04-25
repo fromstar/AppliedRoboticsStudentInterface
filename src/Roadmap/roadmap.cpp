@@ -394,7 +394,15 @@ vector<Polygon> difference_of_vectors(vector<Polygon> arena,
 	return arena;
 };
 
-
+/**
+ * This function is used to detect the free space in the arena provided.
+ * The algorithm works by subtracting to the arena the obstacles identified
+ * in it.
+ * The arena is cut into several cells which have the arena centroid as the
+ * reference point. Then the obstacles are subtracted from those cells
+ * retaining only the free space in it.
+ * @param[in] res: int. Is the resolution to apply at the arena subsetting.
+ */
 void points_map::make_free_space_cells(int res){
 	// Subset arena -> free space idealization
 	polygon* _arena = new polygon(arena);
@@ -420,6 +428,13 @@ void points_map::make_free_space_cells(int res){
 		pol = pol -> pnext;
 	};
 	printf("Obstacles converted to boost\n");
+
+	pol = gates -> head;
+	while (pol != NULL){
+		arena_obstacles.push_back(pol->to_boost_polygon());
+		pol = pol -> pnext;
+	};
+	printf("Arena gates added to obstacles list\n");
 
 	// Remove the obstacles from the free space and compute the new shapes
 	if (arena_obstacles.size() > 0){
