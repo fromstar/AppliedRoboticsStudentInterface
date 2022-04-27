@@ -19,6 +19,16 @@ using pt         = bgm::d2::point_xy<double>;
 using Polygon       = bgm::polygon<pt>;
 using Multi_Polygon = bgm::multi_polygon<Polygon>;
 
+
+Robot::Robot(string _id, Robot_type _type, point_node* _loc,
+			 double _max_curvature, double _offset){
+	ID = _id;
+	type = _type;
+	location = _loc;
+	max_curvature_angle = _max_curvature;
+	offset = _offset;
+};
+
 /**
  * \fn void Robot::set_id(string _id)
  * Sets the identifier of the robot.
@@ -121,10 +131,32 @@ void points_map::add_arena_points(point_list *ArenaPoints){
 	arena = ArenaPoints;
 };
 
-void points_map::set_robot_position(double x, double y){
-  robot = new(Robot);
-  robot -> location -> x = x;
-  robot -> location -> y = y;
+/**
+ * \fun void points_map::add_robot(Robot\* r)
+ * Use this function to add a robot to the mapping of the environments.
+ * The functions checks whether a robot with the same id exists in the mapping
+ * and if so it changes the id adding an index at its end.
+ * @param r: Robot. Is the Robot object to add to the mapping.
+ */
+void points_map::add_robot(Robot* r){
+	int existing = robot.count(r->ID);
+	if (existing > 0){  // A robot with same id already exists.
+		r -> ID += "_" + to_string(existing);
+		add_robot(r);  // Recursive call, dangerous but ensures uniqueness.
+	}else{ // No robot with that id
+		robot[r->ID] = r;
+	};
+};
+
+void points_map::set_robot_position(string robot_id, double x, double y){
+	int existing = robot.count(robot_id);
+	if (existing == 0){
+		cout << "No Robot found having id = \"" << robot_id << "\"" << endl;
+		return;
+	};
+	Robot* _robot = robot[robot_id];  // If no element in container it adds it.
+	delete(_robot->location);  // free memory of previous location.
+	_robot -> location = new point_node(x, y);
 };
 
 void list_of_polygons::add_polygon(polygon *p){
@@ -173,8 +205,13 @@ void points_map::add_obstacle(polygon *ob){
 };
 
 void points_map::print_info(){
-  cout <<"Robot location: " << robot-> location -> x << " - "
-	   << robot-> location -> y <<endl;
+	// Print robots informations.
+	for(map<string, Robot*>::iterator robot_it = robot.begin();
+		robot_it != robot.end(); ++robot_it){
+		robot_it -> second -> info();
+		cout << endl;
+	};
+
 };
 
 void points_map::reduce_arena(){ // Buggy function, must be re_seen
@@ -225,11 +262,17 @@ Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons){
 	};
 
 	// plot robots
-	point_list *robot_loc = new point_list;
-	robot_loc -> add_node(robot -> location -> copy());
-	robot_loc -> add_node(robot -> location -> copy());
-	img_arena = plot_points(robot_loc, img_arena, Scalar(210, 26, 198),
-							false, 5);
+
+	for(map<string, Robot*>::iterator robot_it = robot.begin();
+		robot_it != robot.end(); ++robot_it){
+
+		point_list* robot_loc = new point_list;
+		robot_loc -> add_node(robot_it -> second -> location -> copy());
+		robot_loc -> add_node(robot_it -> second -> location -> copy());
+		img_arena = plot_points(robot_loc, img_arena, Scalar(210, 26, 198),
+								false, 5);
+		delete(robot_loc);
+	};
 
 	return img_arena;
 }

@@ -14,7 +14,7 @@ void logger::add_event(string event){
 	time_t timer = time(0);
 	tm* event_time = localtime(&timer);
 
-	fprintf(log, "[%02d/%02d/%04d - %02d:%02d:%02d]: %s",
+	fprintf(log, "[%02d/%02d/%04d - %02d:%02d:%02d]: %s\n",
 		   event_time->tm_mday, event_time->tm_mon, 1900 + event_time->tm_year,
 		   event_time->tm_hour, event_time->tm_min, event_time->tm_sec,
 		   event.c_str());

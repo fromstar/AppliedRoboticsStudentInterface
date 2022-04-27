@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <boost/geometry.hpp>
 #include <string.h>
-
+#include <map>
 
 using pt         = boost::geometry::model::d2::point_xy<double>;
 using Polygon       = boost::geometry::model::polygon<pt>;
@@ -53,10 +53,9 @@ typedef struct Robot{
 	double offset = 1;
 	Robot* next = NULL;
 
-	Robot(){
-		ID = "Default_id";
-		location = new point_node(0, 0);
-	}
+	Robot(string _id="Default_id", Robot_type _type=undefined,
+		  point_node* loc=new point_node(0, 0), double _max_curvature=0,
+		  double _offset=1);
 
 	void set_id(string _id);
 	void set_robot_type(Robot_type rt);
@@ -100,13 +99,15 @@ typedef struct points_map {
   list_of_obstacles *obstacles = new list_of_obstacles;
   list_of_polygons *gates = new list_of_polygons;
   list_of_polygons *free_space = new list_of_polygons;
-  Robot *robot = NULL; // to update using list_of_robots
+  // Robot *robot = NULL; // to update using list_of_robots
+  map<string, Robot*> robot;
   logger* log;
 
   points_map(logger* l){log=l;};
 
   void add_arena_points(point_list *ArenaPoints);
-  void set_robot_position(double x, double y);
+  void add_robot(Robot* r);
+  void set_robot_position(string robot_id, double x, double y);
   void add_obstacle(polygon* ob);
   void add_gate(polygon *gt);
   void merge_obstacles();

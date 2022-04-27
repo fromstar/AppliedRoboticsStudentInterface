@@ -9,6 +9,18 @@ void test2();
 
 int main(){
 	test();
+	/*
+	logger* l = new logger();
+	points_map a(l);
+
+	Robot* r_1 = new Robot("R1");
+	Robot* r_2 = new Robot("R1");
+	
+	a.add_robot(r_1);
+	a.add_robot(r_2);
+	
+	a.print_info();
+	*/
 	return 0;
 };
 
@@ -82,8 +94,10 @@ void test()
    	test_map.make_free_space_cells();
 
 	log_test -> add_event("Created Roadmap");
-
-	test_map.set_robot_position(1, -2);
+	
+	Robot* r_1 = new Robot(); 
+	test_map.add_robot(r_1);
+	test_map.set_robot_position(r_1->ID, 1, -2);
 	// test_map.reduce_arena();
 
 	Mat img_arena = test_map.plot_arena(800, 800, true);
