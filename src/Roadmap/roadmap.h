@@ -2,27 +2,66 @@
 #define __ROADMAP_H__
 
 #include "../Utility/utility.h"
+#include "../Log/logger.h"
+
 #include <iostream>
 #include <stdio.h>
 #include <stdexcept>
 #include <boost/geometry.hpp>
+#include <string.h>
+
 
 using pt         = boost::geometry::model::d2::point_xy<double>;
 using Polygon       = boost::geometry::model::polygon<pt>;
 
+/**
+ * \enum {fugitive, catcher, undefined}
+ * These types identify the role of the robot in the environment.
+ * fugitive: The robot must chose an exit point in the arena (i.e. gate) and
+ * reach it without colliding with anything.
+ * catcher: The robot must catch the fugitives before they reach the exit
+ * point.
+ * undefined: The robot has yet to be assigned a role.
+ */
+typedef enum {fugitive, catcher, undefined} Robot_type;
+
+/**
+ * \struct Robot
+ * This struct represent a robot in the environment. Its parameters are:
+ * @param ID: string. It is the unique identifier of the robot.
+ * @param type: Robot_type. It is the role of the robot in the environment.
+ * @param x: double. It is the robot location over the abscissa axis.
+ * @param y: double. It is the robot location over the ordinates axis.
+ * @param max_curvature_angle: double. It is the maximum angle that the robot
+ * is able to reach during a turning action.
+ * @param offset: double. It is the value of which the robot physical
+ * dimensions are increased to account for a safe movement in the environment.
+ * @param next: Robot\*. Is the pointer to another robot instance, useful in
+ * creating lists of robots.
+ *
+ * Available methods are:
+ * @see set_id(string _id): Sets the robot id.
+ * @see set_robot_type(Robot_type rt): Sets the type of the robot.
+ * @see info(): Prints all the informations regarding the robot.
+ */
 typedef struct Robot{
 	// Take into account orientation -> Changes the available movements
-	char *ID = NULL;
-	double x;
-	double y;
-	double max_curvature_angle;
+	string ID;
+	Robot_type type = undefined;
+	point_node* location = NULL;
+	double max_curvature_angle = 0;
 	double offset = 1;
 	Robot* next = NULL;
 
 	Robot(){
-		x = 0.0;
-		y = 0.0;
+		ID = "Default_id";
+		location = new point_node(0, 0);
 	}
+
+	void set_id(string _id);
+	void set_robot_type(Robot_type rt);
+	point_node* where();
+	void info();
 } Robot;
 
 typedef struct list_of_robots{
@@ -62,9 +101,12 @@ typedef struct points_map {
   list_of_polygons *gates = new list_of_polygons;
   list_of_polygons *free_space = new list_of_polygons;
   Robot *robot = NULL; // to update using list_of_robots
+  logger* log;
+
+  points_map(logger* l){log=l;};
 
   void add_arena_points(point_list *ArenaPoints);
-  void set_robot_position(double x, double y);  // To update using list
+  void set_robot_position(double x, double y);
   void add_obstacle(polygon* ob);
   void add_gate(polygon *gt);
   void merge_obstacles();

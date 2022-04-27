@@ -44,6 +44,7 @@ struct point_node{
 		x=a;
 		y=b;
 		}
+	point_node* copy();
 	void Print();
 }typedef point_node;
 
@@ -54,21 +55,28 @@ struct point_list{
 	double x_max,y_max;
 	int size = 0;
 	
-	void add_node(point_node *);
+	void add_node(point_node *, int iterations=1);
 	void append_list(point_list *e);
 	void print_list();
 	void delete_list();	
 }typedef point_list;
 
+/**
+ * \struct
+ * Edge struct. Represents the edges inside a polygon.
+ * Attributes:
+ * @param points : pointer of type point_list. Contains two points of the
+ * 				   edge.
+ * @param next : pointer of type Edge. Points to the next instance.
+ * @param slope : pointer of type double. The slope of the edge.
+ *
+ * Available methods are:
+ * @see info(): It prints the coordinates of the points constituing an edge and
+ * its slope.
+ * @see draw(): It allows to draw the edge inside a Mat image object.
+ * @see intersection(Edge): It checks whether the edge intersects with another.
+ */
 typedef struct Edge{
-	/**
-	 * Edge class. Represents the edges inside a polygon.
-	 * Attributes:
-	 * @param points : pointer of type point_list. Contains two points of the
-	 * 				   edge.
-	 * @param next : pointer of type Edge. Points to the next instance.
-	 * @param slope : pointer of type double. The slope of the edge.
-	 */
 	point_list* points;
 	double *slope = new double;
 	Edge *next = NULL;
@@ -84,6 +92,16 @@ typedef struct Edge{
 	~Edge();
 }Edge;
 
+/**
+ * \struct
+ * This struct implements a list of edges.
+ * It is constituted by:
+ * @param head: Edge*. It is the head of the list.
+ * @param tail: Edge*. It is the tail of the list.
+ * The methods available are:
+ * @see add_edge(Edge): allows to add an edge to the list.
+ * @see info(): Calls the info function of each Edge in the list.
+ */
 typedef struct Edge_list{
 	//Edge *edge = NULL;
 	Edge *head = NULL;
@@ -94,6 +112,31 @@ typedef struct Edge_list{
 	~Edge_list();
 }Edge_list;
 
+/**
+ * \struct
+ * This struct represents a polygon in the environment.
+ * Its parameters are:
+ * @param pl: point_list*. Is the list of points delimiting the polygon
+ * perimeter.
+ * @param centroid: point_node*. Is the point representing the centroid of the
+ * polygon. It is computed averaging the coordinates of the points in the
+ * perimeter.
+ * @param pnext: polygon*. Is a pointer to another polygon istance, useful for
+ * implementing a list.
+ * The method available are:
+ * @see edgify(): It is the function responsible to turn the polygon into a
+ * list of edges.
+ * @see add_offset(double offset): It is the function responsible to turn a
+ * polygon into an enlarged version of itself.
+ * @see concatenate(polygon a): It is the function allowing to concatenate
+ * a polygon with another.
+ * @see to_boost_polygon(): It is the function responsible to turn a polygon
+ * into a boost::geometry::model::Polygon object, ready to use by the boost
+ * library.
+ * @see info(): It is the function responsible to print all the information
+ * representing a polygon and calls the info() functions of the point_node 
+ * elements.
+ */
 typedef struct polygon{
 	point_list *pl = NULL;
 	point_node *centroid = NULL;

@@ -2,24 +2,73 @@
 #include <vector>
 
 
-#include <boost/geometry.hpp>
+// #include <boost/geometry.hpp>
 // #include <boost/geometry/geometries/point_xy.hpp>
 // #include <boost/geometry/geometries/polygon.hpp>
 // #include <boost/geometry/io/wkt/wkt.hpp>
 
-#include <boost/foreach.hpp>
-#include <boost/polygon/voronoi_builder.hpp>
-#include <boost/polygon/voronoi_diagram.hpp>
-#include <string.h>
+// #include <boost/foreach.hpp>
+// #include <boost/polygon/voronoi_builder.hpp>
+// #include <boost/polygon/voronoi_diagram.hpp>
+// #include <string.h>
 
 namespace bg = boost::geometry;
 namespace bgm = bg::model;
-
 
 using pt         = bgm::d2::point_xy<double>;
 using Polygon       = bgm::polygon<pt>;
 using Multi_Polygon = bgm::multi_polygon<Polygon>;
 
+/**
+ * \fn void Robot::set_id(string _id)
+ * Sets the identifier of the robot.
+ * @param _id: string. New identifier to apply.
+ */
+void Robot::set_id(string _id){
+	ID = _id;
+};
+
+/**
+ * \fn void Robot::set_robot_type(Robot_type rt)
+ * Sets the type of the robot, it will be further used during the pddl
+ * creation.
+ * @param rt: Robot_type. The type to apply at the robot.
+ */
+void Robot::set_robot_type(Robot_type rt){
+	type=rt;
+};
+
+/**
+ * \fun point_node* where();
+ * Use this function to return the robot current position.
+ * @return robot location: point_node\*.
+ */
+point_node* Robot::where(){
+	return location;
+};
+
+/**
+ * \fn void Robot::info()
+ * This fuction serves the purpose to print on screen the details of the
+ * robot on which it is called.
+ */
+void Robot::info(){
+	string _type;
+	switch(type){
+		case fugitive: 	_type = "Fugitive";
+					  	break;
+		case catcher: 	_type = "Catcher";
+					  	break;
+		default: 		_type = "Undefined";
+				 		break;
+	};
+	cout << std::setprecision(2) << std::fixed;
+
+	cout << "Robot: " << ID << endl << "Type: " << _type << endl
+		 << "Location: " << location -> x << " - " << location -> y << endl
+		 << "Max curvature angle: " << max_curvature_angle << endl
+		 << "Offset in use: " << offset << endl;
+};
 
 list_of_robots::~list_of_robots(){
 	Robot* tmp = head;
@@ -74,8 +123,8 @@ void points_map::add_arena_points(point_list *ArenaPoints){
 
 void points_map::set_robot_position(double x, double y){
   robot = new(Robot);
-  robot -> x = x;
-  robot -> y = y;
+  robot -> location -> x = x;
+  robot -> location -> y = y;
 };
 
 void list_of_polygons::add_polygon(polygon *p){
@@ -124,10 +173,11 @@ void points_map::add_obstacle(polygon *ob){
 };
 
 void points_map::print_info(){
-  cout<<"Robot location: " << robot->x << " - "<< robot->y <<endl;
+  cout <<"Robot location: " << robot-> location -> x << " - "
+	   << robot-> location -> y <<endl;
 };
 
-void points_map::reduce_arena(){
+void points_map::reduce_arena(){ // Buggy function, must be re_seen
 	polygon *copy_arena = new polygon(arena);
 	copy_arena = copy_arena -> add_offset(-0.1);
 	arena = copy_arena -> pl;
@@ -176,15 +226,22 @@ Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons){
 
 	// plot robots
 	point_list *robot_loc = new point_list;
-	robot_loc -> add_node(new point_node(robot->x, robot->y));
-	robot_loc -> add_node(new point_node(robot->x, robot->y));
+	robot_loc -> add_node(robot -> location -> copy());
+	robot_loc -> add_node(robot -> location -> copy());
 	img_arena = plot_points(robot_loc, img_arena, Scalar(210, 26, 198),
 							false, 5);
 
 	return img_arena;
 }
 
-
+/**
+ * This function is used to convert a boost polygon object into a list of
+ * points ready to be interpreted by others functions in the framework.
+ * The only purpose of this function is to reduce the amount of code written.
+ * @param[in] p: boost::geometry::model::Polygon. Is the polygon to convert.
+ * @parma[out] pl: point_list pointer. Is the resulting point list of the
+ * polygon.
+ */
 point_list* boost_polygon_to_point_list(Polygon p){
 	point_list *pl = new point_list();
 	for(auto it = boost::begin(boost::geometry::exterior_ring(p));
@@ -199,7 +256,10 @@ point_list* boost_polygon_to_point_list(Polygon p){
 };
 
 
-// Use boost library to merge polygons
+/**
+ * This function is used to merge the obstacles that touch each others in the
+ * arena space.
+ */
 void points_map::merge_obstacles()
 {
 	std::vector<Polygon> polys;
@@ -257,7 +317,7 @@ void points_map::merge_obstacles()
 		polygon* tmp_gate = gates->head;
 		gates = NULL;  // Delete old gates list
 		vector<Polygon> tmp_new_gates;
-		points_map* tmp_map = new points_map;
+		points_map* tmp_map = new points_map(NULL);
 
 		while (tmp_gate != NULL){
 			Polygon _gate = tmp_gate -> to_boost_polygon();
@@ -301,8 +361,17 @@ void points_map::merge_obstacles()
 		}
 		obstacles->offset_size++;
 	}
+	log -> add_event("Obstacles in touch merged\n");
 }
 
+/**
+ * This function is used to subset a polygon into a finite number of cells.
+ * The cells are formed creating a triange connecting every edge of the polygon
+ * with the centroid of the object. The number of cells is num_edges^(1+levels).
+ * @param[in] levels: int. Is the number of iterations to perform during the
+ * polygon subsetting.
+ * @param[out] subset_list: list_of_polygons.
+ */
 list_of_polygons* subset_polygon(polygon* p, int levels){
 	list_of_polygons* subset_list = new list_of_polygons;
 
@@ -372,7 +441,7 @@ vector<Polygon> difference_of_vectors(vector<Polygon> arena,
 				bg::difference(arena[i], obstacles[j], output);
 				int diff = output.size() - prev_output;
 				prev_output = output.size();
-
+				
 				// printf("Polygon %d and obstacle %d intersects", i, j);
 				// printf(" -> %d new cells\n", diff);
 
@@ -407,7 +476,7 @@ void points_map::make_free_space_cells(int res){
 	// Subset arena -> free space idealization
 	polygon* _arena = new polygon(arena);
 	list_of_polygons* _arena_subset = subset_polygon(_arena, res);
-	
+	log -> add_event("Arena subsetted\n");	
 
 	// Arena subsets to boost::polygons;
 	vector<Polygon> arena_polys;
@@ -420,21 +489,21 @@ void points_map::make_free_space_cells(int res){
 		arena_polys.push_back(pol->to_boost_polygon());
 		pol = pol -> pnext;
 	};
-	printf("Arena converted to boost\n");
+	log->add_event("Arena converted to boost\n");
 
 	pol = obstacles -> offset_head;
 	while(pol != NULL){
 		arena_obstacles.push_back(pol->to_boost_polygon());
 		pol = pol -> pnext;
 	};
-	printf("Obstacles converted to boost\n");
+	log->add_event("Obstacles converted to boost\n");
 
 	pol = gates -> head;
 	while (pol != NULL){
 		arena_obstacles.push_back(pol->to_boost_polygon());
 		pol = pol -> pnext;
 	};
-	printf("Arena gates added to obstacles list\n");
+	log->add_event("Arena gates added to obstacles list\n");
 
 	// Remove the obstacles from the free space and compute the new shapes
 	if (arena_obstacles.size() > 0){
@@ -488,6 +557,6 @@ void points_map::make_free_space_cells(int res){
 		polygon* new_space = new polygon(new_space_points);
 		free_space->add_polygon(new_space);
 	};
-	printf("Free space generated\n");
+	log->add_event("Free space generated\n");
 };
 

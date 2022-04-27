@@ -39,41 +39,44 @@ void double_list::delete_list()
 	size = 0;
 }
 
+point_node* point_node::copy(){
+	return new point_node(x, y);
+};
+
 void point_node::Print(){
 		printf("%0.4f,%0.4f\n", x, y);
 	};
 
-void point_list::add_node(point_node *node)
+/**
+ * Function to add a point in a list of points.
+ * @param node: poiter of type point_node.
+ * @param iterations: int.
+ * 					 Specifies the number of times the point has to be added.
+ * 					 This reduces a bit the code.
+ */
+void point_list::add_node(point_node *node, int iterations)
 {
-	size++;
-	if(head==NULL)
-	{
-		head = node;
-		tail = head;
-		x_min = node->x;
-		x_max = x_min;
-		y_min = node->y;
-		y_max = y_min;
-		return;
-	}
-	/*
-	if(node->x < x_min)
-		x_min = node->x;
-	else if(node->x > x_max)
-		x_max = node->x;
-	if(node->y < y_min)
-		y_min = node->y;
-	else if(node->y > y_max)
-		y_max = node->y;
-	*/
+	for(int i=0; i<iterations; i++){
+		size++;
+		if(head==NULL)
+		{
+			head = node;
+			tail = head;
+			x_min = node->x;
+			x_max = x_min;
+			y_min = node->y;
+			y_max = y_min;
+			return;
+		}
 
-	x_min = std::min(x_min, node->x);
-	x_max = std::max(x_max, node->x);
-	y_min = std::min(y_min, node->y);
-	y_max = std::max(y_max, node->y);
+		x_min = std::min(x_min, node->x);
+		x_max = std::max(x_max, node->x);
+		y_min = std::min(y_min, node->y);
+		y_max = std::max(y_max, node->y);
 
-	tail->pnext = node;
-	tail = tail->pnext;
+		tail->pnext = node;
+		tail = tail->pnext;
+		};
 }
 
 void point_list::append_list(point_list *e){
@@ -378,7 +381,7 @@ polygon * polygon::add_offset(double offset){
 
 	// A matrix that contains in x the angular coefficient and in y the
 	// ordinates value of the lines offsetted
-
+	
 	double 	coeff [pl->size][2];
 
 	double x,y;
