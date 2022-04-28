@@ -9,18 +9,6 @@ void test2();
 
 int main(){
 	test();
-	/*
-	logger* l = new logger();
-	points_map a(l);
-
-	Robot* r_1 = new Robot("R1");
-	Robot* r_2 = new Robot("R1");
-	
-	a.add_robot(r_1);
-	a.add_robot(r_2);
-	
-	a.print_info();
-	*/
 	return 0;
 };
 
@@ -95,15 +83,33 @@ void test()
 
 	log_test -> add_event("Created Roadmap");
 	
-	Robot* r_1 = new Robot(); 
-	test_map.add_robot(r_1);
-	test_map.set_robot_position(r_1->ID, 1, -2);
-	// test_map.reduce_arena();
+	Robot* c_1 = new Robot("Catcher_1", catcher); 
+	test_map.add_robot(c_1);
+	
+	Robot* f_1 = new Robot("Fugitive_1", fugitive); 
+	test_map.add_robot(f_1);
 
+	test_map.set_robot_position(c_1->ID, 1, -2);
+	test_map.set_robot_position(f_1->ID, -0.5, -0.5);
+	
+	World_representation abstract_arena = World_representation(
+											test_map.free_space,
+											test_map.gates,
+											test_map.robot,
+											log_test
+										  );
+	abstract_arena.info();
+	abstract_arena.to_pddl("problem_catcher.pddl");
+	abstract_arena.to_pddl("problem_fugitive.pddl", "fugitive_catcher",
+						   "fugitive_catcher", false, true);
+	
+	// test_map.reduce_arena();
+	/*
 	Mat img_arena = test_map.plot_arena(800, 800, true);
 	
     imshow("Arena", img_arena);
+	imwrite("Arena.png", img_arena);
 	waitKey(0);
-	
+	*/
 	// test_map.print_info();
 }

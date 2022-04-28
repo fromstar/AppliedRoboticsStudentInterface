@@ -58,12 +58,31 @@ point_node* Robot::where(){
 };
 
 /**
+ * \func
+ * This function is used to return the string type
+ * representing the role of the robot.
+ * @return char*.
+ */
+string Robot::get_type(){
+	string _type;
+	switch(type){
+		case fugitive: 	_type = "fugitive";
+					  	break;
+		case catcher: 	_type = "catcher";
+					  	break;
+		default: 		_type = "undefined";
+				 		break;
+	};
+	return _type;
+};
+
+/**
  * \fn void Robot::info()
  * This fuction serves the purpose to print on screen the details of the
  * robot on which it is called.
  */
 void Robot::info(){
-	string _type;
+	/*string _type;
 	switch(type){
 		case fugitive: 	_type = "Fugitive";
 					  	break;
@@ -71,10 +90,10 @@ void Robot::info(){
 					  	break;
 		default: 		_type = "Undefined";
 				 		break;
-	};
+	}; */
 	cout << std::setprecision(2) << std::fixed;
 
-	cout << "Robot: " << ID << endl << "Type: " << _type << endl
+	cout << "Robot: " << ID << endl << "Type: " << get_type() << endl
 		 << "Location: " << location -> x << " - " << location -> y << endl
 		 << "Max curvature angle: " << max_curvature_angle << endl
 		 << "Offset in use: " << offset << endl;
@@ -603,3 +622,271 @@ void points_map::make_free_space_cells(int res){
 	log->add_event("Free space generated\n");
 };
 
+/**
+ * Is the default constructor.
+ */
+World_node::World_node(string id, polygon* p, double prob){
+	cell_id = id;
+	cell = p;
+	probability = prob;
+};
+
+/**
+ * \func void set_id(string id)
+ * Use this function to set the unique identifier of the cell.
+ */
+void World_node::set_id(string id){
+	cell_id = id;
+};
+
+/**
+ * \func
+ * This function is used to print relevant informations of the world_node.
+ */
+void World_node::info(){
+	cout << "Cell ID: " << cell_id << endl << "Reaching probability: "
+		 << probability << endl;
+};
+
+/**
+ * \func void add_cell(World_node cell, bool gate)
+ * This function allows to add a cell to the abstract representation of
+ * the environment.
+ * Its parameters are:
+ * @param cell: World_node. Is the space representation to add.
+ * @param gate: bool. This flag specifies whether or not the cell is a gate.
+ */
+void World_representation::add_cell(World_node cell, bool gate){
+	if (!gate){
+		int existing = world_free_cells.count(cell.cell_id);
+		if (existing > 0){
+			cell.cell_id += "_" + to_string(existing);
+		};
+		world_free_cells[cell.cell_id] = cell;
+	}else{
+		int existing = world_gates.count(cell.cell_id);
+		if (existing > 0){
+			cell.cell_id += "_" + to_string(existing);
+		};
+		world_gates[cell.cell_id] = cell;
+	};
+};
+
+/**
+ * \func
+ * Is the default constructor.
+ * @param cells: list_of_polygons\*. Are the free space cells.
+ * @param gate_cells: list_of_polygons\*. Are the cells representing the gates.
+ * @param agents: map<string, Robot\*>. Are the agents available.
+ * @param log: logger\*. Is the log class used to record the activity.
+ */
+World_representation:: World_representation(list_of_polygons* cells,
+											list_of_polygons* gate_cells,
+						 					map<string, Robot*> agents,
+											logger* log){
+	l = log;
+	l->add_event("Created world representation");
+
+	polygon* pol_pointer = cells->head;
+	int cells_counter = 0;
+	while(pol_pointer != NULL){
+		World_node temp = World_node("Cell_" + to_string(cells_counter),
+									 pol_pointer);
+		add_cell(temp);
+		pol_pointer = pol_pointer->pnext;
+		cells_counter += 1;
+	};
+
+	l -> add_event("Added free space cells to world representation");
+
+	cells_counter = 0;
+	pol_pointer = gate_cells->head;
+	while(pol_pointer != NULL){
+		World_node temp = World_node("Gate_" + to_string(cells_counter),
+									 pol_pointer);
+		add_cell(temp, true);
+		pol_pointer = pol_pointer->pnext;
+		cells_counter += 1;
+	};
+	
+	l -> add_event("Added gates cells to world representation");
+
+	world_robots = agents;
+	
+	l -> add_event("Added robot agents to world representation");
+	l -> add_event("End world representation creation");
+};
+
+/**
+ * \func
+ * This function is used to generate a pddl problem file from the abstract
+ * world representation.
+ * The .pddl file is overwritten every time.
+ * @param path_pddl_problem_file: string. It is the path in which the problem
+ * @param domain_name: string. It is the default name of the domain to use.
+ * file will be saved. Default is the current path with name problem.pddl .
+ * @param symmetrical: bool. Tells whether or not to suppose that two cells
+ * can be accessed in both ways.
+ * @param fugitive: bool. Tells whether or not the problem file has been
+ * created for a fugitive-type agent. This flag changes the goal to achieve.
+ */
+void World_representation::to_pddl(string path_pddl_problem_file,
+								   string problem_name,
+				 				   string domain_name,
+								   bool symmetrical,
+								   bool fugitive_agent){
+
+	l -> add_event("Started Creation of pddl problem file.");
+
+	FILE* pddl_out = fopen(path_pddl_problem_file.c_str(), "w");
+
+	// Write first two lines defining the problem and domain names
+	fprintf(pddl_out, "(define (problem %s)\n\t(:domain %s)\n",
+					  problem_name.c_str(), domain_name.c_str());
+
+	// Write the objects available.
+	fprintf(pddl_out, "\t(:objects\n");
+
+	for (map<string, World_node>::iterator it = world_free_cells.begin();
+		 it != world_free_cells.end(); ++it){
+		fprintf(pddl_out, "\t\t(%s - cell)\n", it->first.c_str());	
+	};
+	
+	for (map<string, World_node>::iterator it = world_gates.begin();
+		 it != world_gates.end(); ++it){
+		fprintf(pddl_out, "\t\t(%s - gate)\n", it->first.c_str());	
+	};
+	
+	for (map<string, Robot*>::iterator it = world_robots.begin();
+		 it != world_robots.end(); ++it){
+		if (it -> second -> type != undefined){
+			fprintf(pddl_out, "\t\t(%s - %s - robot)\n",
+					it->first.c_str(), it->second->get_type().c_str());
+		};
+	};
+
+	fprintf(pddl_out, "\t)\n");
+	
+	// Write the initial state
+	// 1 Write connections among cells
+	fprintf(pddl_out, "\t(:init\n");
+	for (map<string, World_node>::iterator it_1 = world_free_cells.begin();
+		 it_1 != world_free_cells.end(); ++it_1){
+		for (map<string, World_node>::iterator it_2 = world_free_cells.begin();
+		 it_2 != world_free_cells.end(); ++it_2){
+			if (it_1 != it_2){
+				Polygon pol_1 = it_1->second.cell->to_boost_polygon();
+				Polygon pol_2 = it_2->second.cell->to_boost_polygon();
+
+				if (bg::touches(pol_1, pol_2)){ // works also if one point in common !!!!
+					fprintf(pddl_out, "\t\t(connected(%s, %s))\n",
+									  it_1->first.c_str(),
+									  it_2->first.c_str());
+					if (symmetrical){
+						fprintf(pddl_out, "\t\t(connected(%s, %s))\n",
+										  it_2->first.c_str(),
+										  it_1->first.c_str());
+					};
+				};
+			};
+		};
+	};
+	
+	// 2 Write connections among gates and cells.
+	for (map<string, World_node>::iterator it_g = world_gates.begin();
+		 it_g != world_gates.end(); ++it_g){
+		for (map<string, World_node>::iterator it_c = world_free_cells.begin();
+		 	 it_c != world_free_cells.end(); ++it_c){
+
+			Polygon pol_g = it_g->second.cell->to_boost_polygon();
+			Polygon pol_c = it_c->second.cell->to_boost_polygon();
+
+			if (bg::touches(pol_g, pol_c)){ // works also if one point in common !!!!
+				fprintf(pddl_out, "\t\t(connected(%s, %s))\n",
+								  it_g->first.c_str(),
+								  it_c->first.c_str());
+				if (symmetrical){
+					fprintf(pddl_out, "\t\t(connected(%s, %s))\n",
+									  it_c->first.c_str(),
+									  it_g->first.c_str());
+				};
+			};
+		};
+	};
+
+
+	// 3 Write agents location
+	using boost_point = bgm::d2::point_xy<double>;
+
+	for (map<string, Robot*>::iterator it_r = world_robots.begin();
+		 it_r != world_robots.end(); ++it_r){
+		for (map<string, World_node>::iterator it_c = world_free_cells.begin();
+		 	 it_c != world_free_cells.end(); ++it_c){
+
+			boost_point robot_pos = boost_point(it_r->second->location->x,
+												it_r->second->location->y);
+			Polygon pol_c = it_c->second.cell->to_boost_polygon();
+
+			if (bg::covered_by(robot_pos, pol_c)){
+				fprintf(pddl_out, "\t\t(is_in(%s, %s))\n",
+								  it_r->first.c_str(),
+								  it_c->first.c_str());
+				break; // skip to next robot -> it can be only in one place
+			};
+		};
+	};
+	fprintf(pddl_out, "\t)\n");
+
+	// Write goal
+	fprintf(pddl_out, "\t(:goal\n\t\t(and\n");
+	if (fugitive_agent){
+		int fugitives = 0;
+		for (map<string, Robot*>::iterator it_r = world_robots.begin();
+			 it_r != world_robots.end(); ++it_r){
+			// cout << it_r -> first.c_str() << " " << it_r -> second -> ID << endl;
+			if (it_r -> second -> type == fugitive){
+				fugitives += 1;
+				// random chose escape gate -> it may not consider the last one.
+				// Chose nearest gate
+				int escape_gate = ((rand()%world_gates.size()-1))+1;
+				map<string, World_node>::iterator it_g = world_gates.begin();
+				for(int i=0; i < escape_gate; i++){++it_g;};
+				// cout << it_r -> first.c_str() << " " << it_g -> first.c_str() << endl;
+				fprintf(pddl_out, "\t\t\t(is_in(%s, %s))\n",
+								  it_r -> first.c_str(),
+								  it_g -> first.c_str());
+			};
+		};
+		fprintf(pddl_out, "\t\t)");
+		if (fugitives == 0){printf("No fugitives found\n"); return;};
+	}else{
+		int catchers = 0;
+		for (map<string, Robot*>::iterator it_r = world_robots.begin();
+			 it_r != world_robots.end(); ++it_r){
+			if (it_r -> second -> type == fugitive){
+				fprintf(pddl_out, "\t\t\t(captured(%s))\n",
+								  it_r->first.c_str());
+			}else{  // Undefined treated as catchers
+				catchers += 1;
+			};
+		};
+		fprintf(pddl_out, "\t\t)");
+		if (catchers == 0){printf("No catchers found\n"); return;};
+	};
+
+	fprintf(pddl_out, "\n\t)");
+
+	// Write ending of the pddl file
+	fprintf(pddl_out, "\n)");
+
+	fclose(pddl_out);
+	l -> add_event("Ended Creation of pddl problem file.");
+};
+
+void World_representation::info(){
+	cout << "World representation contains:\n\t" << "- "
+		 << world_free_cells.size() << " Cells\n\t" << "- "
+		 << world_gates.size() << " Gates\n\t" << "- "
+		 << world_robots.size() << " Robots"
+		 << endl;
+};
