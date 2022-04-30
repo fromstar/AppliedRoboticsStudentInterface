@@ -13,5 +13,5 @@ key="$1"
 
 out_name="Dsquare_RP.out"
  
-g++ -std=gnu++11 -o $out_name main.cpp ./Utility/*.cpp ./Dubins/*.cpp ./Roadmap/*.cpp `pkg-config opencv$VERSION --cflags --libs`
+g++ -std=gnu++11 -o $out_name main.cpp ./Utility/*.cpp ./Dubins/*.cpp ./Roadmap/*.cpp ./Log/*.cpp `pkg-config opencv$VERSION --cflags --libs`
 ./$out_name
