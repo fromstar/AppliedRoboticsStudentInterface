@@ -99,8 +99,8 @@ void test()
 											log_test
 										  );
 	abstract_arena.info();
-	abstract_arena.to_pddl("problem_catcher.pddl");
-	abstract_arena.to_pddl("problem_fugitive.pddl", "fugitive_catcher",
+	abstract_arena.to_pddl("Pddl/problem_catcher.pddl");
+	abstract_arena.to_pddl("Pddl/problem_fugitive.pddl", "fugitive_catcher",
 						   "fugitive_catcher", false, true);
 	
 	// test_map.reduce_arena();

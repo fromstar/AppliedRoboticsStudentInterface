@@ -749,18 +749,18 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 
 	for (map<string, World_node>::iterator it = world_free_cells.begin();
 		 it != world_free_cells.end(); ++it){
-		fprintf(pddl_out, "\t\t(%s - cell)\n", it->first.c_str());	
+		fprintf(pddl_out, "\t\t%s - cell\n", it->first.c_str());	
 	};
 	
 	for (map<string, World_node>::iterator it = world_gates.begin();
 		 it != world_gates.end(); ++it){
-		fprintf(pddl_out, "\t\t(%s - gate)\n", it->first.c_str());	
+		fprintf(pddl_out, "\t\t%s - gate\n", it->first.c_str());	
 	};
 	
 	for (map<string, Robot*>::iterator it = world_robots.begin();
 		 it != world_robots.end(); ++it){
 		if (it -> second -> type != undefined){
-			fprintf(pddl_out, "\t\t(%s - %s - robot)\n",
+			fprintf(pddl_out, "\t\t%s - %s - robot\n",
 					it->first.c_str(), it->second->get_type().c_str());
 		};
 	};
@@ -779,11 +779,11 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 				Polygon pol_2 = it_2->second.cell->to_boost_polygon();
 
 				if (bg::touches(pol_1, pol_2)){ // works also if one point in common !!!!
-					fprintf(pddl_out, "\t\t(connected(%s, %s))\n",
+					fprintf(pddl_out, "\t\t( connected %s %s )\n",
 									  it_1->first.c_str(),
 									  it_2->first.c_str());
 					if (symmetrical){
-						fprintf(pddl_out, "\t\t(connected(%s, %s))\n",
+						fprintf(pddl_out, "\t\t( connected %s %s )\n",
 										  it_2->first.c_str(),
 										  it_1->first.c_str());
 					};
@@ -802,11 +802,11 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 			Polygon pol_c = it_c->second.cell->to_boost_polygon();
 
 			if (bg::touches(pol_g, pol_c)){ // works also if one point in common !!!!
-				fprintf(pddl_out, "\t\t(connected(%s, %s))\n",
+				fprintf(pddl_out, "\t\t( connected %s %s )\n",
 								  it_g->first.c_str(),
 								  it_c->first.c_str());
 				if (symmetrical){
-					fprintf(pddl_out, "\t\t(connected(%s, %s))\n",
+					fprintf(pddl_out, "\t\t( connected %s %s )\n",
 									  it_c->first.c_str(),
 									  it_g->first.c_str());
 				};
@@ -828,7 +828,7 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 			Polygon pol_c = it_c->second.cell->to_boost_polygon();
 
 			if (bg::covered_by(robot_pos, pol_c)){
-				fprintf(pddl_out, "\t\t(is_in(%s, %s))\n",
+				fprintf(pddl_out, "\t\t( is_in %s %s )\n",
 								  it_r->first.c_str(),
 								  it_c->first.c_str());
 				break; // skip to next robot -> it can be only in one place
@@ -838,7 +838,7 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 	fprintf(pddl_out, "\t)\n");
 
 	// Write goal
-	fprintf(pddl_out, "\t(:goal\n\t\t(and\n");
+	fprintf(pddl_out, "\t(:goal\n\t\t( and\n");
 	if (fugitive_agent){
 		int fugitives = 0;
 		for (map<string, Robot*>::iterator it_r = world_robots.begin();
@@ -852,7 +852,7 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 				map<string, World_node>::iterator it_g = world_gates.begin();
 				for(int i=0; i < escape_gate; i++){++it_g;};
 				// cout << it_r -> first.c_str() << " " << it_g -> first.c_str() << endl;
-				fprintf(pddl_out, "\t\t\t(is_in(%s, %s))\n",
+				fprintf(pddl_out, "\t\t\t( is_in %s %s )\n",
 								  it_r -> first.c_str(),
 								  it_g -> first.c_str());
 			};
