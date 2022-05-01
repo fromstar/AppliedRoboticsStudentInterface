@@ -34,34 +34,111 @@ void test()
 	// Add obstacles
     point_list *pol = new point_list;
 
-	pol->add_node(new point_node(-0.5,0.0));
-    pol->add_node(new point_node(1.0,0.0));
-    pol->add_node(new point_node(0.5,-1.0));
+	pol->add_node(new point_node(0.9204, 0.6513));
+    pol->add_node(new point_node(0.89895, 0.702));
+    pol->add_node(new point_node(0.9516, 0.73515));
+	pol->add_node(new point_node(0.9906, 0.7059));
+    pol->add_node(new point_node(0.99255, 0.6903));
+    pol->add_node(new point_node(0.975, 0.65325));
+
     test_map.add_obstacle(new polygon(pol));
 		
 	pol = new point_list;
-    pol->add_node(new point_node(3.0,-1.0));
-    pol->add_node(new point_node(3.5,-2.5));
-    pol->add_node(new point_node(2.5,-2.25));
-    pol->add_node(new point_node(2.0,-0.0));
+	pol->add_node(new point_node(0.7137, 0.64935));
+    pol->add_node(new point_node(0.7098, 0.6591));
+    pol->add_node(new point_node(0.77025, 0.75465));
+	pol->add_node(new point_node(0.77805, 0.78585));
+    pol->add_node(new point_node(0.7917, 0.78585));
+    pol->add_node(new point_node(0.86775, 0.6552));
     test_map.add_obstacle(new polygon(pol));
 
 	pol = new point_list;
-    pol->add_node(new point_node(-0.5,-3.5));
-    pol->add_node(new point_node(1.0,-3.5));
-    pol->add_node(new point_node(1.5,-2.25));
-    pol->add_node(new point_node(0.0,-2.0));
-    pol->add_node(new point_node(-0.9,-2.25));
+	pol->add_node(new point_node(0.5109, 0.6006));
+    pol->add_node(new point_node(0.5655, 0.70395));
+    pol->add_node(new point_node(0.5772, 0.70395));
+	pol->add_node(new point_node(0.62985, 0.60645));
+    pol->add_node(new point_node(0.61035, 0.59865));
     test_map.add_obstacle(new polygon(pol));
 
     pol = new point_list;
-    pol->add_node(new point_node(2,-1.2));
-    pol->add_node(new point_node(0.5,-1.2));
-    pol->add_node(new point_node(0.5,-1.8));
-    pol->add_node(new point_node(2,-1.8));
+	pol->add_node(new point_node(0.33345, 0.60255));
+    pol->add_node(new point_node(0.3042, 0.68445));
+    pol->add_node(new point_node(0.36855, 0.72735));
+	pol->add_node(new point_node(0.39585, 0.7215));
+    pol->add_node(new point_node(0.44265, 0.6864));
+    pol->add_node(new point_node(0.44265, 0.663));
+	pol->add_node(new point_node(0.4173, 0.6006));
     test_map.add_obstacle(new polygon(pol));
 
+	pol = new point_list;
+	pol->add_node(new point_node(0.25545, 0.6006));
+    pol->add_node(new point_node(0.1794, 0.6006));
+    pol->add_node(new point_node(0.21255, 0.6708));
+	pol->add_node(new point_node(0.234, 0.6513));
+    test_map.add_obstacle(new polygon(pol));
+
+	pol = new point_list;
+	pol->add_node(new point_node(0.05655, 0.5967));
+    pol->add_node(new point_node(0.04095, 0.65715));
+    pol->add_node(new point_node(0.0741, 0.6825));
+	pol->add_node(new point_node(0.09945, 0.68445));
+    pol->add_node(new point_node(0.13845, 0.65325));
+    pol->add_node(new point_node(0.117, 0.59865));
+    test_map.add_obstacle(new polygon(pol));
+
+	pol = new point_list;
+	pol->add_node(new point_node(0.94575, 0.45435));
+    pol->add_node(new point_node(0.9009, 0.53625));
+    pol->add_node(new point_node(0.94965, 0.62205));
+	pol->add_node(new point_node(1.04325, 0.6201));
+    pol->add_node(new point_node(1.09005, 0.5421));
+    pol->add_node(new point_node(1.0725, 0.49725));
+    pol->add_node(new point_node(1.04325, 0.4524));
+    test_map.add_obstacle(new polygon(pol));
+
+	pol = new point_list;
+	pol->add_node(new point_node(0.7098, 0.45435));
+    pol->add_node(new point_node(0.7098, 0.58695));
+    pol->add_node(new point_node(0.8385, 0.59085));
+	pol->add_node(new point_node(0.8346, 0.45435));
+    test_map.add_obstacle(new polygon(pol));
+
+	pol = new point_list;
+	pol->add_node(new point_node(0.50505, 0.45825));
+    pol->add_node(new point_node(0.50895, 0.55575));
+    pol->add_node(new point_node(0.6084, 0.5538));
+	pol->add_node(new point_node(0.60645, 0.4524));
+    pol->add_node(new point_node(0.52455, 0.45045));
+    test_map.add_obstacle(new polygon(pol));
+
+	pol = new point_list;
+	pol->add_node(new point_node(0.41535, 0.45435));
+    pol->add_node(new point_node(0.35295, 0.45045));
+    pol->add_node(new point_node(0.3315, 0.4602));
+	pol->add_node(new point_node(0.30225, 0.5109));
+    pol->add_node(new point_node(0.34125, 0.57525));
+    pol->add_node(new point_node(0.4173, 0.5772));
+    pol->add_node(new point_node(0.4524, 0.52065));
+    test_map.add_obstacle(new polygon(pol));
+
+	pol = new point_list;
+	pol->add_node(new point_node(0.1755, 0.44655));
+    pol->add_node(new point_node(0.1755, 0.51285));
+    pol->add_node(new point_node(0.20475, 0.5226));
+	pol->add_node(new point_node(0.23985, 0.5187));
+    pol->add_node(new point_node(0.24765, 0.45045));
+    test_map.add_obstacle(new polygon(pol));
     cout << "Number of obstacles: " << test_map.obstacles -> size << endl;
+
+	pol = new point_list;
+	pol->add_node(new point_node(0.117, 0.4524));
+    pol->add_node(new point_node(0.09165, 0.44655));
+    pol->add_node(new point_node(0.06045, 0.4563));
+	pol->add_node(new point_node(0.04095, 0.4953));
+    pol->add_node(new point_node(0.0663, 0.5343));
+    pol->add_node(new point_node(0.12285, 0.5265));
+    pol->add_node(new point_node(0.13845, 0.48165));
+    test_map.add_obstacle(new polygon(pol));
 
 	// Add gates
     pol = new point_list;
@@ -89,7 +166,8 @@ void test()
 	
 	Robot* f_1 = new Robot("Fugitive_1", fugitive); 
 	test_map.add_robot(f_1);
-
+	
+	/*
 	test_map.set_robot_position(c_1->ID, 1, -2);
 	test_map.set_robot_position(f_1->ID, -0.5, -0.5);
 	
@@ -103,14 +181,15 @@ void test()
 	abstract_arena.to_pddl("Pddl/problem_catcher.pddl");
 	abstract_arena.to_pddl("Pddl/problem_fugitive.pddl", "fugitive_catcher",
 						   "fugitive_catcher", true);
-	// system("exec /home/davide/.planutils/packages/downward/run --alias lama-first --plan-file Pddl/Myplan.plan Pddl/domain_fugitive_catcher.pddl Pddl/problem_fugitive.pddl");	
+	*/
+
 	// test_map.reduce_arena();
-	/*
+
 	Mat img_arena = test_map.plot_arena(800, 800, true);
 	
     imshow("Arena", img_arena);
 	imwrite("Arena.png", img_arena);
 	waitKey(0);
-	*/
+
 	// test_map.print_info();
 }

@@ -1,5 +1,5 @@
 (define (problem fugitive_catcher)
-	(:domain fugitive_catcher)
+	(:domain fugitive_catcher )
 	(:objects
 		Cell_0 - cell
 		Cell_1 - cell
@@ -26,8 +26,8 @@
 		Cell_9 - cell
 		Gate_0 - gate
 		Gate_1 - gate
-		Catcher_1 - catcher - robot
-		Fugitive_1 - fugitive - robot
+		Catcher_1 - catcher
+		Fugitive_1 - fugitive
 	)
 	(:init
 		( connected Cell_0 Cell_17 )
@@ -115,8 +115,6 @@
 		( is_in Fugitive_1 Cell_3 )
 	)
 	(:goal
-		( and
-			( is_in Fugitive_1 Gate_1 )
-		)
+
 	)
 )
