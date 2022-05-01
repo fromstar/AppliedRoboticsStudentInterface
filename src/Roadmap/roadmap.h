@@ -36,8 +36,8 @@ typedef enum {fugitive, catcher, undefined} Robot_type;
  * is able to reach during a turning action.
  * @param offset: double. It is the value of which the robot physical
  * dimensions are increased to account for a safe movement in the environment.
- * @param next: Robot\*. Is the pointer to another robot instance, useful in
- * creating lists of robots.
+ * @param plan: pointer of type vector<string>. It is the plan that the robot
+ * has to execute, default to NULL.
  *
  * Available methods are:
  * @see set_id(string _id): Sets the robot id.
@@ -51,7 +51,7 @@ typedef struct Robot{
 	point_node* location = NULL;
 	double max_curvature_angle = 0;
 	double offset = 1;
-	Robot* next = NULL;
+	vector<string> plan;
 
 	Robot(string _id="Default_id", Robot_type _type=undefined,
 		  point_node* loc=new point_node(0, 0), double _max_curvature=0,
@@ -61,6 +61,7 @@ typedef struct Robot{
 	void set_robot_type(Robot_type rt);
 	point_node* where();
 	string get_type();
+	void set_plan(vector<string> p);
 	void info();
 } Robot;
 

@@ -76,6 +76,10 @@ string Robot::get_type(){
 	return _type;
 };
 
+void Robot::set_plan(vector<string> p){
+	plan = p;
+};
+
 /**
  * \fn void Robot::info()
  * This fuction serves the purpose to print on screen the details of the
@@ -97,24 +101,12 @@ void Robot::info(){
 		 << "Location: " << location -> x << " - " << location -> y << endl
 		 << "Max curvature angle: " << max_curvature_angle << endl
 		 << "Offset in use: " << offset << endl;
-};
 
-list_of_robots::~list_of_robots(){
-	Robot* tmp = head;
-	while(tmp != NULL){
-		Robot* deleter = tmp;
-		tmp = tmp -> next;
-		delete deleter;
-	};
-};
-
-void list_of_robots::add_robot(Robot* r){
-	if (head == NULL){
-		head = r;
-		tail = head;
-	}else{
-		tail->next = r;
-		tail = tail->next;
+	// Print plan if available
+	if (plan.size() != 0){
+		for(int i=0; i< plan.size(); i++){
+			cout << "\t- " << i << ": " << plan[i] << endl;
+		};
 	};
 };
 
@@ -850,6 +842,7 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 		for (map<string, Robot*>::iterator it_r = world_robots.begin();
 			 it_r != world_robots.end(); ++it_r){
 			// cout << it_r -> first.c_str() << " " << it_r -> second -> ID << endl;
+			vector<vector<string>> all_plans;
 			if (it_r -> second -> type == fugitive){
 				fugitives += 1;
 				// Chose nearest gate -> run planner for each gate and retain
@@ -864,6 +857,9 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 				pddl_file += "\t\t\t( is_in " + it_r->first + " " +
 							 it_g->first + " )\n";
 				*/
+
+				// make variable to store the best_plan.
+				vector<string> fugitive_plans;
 
 				// make temporary folder for the plans.
 				int tmp_folder = mkdir(".tmp", 0777);
@@ -896,10 +892,31 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 								curr_dir + "/Pddl/domain_fugitive_catcher.pddl",
 								curr_dir + "/" + file_name + ".pddl",
 								curr_dir + "/" + file_name + ".plan");
+
 					// Must add a flag to check if everything went good
 					FILE* tmp_in = fopen((file_name+".plan").c_str(), "r");
+					char tmp[1000];
+					cout << "reading file" << endl;
+					while(fgets(tmp, 1000, tmp_in)){
+						fugitive_plans.push_back(tmp);
+					};
 					fclose(tmp_in);
+					fugitive_plans.pop_back();
+					all_plans.push_back(fugitive_plans);
 				};
+
+				// Find lowest number of steps plan
+				int min_plan_idx=0;
+				for (int i=0; i<all_plans.size(); i++){
+					if (all_plans[i].size() <
+						all_plans[min_plan_idx].size()){
+							min_plan_idx = i;
+					};
+				};
+				cout << "Apply plan" << endl;
+				// Set plan for robot fugitive
+				it_r -> second -> set_plan(all_plans[min_plan_idx]);
+				it_r -> second -> info();
 			};
 		};
 		if (fugitives == 0){printf("No fugitives found\n"); return;};
