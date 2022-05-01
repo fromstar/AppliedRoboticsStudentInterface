@@ -16,8 +16,8 @@ namespace bg = boost::geometry;
 namespace bgm = bg::model;
 
 using pt         = bgm::d2::point_xy<double>;
-using Polygon       = bgm::polygon<pt>;
-using Multi_Polygon = bgm::multi_polygon<Polygon>;
+using Polygon_boost       = bgm::polygon<pt>;
+using Multi_Polygon_boost = bgm::multi_polygon<Polygon_boost>;
 
 
 Robot::Robot(string _id, Robot_type _type, point_node* _loc,
@@ -300,11 +300,11 @@ Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons){
  * This function is used to convert a boost polygon object into a list of
  * points ready to be interpreted by others functions in the framework.
  * The only purpose of this function is to reduce the amount of code written.
- * @param[in] p: boost::geometry::model::Polygon. Is the polygon to convert.
+ * @param[in] p: boost::geometry::model::Polygon_boost. Is the polygon to convert.
  * @parma[out] pl: point_list pointer. Is the resulting point list of the
  * polygon.
  */
-point_list* boost_polygon_to_point_list(Polygon p){
+point_list* boost_polygon_to_point_list(Polygon_boost p){
 	point_list *pl = new point_list();
 	for(auto it = boost::begin(boost::geometry::exterior_ring(p));
 		it != boost::end(boost::geometry::exterior_ring(p)); ++it)
@@ -324,7 +324,7 @@ point_list* boost_polygon_to_point_list(Polygon p){
  */
 void points_map::merge_obstacles()
 {
-	std::vector<Polygon> polys;
+	std::vector<Polygon_boost> polys;
 
  	polygon *pol_iter = obstacles->offset_head;
 
@@ -336,7 +336,7 @@ void points_map::merge_obstacles()
 	}
 
 	// check which polygons intersect
-	vector<Polygon> output;
+	vector<Polygon_boost> output;
 	int i=0; // number of polygons present
 	double psize = polys.size();
 	while(i < psize)
@@ -361,8 +361,8 @@ void points_map::merge_obstacles()
 	// Check intersections with arena
 	if(arena != NULL){
 		polygon *arena_pol = new polygon(arena);
-		Polygon _arena = arena_pol->to_boost_polygon();
-		vector<Polygon> tmp_pols;
+		Polygon_boost _arena = arena_pol->to_boost_polygon();
+		vector<Polygon_boost> tmp_pols;
 
 		for (int k=0; k<i; k++){
 			if (boost::geometry::intersects(_arena, polys[k])){
@@ -378,11 +378,11 @@ void points_map::merge_obstacles()
 	if (gates != NULL){
 		polygon* tmp_gate = gates->head;
 		gates = NULL;  // Delete old gates list
-		vector<Polygon> tmp_new_gates;
+		vector<Polygon_boost> tmp_new_gates;
 		points_map* tmp_map = new points_map(NULL);
 
 		while (tmp_gate != NULL){
-			Polygon _gate = tmp_gate -> to_boost_polygon();
+			Polygon_boost _gate = tmp_gate -> to_boost_polygon();
 			for (int k=0; k<i; k++){
 				if (boost::geometry::intersects(_gate, polys[k])){
 					boost::geometry::difference(_gate, polys[k],
@@ -484,15 +484,15 @@ list_of_polygons* subset_polygon(polygon* p, int levels){
 
 /**
  * Subtract a vector o polygons from another one.
- * @param arena: vector<Polygon>. Is the vector of polygons from which
+ * @param arena: vector<Polygon_boost>. Is the vector of polygons from which
  * the other polygons will be subtracted.
- * @param obstacles: vector<Polygon>. Is the vector of polygons that will
+ * @param obstacles: vector<Polygon_boost>. Is the vector of polygons that will
  * be subtracted.
  */
-vector<Polygon> difference_of_vectors(vector<Polygon> arena,
-									  vector<Polygon> obstacles){
-	vector<Polygon> output;
-	vector<Polygon> tmp_output;
+vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
+									  vector<Polygon_boost> obstacles){
+	vector<Polygon_boost> output;
+	vector<Polygon_boost> tmp_output;
 
 	int prev_output = 0;
 	int arena_size = arena.size();
@@ -504,7 +504,7 @@ vector<Polygon> difference_of_vectors(vector<Polygon> arena,
 				int diff = output.size() - prev_output;
 				prev_output = output.size();
 				
-				// printf("Polygon %d and obstacle %d intersects", i, j);
+				// printf("Polygon_boost %d and obstacle %d intersects", i, j);
 				// printf(" -> %d new cells\n", diff);
 
 				arena[i] = output[output.size()-1];
@@ -512,7 +512,7 @@ vector<Polygon> difference_of_vectors(vector<Polygon> arena,
 					tmp_output = arena;
 					for(int k=1; k < diff; k++){
 						int output_idx = output.size()-1-k;
-						vector<Polygon>::iterator it;
+						vector<Polygon_boost>::iterator it;
 						it = tmp_output.begin();
 						tmp_output.insert(it+i+k, output[output_idx]);
 						arena_size += 1;
@@ -541,10 +541,10 @@ void points_map::make_free_space_cells(int res){
 	log -> add_event("Arena subsetted");	
 
 	// Arena subsets to boost::polygons;
-	vector<Polygon> arena_polys;
-	vector<Polygon> arena_obstacles;
-	vector<Polygon> output;
-	vector<Polygon> tmp_output;
+	vector<Polygon_boost> arena_polys;
+	vector<Polygon_boost> arena_obstacles;
+	vector<Polygon_boost> output;
+	vector<Polygon_boost> tmp_output;
 
 	polygon* pol = _arena_subset -> head;
 	while(pol != NULL){
@@ -588,7 +588,7 @@ void points_map::make_free_space_cells(int res){
 						int diff = output.size() - prev_output;
 						prev_output = output.size();
 
-						// printf("Polygon %d and polygon %d intersects", i, j);
+						// printf("Polygon_boost %d and polygon %d intersects", i, j);
 						// printf(" -> %d new cells\n", diff);
 
 						arena_polys[i] = output[output.size()-1];
@@ -596,7 +596,7 @@ void points_map::make_free_space_cells(int res){
 							tmp_output = arena_polys;
 							for(int k=1; k < diff; k++){
 								int output_idx = output.size()-1-k;
-								vector<Polygon>::iterator it;
+								vector<Polygon_boost>::iterator it;
 								it = tmp_output.begin();
 								tmp_output.insert(it+i+k, output[output_idx]);
 								arena_size += 1;
@@ -718,6 +718,27 @@ World_representation:: World_representation(list_of_polygons* cells,
 };
 
 /**
+ * This function runs the planner and saves it to the specified plan file.
+ * The default location of the plan is the current working directory and
+ * the filename is MyPlan.plan
+ * @param planner_path: string. Is the path in which the callable executable
+ * file of the planner is located.
+ * @param domain_file_path: string. Is the path of the domain file to use.
+ * @patma problem_file_path: string. Is the path of the problem file to use.
+ */
+void run_planner(string planner_path, string domain_file_path,
+				 string problem_file_path, string plan_path="MyPlan.plan"){
+
+	cout << "called planner for: " << planner_path << endl << domain_file_path
+		 << endl << problem_file_path << endl << plan_path << endl;
+
+	string command = "exec " + planner_path + " --alias lama-first " +
+					 "--plan-file " + plan_path + " " + 
+					 domain_file_path + " " + problem_file_path;
+	system(command.c_str());
+};
+
+/**
  * \func
  * This function is used to generate a pddl problem file from the abstract
  * world representation.
@@ -773,8 +794,8 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 		for (map<string, World_node>::iterator it_2 = world_free_cells.begin();
 		 it_2 != world_free_cells.end(); ++it_2){
 			if (it_1 != it_2){
-				Polygon pol_1 = it_1->second.cell->to_boost_polygon();
-				Polygon pol_2 = it_2->second.cell->to_boost_polygon();
+				Polygon_boost pol_1 = it_1->second.cell->to_boost_polygon();
+				Polygon_boost pol_2 = it_2->second.cell->to_boost_polygon();
 
 				if (bg::touches(pol_1, pol_2)){ // works also if one point in common !!!!
 					pddl_file += "\t\t( connected " + it_1->first + " " +
@@ -790,8 +811,8 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 		for (map<string, World_node>::iterator it_c = world_free_cells.begin();
 		 	 it_c != world_free_cells.end(); ++it_c){
 
-			Polygon pol_g = it_g->second.cell->to_boost_polygon();
-			Polygon pol_c = it_c->second.cell->to_boost_polygon();
+			Polygon_boost pol_g = it_g->second.cell->to_boost_polygon();
+			Polygon_boost pol_c = it_c->second.cell->to_boost_polygon();
 
 			if (bg::touches(pol_g, pol_c)){ // works also if one point in common !!!!
 				pddl_file += "\t\t( connected " + it_g->first + " " +
@@ -811,7 +832,7 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 
 			boost_point robot_pos = boost_point(it_r->second->location->x,
 												it_r->second->location->y);
-			Polygon pol_c = it_c->second.cell->to_boost_polygon();
+			Polygon_boost pol_c = it_c->second.cell->to_boost_polygon();
 
 			if (bg::covered_by(robot_pos, pol_c)){
 				pddl_file += "\t\t( is_in " + it_r->first + " " +
@@ -862,11 +883,22 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 					// write file ending
 					pddl_file_fugitive += "\n\t)\n)";
 					string file_name = ".tmp/" + it_r->first + "_" +
-									   it_g->first + ".pddl";
-					FILE* tmp_out = fopen(file_name.c_str(), "w");
+									   it_g->first;
 
+					FILE* tmp_out = fopen((file_name + ".pddl").c_str(), "w");
 					fprintf(tmp_out, "%s", pddl_file_fugitive.c_str());
 					fclose(tmp_out);
+
+					string user_folder = getenv("USER");
+					string curr_dir = get_current_dir_name();
+					run_planner("/home/" + user_folder +
+								"/.planutils/packages/downward/run",
+								curr_dir + "/Pddl/domain_fugitive_catcher.pddl",
+								curr_dir + "/" + file_name + ".pddl",
+								curr_dir + "/" + file_name + ".plan");
+					// Must add a flag to check if everything went good
+					FILE* tmp_in = fopen((file_name+".plan").c_str(), "r");
+					fclose(tmp_in);
 				};
 			};
 		};

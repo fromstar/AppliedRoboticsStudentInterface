@@ -187,7 +187,7 @@ Edge_list::~Edge_list(){
 };
 
 
-Mat plot_points(point_list * pl, Mat arena, Scalar colorline, bool isPolygon,
+Mat plot_points(point_list * pl, Mat arena, Scalar colorline, bool isPolygon_boost,
 				int thickness)
  {
 	 if(pl != NULL)
@@ -206,7 +206,7 @@ Mat plot_points(point_list * pl, Mat arena, Scalar colorline, bool isPolygon,
 			n1 = n1->pnext;
 		}
 		
-		if (isPolygon) //close the polygon connecting the last point with the firts one
+		if (isPolygon_boost) //close the polygon connecting the last point with the firts one
 			line(arena, Point((n1->x * SCALE_1) + SCALE_2,
 				 (n1->y * -SCALE_1) + SCALE_2),
 				 Point( (pl->head->x * SCALE_1) + SCALE_2,
@@ -491,7 +491,7 @@ polygon * polygon::add_offset(double offset){
 };
 
 
-Polygon polygon::to_boost_polygon(){
+Polygon_boost polygon::to_boost_polygon(){
 
 	point_node *pn = pl->head;
 	string pts = "POLYGON((";
@@ -506,7 +506,7 @@ Polygon polygon::to_boost_polygon(){
 	}
 	pts.append("))");
 
-	Polygon p;
+	Polygon_boost p;
 	boost::geometry::read_wkt(pts, p);
 	if(!boost::geometry::is_valid(p)){
 	  boost::geometry::correct(p); // Fixes edge order -> e.g. clockwise
@@ -524,6 +524,6 @@ void polygon::concatenate(polygon *p){
 
 void polygon::info(){
 	pl -> print_list();
-	printf("Polygon centroid: ");
+	printf("Polygon_boost centroid: ");
 	centroid -> Print();
 };

@@ -8,13 +8,11 @@
 #include <stdio.h>
 #include <stdexcept>
 #include <boost/geometry.hpp>
-#include <boost/geometry/geometries/point_xy.hpp>
-#include <boost/geometry/geometries/polygon.hpp>
 #include <string.h>
 #include <map>
 
 using pt         = boost::geometry::model::d2::point_xy<double>;
-using Polygon       = boost::geometry::model::polygon<pt>;
+using Polygon_boost       = boost::geometry::model::polygon<pt>;
 
 /**
  * \enum {fugitive, catcher, undefined}
@@ -165,8 +163,8 @@ typedef struct World_representation{
 }World_representation;
 
 // outsider functions
-point_list* boost_polygon_to_point_list(Polygon p);
+point_list* boost_polygon_to_point_list(Polygon_boost p);
 list_of_polygons* subset_polygon(polygon* p, int levels=1);
-vector<Polygon> difference_of_vectors(vector<Polygon> arena,
-									  vector<Polygon> obstacles);
+vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
+									  vector<Polygon_boost> obstacles);
 #endif

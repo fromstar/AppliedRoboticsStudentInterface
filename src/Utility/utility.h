@@ -12,7 +12,7 @@
 #include <string.h>
 
 using pt = boost::geometry::model::d2::point_xy<double>;
-using Polygon = boost::geometry::model::polygon<pt>;
+using Polygon_boost = boost::geometry::model::polygon<pt>;
 
 using namespace cv;
 using namespace std;
@@ -133,7 +133,7 @@ typedef struct Edge_list{
  * @see concatenate(polygon a): It is the function allowing to concatenate
  * a polygon with another.
  * @see to_boost_polygon(): It is the function responsible to turn a polygon
- * into a boost::geometry::model::Polygon object, ready to use by the boost
+ * into a boost::geometry::model::Polygon_boost object, ready to use by the boost
  * library.
  * @see info(): It is the function responsible to print all the information
  * representing a polygon and calls the info() functions of the point_node 
@@ -152,7 +152,7 @@ typedef struct polygon{
 	Edge_list* edgify();
   	polygon* add_offset(double offset);  // Our polygon class
   	void concatenate(polygon *p);
-	Polygon to_boost_polygon();  // Polygon of boost lybrary
+	Polygon_boost to_boost_polygon();  // Polygon_boost of boost lybrary
   	void info();
 }polygon;
 
