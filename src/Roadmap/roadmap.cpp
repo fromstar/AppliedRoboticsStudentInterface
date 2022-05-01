@@ -1,6 +1,6 @@
 #include "roadmap.h"
 #include <vector>
-
+#include <sys/stat.h>  // used to create folders
 
 // #include <boost/geometry.hpp>
 // #include <boost/geometry/geometries/point_xy.hpp>
@@ -538,7 +538,7 @@ void points_map::make_free_space_cells(int res){
 	// Subset arena -> free space idealization
 	polygon* _arena = new polygon(arena);
 	list_of_polygons* _arena_subset = subset_polygon(_arena, res);
-	log -> add_event("Arena subsetted\n");	
+	log -> add_event("Arena subsetted");	
 
 	// Arena subsets to boost::polygons;
 	vector<Polygon> arena_polys;
@@ -551,21 +551,21 @@ void points_map::make_free_space_cells(int res){
 		arena_polys.push_back(pol->to_boost_polygon());
 		pol = pol -> pnext;
 	};
-	log->add_event("Arena converted to boost\n");
+	log->add_event("Arena converted to boost");
 
 	pol = obstacles -> offset_head;
 	while(pol != NULL){
 		arena_obstacles.push_back(pol->to_boost_polygon());
 		pol = pol -> pnext;
 	};
-	log->add_event("Obstacles converted to boost\n");
+	log->add_event("Obstacles converted to boost");
 
 	pol = gates -> head;
 	while (pol != NULL){
 		arena_obstacles.push_back(pol->to_boost_polygon());
 		pol = pol -> pnext;
 	};
-	log->add_event("Arena gates added to obstacles list\n");
+	log->add_event("Arena gates added to obstacles list");
 
 	// Remove the obstacles from the free space and compute the new shapes
 	if (arena_obstacles.size() > 0){
@@ -619,7 +619,7 @@ void points_map::make_free_space_cells(int res){
 		polygon* new_space = new polygon(new_space_points);
 		free_space->add_polygon(new_space);
 	};
-	log->add_event("Free space generated\n");
+	log->add_event("Free space generated");
 };
 
 /**
@@ -733,43 +733,41 @@ World_representation:: World_representation(list_of_polygons* cells,
 void World_representation::to_pddl(string path_pddl_problem_file,
 								   string problem_name,
 				 				   string domain_name,
-								   bool symmetrical,
 								   bool fugitive_agent){
 
 	l -> add_event("Started Creation of pddl problem file.");
-
-	FILE* pddl_out = fopen(path_pddl_problem_file.c_str(), "w");
+	string pddl_file = "";
 
 	// Write first two lines defining the problem and domain names
-	fprintf(pddl_out, "(define (problem %s)\n\t(:domain %s)\n",
-					  problem_name.c_str(), domain_name.c_str());
+	pddl_file += "(define (problem " + problem_name + ")\n\t(:domain "
+				 + domain_name + " )\n";
 
 	// Write the objects available.
-	fprintf(pddl_out, "\t(:objects\n");
+	pddl_file += "\t(:objects\n";
 
 	for (map<string, World_node>::iterator it = world_free_cells.begin();
 		 it != world_free_cells.end(); ++it){
-		fprintf(pddl_out, "\t\t%s - cell\n", it->first.c_str());	
+		pddl_file += "\t\t" + it->first + " - cell\n";	
 	};
 	
 	for (map<string, World_node>::iterator it = world_gates.begin();
 		 it != world_gates.end(); ++it){
-		fprintf(pddl_out, "\t\t%s - gate\n", it->first.c_str());	
+		pddl_file += "\t\t" + it->first + " - gate\n";	
 	};
 	
 	for (map<string, Robot*>::iterator it = world_robots.begin();
 		 it != world_robots.end(); ++it){
 		if (it -> second -> type != undefined){
-			fprintf(pddl_out, "\t\t%s - %s - robot\n",
-					it->first.c_str(), it->second->get_type().c_str());
+			pddl_file += "\t\t" + it->first + " - " + it->second->get_type() +
+						 "\n";
 		};
 	};
 
-	fprintf(pddl_out, "\t)\n");
+	pddl_file += "\t)\n";
 	
 	// Write the initial state
 	// 1 Write connections among cells
-	fprintf(pddl_out, "\t(:init\n");
+	pddl_file += "\t(:init\n";
 	for (map<string, World_node>::iterator it_1 = world_free_cells.begin();
 		 it_1 != world_free_cells.end(); ++it_1){
 		for (map<string, World_node>::iterator it_2 = world_free_cells.begin();
@@ -779,14 +777,8 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 				Polygon pol_2 = it_2->second.cell->to_boost_polygon();
 
 				if (bg::touches(pol_1, pol_2)){ // works also if one point in common !!!!
-					fprintf(pddl_out, "\t\t( connected %s %s )\n",
-									  it_1->first.c_str(),
-									  it_2->first.c_str());
-					if (symmetrical){
-						fprintf(pddl_out, "\t\t( connected %s %s )\n",
-										  it_2->first.c_str(),
-										  it_1->first.c_str());
-					};
+					pddl_file += "\t\t( connected " + it_1->first + " " +
+								 it_2->first + " )\n";
 				};
 			};
 		};
@@ -802,14 +794,8 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 			Polygon pol_c = it_c->second.cell->to_boost_polygon();
 
 			if (bg::touches(pol_g, pol_c)){ // works also if one point in common !!!!
-				fprintf(pddl_out, "\t\t( connected %s %s )\n",
-								  it_g->first.c_str(),
-								  it_c->first.c_str());
-				if (symmetrical){
-					fprintf(pddl_out, "\t\t( connected %s %s )\n",
-									  it_c->first.c_str(),
-									  it_g->first.c_str());
-				};
+				pddl_file += "\t\t( connected " + it_g->first + " " +
+							 it_c->first + " )\n";
 			};
 		};
 	};
@@ -828,17 +814,16 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 			Polygon pol_c = it_c->second.cell->to_boost_polygon();
 
 			if (bg::covered_by(robot_pos, pol_c)){
-				fprintf(pddl_out, "\t\t( is_in %s %s )\n",
-								  it_r->first.c_str(),
-								  it_c->first.c_str());
+				pddl_file += "\t\t( is_in " + it_r->first + " " +
+							 it_c->first + " )\n";
 				break; // skip to next robot -> it can be only in one place
 			};
 		};
 	};
-	fprintf(pddl_out, "\t)\n");
+	pddl_file += "\t)\n";
 
 	// Write goal
-	fprintf(pddl_out, "\t(:goal\n\t\t( and\n");
+	pddl_file += "\t(:goal\n"; // "\t\t( and\n";
 	if (fugitive_agent){
 		int fugitives = 0;
 		for (map<string, Robot*>::iterator it_r = world_robots.begin();
@@ -846,39 +831,51 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 			// cout << it_r -> first.c_str() << " " << it_r -> second -> ID << endl;
 			if (it_r -> second -> type == fugitive){
 				fugitives += 1;
-				// random chose escape gate -> it may not consider the last one.
-				// Chose nearest gate
+				// Chose nearest gate -> run planner for each gate and retain
+				// The safest one -> must find way to interlace catcher and gate
+				// distance
+
 				int escape_gate = ((rand()%world_gates.size()-1))+1;
 				map<string, World_node>::iterator it_g = world_gates.begin();
 				for(int i=0; i < escape_gate; i++){++it_g;};
 				// cout << it_r -> first.c_str() << " " << it_g -> first.c_str() << endl;
-				fprintf(pddl_out, "\t\t\t( is_in %s %s )\n",
-								  it_r -> first.c_str(),
-								  it_g -> first.c_str());
+				pddl_file += "\t\t\t( is_in " + it_r->first + " " +
+							 it_g->first + " )\n";
+
+				// make temporary folder for the plans.
+				int tmp_folder = mkdir(".tmp", 0777);
+				if (tmp_folder != 0){
+					l->add_event("Temporary folder for planning correctly "
+								 "created");
+				}else{
+					l->add_event("Unable to create temporary folder");					
+				};
+
+				// Write pddl problem specific to each fugitve
+
 			};
 		};
-		fprintf(pddl_out, "\t\t)");
 		if (fugitives == 0){printf("No fugitives found\n"); return;};
 	}else{
 		int catchers = 0;
 		for (map<string, Robot*>::iterator it_r = world_robots.begin();
 			 it_r != world_robots.end(); ++it_r){
 			if (it_r -> second -> type == fugitive){
-				fprintf(pddl_out, "\t\t\t(captured(%s))\n",
-								  it_r->first.c_str());
+				pddl_file += "\t\t\t(captured " + it_r->first + ")\n";
 			}else{  // Undefined treated as catchers
 				catchers += 1;
 			};
 		};
-		fprintf(pddl_out, "\t\t)");
 		if (catchers == 0){printf("No catchers found\n"); return;};
 	};
-
-	fprintf(pddl_out, "\n\t)");
+	// pddl_file += "\t\t)";
+	pddl_file += "\n\t)";
 
 	// Write ending of the pddl file
-	fprintf(pddl_out, "\n)");
+	pddl_file += "\n)";
 
+	FILE* pddl_out = fopen(path_pddl_problem_file.c_str(), "w");
+	fprintf(pddl_out, "%s", pddl_file.c_str());  //write files out
 	fclose(pddl_out);
 	l -> add_event("Ended Creation of pddl problem file.");
 };
