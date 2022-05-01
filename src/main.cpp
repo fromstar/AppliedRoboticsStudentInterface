@@ -1,6 +1,7 @@
 #include "Roadmap/roadmap.h"
 //#include "../../simulator/src/9_project_interface/include/utils.hpp"
 #include <time.h>
+#include <iostream>
 
 using namespace std;
 
@@ -101,8 +102,8 @@ void test()
 	abstract_arena.info();
 	abstract_arena.to_pddl("Pddl/problem_catcher.pddl");
 	abstract_arena.to_pddl("Pddl/problem_fugitive.pddl", "fugitive_catcher",
-						   "fugitive_catcher", false, true);
-	
+						   "fugitive_catcher", true);
+	// system("exec /home/davide/.planutils/packages/downward/run --alias lama-first --plan-file Pddl/Myplan.plan Pddl/domain_fugitive_catcher.pddl Pddl/problem_fugitive.pddl");	
 	// test_map.reduce_arena();
 	/*
 	Mat img_arena = test_map.plot_arena(800, 800, true);
