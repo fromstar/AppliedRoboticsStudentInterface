@@ -339,11 +339,12 @@ void points_map::merge_obstacles()
 			if(boost::geometry::intersects(polys[i],polys[j])){
 				// Update the polygon list
 				boost::geometry::union_(polys[i], polys[j], output);
-				polys.erase(polys.begin() + i);
-				polys.erase(polys.begin() + j);
-				polys.push_back(output[output.size()-1]);
-				psize = polys.size();
-				i=0, j=1;
+				// polys.erase(polys.begin() + i);
+				// polys.erase(polys.begin() + j);
+				// polys.push_back(output[output.size()-1]);
+				polys[i] = output[output.size()-1];
+				// psize = polys.size();
+				// i=0, j=1;
 			}
 			j++;
 		}

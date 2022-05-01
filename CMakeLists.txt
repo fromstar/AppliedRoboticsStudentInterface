@@ -21,6 +21,7 @@ add_library(student SHARED
    src/Roadmap/roadmap.cpp
    src/Utility/utility.cpp
    src/Dubins/dubins.cpp
+   src/Log/logger.cpp
 )
 
 target_link_libraries(student

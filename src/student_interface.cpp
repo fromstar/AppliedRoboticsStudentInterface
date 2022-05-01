@@ -50,23 +50,36 @@ void unwarp(const cv::Mat& img_in, cv::Mat& img_out, const cv::Mat& transf,
   bool planPath(const Polygon& borders, const std::vector<Polygon>& obstacle_list, const std::vector<Polygon>& gate_list, const std::vector<float> x, const std::vector<float> y, const std::vector<float> theta, std::vector<Path>& path, const std::string& config_folder)
   {
     //throw std::logic_error( "STUDENT FUNCTION - PLAN PATH - NOT IMPLEMENTED" );
-    points_map arena;
+
+    logger* log_test = new logger;
+	  log_test -> set_log_path("test_log.txt");
+	  log_test -> add_event("Code started\n");
+    points_map arena(log_test);
+
+    // Add arena limits
     point_list *arena_limits = new point_list;
     for(int i=0;i<borders.size();i++)
     {
       arena_limits->add_node(new point_node(borders[i].x,borders[i].y));
     }
     arena.add_arena_points(arena_limits);
+
+    // Add obstacles
     point_list *pol;
     for(int i = 0; i < obstacle_list.size();i++)
     {
       pol = new point_list;
+      cout << "Poligono " << i+1<<"\n";
       for(int j=0;j<obstacle_list[i].size();j++)
       {
         pol->add_node(new point_node(obstacle_list[i][j].x,obstacle_list[i][j].y));
+        cout << obstacle_list[i][j].x<<":"<<obstacle_list[i][j].y<<" ";
       }
+      cout << "\n";
       arena.add_obstacle(new polygon(pol));
     }
+
+    // Add gates
     for(int i = 0; i < gate_list.size();i++)
     {
       pol = new point_list;
@@ -76,9 +89,25 @@ void unwarp(const cv::Mat& img_in, cv::Mat& img_out, const cv::Mat& transf,
       }
       arena.add_gate(new polygon(pol));
     }
-    Mat img_arena = arena.plot_arena();
+    
+    arena.merge_obstacles();
+    arena.make_free_space_cells();
+    log_test -> add_event("Created Roadmap");
+
+    Robot* c_1 = new Robot("Catcher_1", catcher); 
+    test_map.add_robot(c_1);
+    
+    Robot* f_1 = new Robot("Fugitive_1", fugitive); 
+    test_map.add_robot(f_1);
+
+    // test_map.set_robot_position(c_1->ID, 1, -2);
+    // test_map.set_robot_position(f_1->ID, -0.5, -0.5);
+
+    Mat img_arena = arena.plot_arena(800,800, true);
     imshow("Arena", img_arena);
     waitKey(0);
+  
+    return true;
   }
 }
 
