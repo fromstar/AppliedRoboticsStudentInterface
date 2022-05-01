@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdexcept>
 #include <boost/geometry.hpp>
+#include <boost/geometry/geometries/point_xy.hpp>
+#include <boost/geometry/geometries/polygon.hpp>
 #include <string.h>
 #include <map>
 
@@ -158,7 +160,6 @@ typedef struct World_representation{
 	void to_pddl(string path_pddl_problem_file="problem.pddl",
 				 string problem_name="fugitive_catcher",
 				 string domain_name="fugitive_catcher",
-				 bool symmetrical=false,
 				 bool fugitive_agent=false);
 	void info();
 }World_representation;

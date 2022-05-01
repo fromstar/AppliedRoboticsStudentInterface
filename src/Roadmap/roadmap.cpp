@@ -834,13 +834,15 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 				// Chose nearest gate -> run planner for each gate and retain
 				// The safest one -> must find way to interlace catcher and gate
 				// distance
-
+				
+				/*
 				int escape_gate = ((rand()%world_gates.size()-1))+1;
 				map<string, World_node>::iterator it_g = world_gates.begin();
 				for(int i=0; i < escape_gate; i++){++it_g;};
 				// cout << it_r -> first.c_str() << " " << it_g -> first.c_str() << endl;
 				pddl_file += "\t\t\t( is_in " + it_r->first + " " +
 							 it_g->first + " )\n";
+				*/
 
 				// make temporary folder for the plans.
 				int tmp_folder = mkdir(".tmp", 0777);
@@ -852,7 +854,20 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 				};
 
 				// Write pddl problem specific to each fugitve
+				for (map<string, World_node>::iterator it_g=world_gates.begin();
+					 it_g != world_gates.end(); ++it_g){
+					string pddl_file_fugitive = pddl_file + "\t\t( is_in " +
+										 it_r->first + " " +
+										 it_g->first + " )";
+					// write file ending
+					pddl_file_fugitive += "\n\t)\n)";
+					string file_name = ".tmp/" + it_r->first + "_" +
+									   it_g->first + ".pddl";
+					FILE* tmp_out = fopen(file_name.c_str(), "w");
 
+					fprintf(tmp_out, "%s", pddl_file_fugitive.c_str());
+					fclose(tmp_out);
+				};
 			};
 		};
 		if (fugitives == 0){printf("No fugitives found\n"); return;};

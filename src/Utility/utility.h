@@ -7,6 +7,8 @@
 #include <cmath>
 
 #include <boost/geometry.hpp>
+#include <boost/geometry/geometries/point_xy.hpp>
+#include <boost/geometry/geometries/polygon.hpp>
 #include <string.h>
 
 using pt = boost::geometry::model::d2::point_xy<double>;
