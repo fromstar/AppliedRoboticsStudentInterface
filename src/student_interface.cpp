@@ -5,109 +5,118 @@
 #include <stdexcept>
 #include <sstream>
 
-namespace student {
+// Scaler factor for plotting arena with opencv
+int scale = 2;
 
- void loadImage(cv::Mat& img_out, const std::string& config_folder){  
-   throw std::logic_error( "STUDENT FUNCTION - LOAD IMAGE - NOT IMPLEMENTED" );
- }
+namespace student
+{
 
- void genericImageListener(const cv::Mat& img_in, std::string topic, const std::string& config_folder){
-    throw std::logic_error( "STUDENT FUNCTION - IMAGE LISTENER - NOT CORRECTLY IMPLEMENTED" );
-  }
-
-  bool extrinsicCalib(const cv::Mat& img_in, std::vector<cv::Point3f> object_points, const cv::Mat& camera_matrix, cv::Mat& rvec, cv::Mat& tvec, const std::string& config_folder){
-    throw std::logic_error( "STUDENT FUNCTION - EXTRINSIC CALIB - NOT IMPLEMENTED" );   
-  }
-
-  void imageUndistort(const cv::Mat& img_in, cv::Mat& img_out, 
-          const cv::Mat& cam_matrix, const cv::Mat& dist_coeffs, const std::string& config_folder){
-
-    throw std::logic_error( "STUDENT FUNCTION - IMAGE UNDISTORT - NOT IMPLEMENTED" );  
-
-  }
-
-  void findPlaneTransform(const cv::Mat& cam_matrix, const cv::Mat& rvec, 
-                        const cv::Mat& tvec, const std::vector<cv::Point3f>& object_points_plane, 
-                        const std::vector<cv::Point2f>& dest_image_points_plane, 
-                        cv::Mat& plane_transf, const std::string& config_folder){
-    throw std::logic_error( "STUDENT FUNCTION - FIND PLANE TRANSFORM - NOT IMPLEMENTED" );  
-  }
-
-
-void unwarp(const cv::Mat& img_in, cv::Mat& img_out, const cv::Mat& transf, 
-            const std::string& config_folder){
-    throw std::logic_error( "STUDENT FUNCTION - UNWRAP - NOT IMPLEMENTED" );   
-  }
-
-  bool processMap(const cv::Mat& img_in, const double scale, std::vector<Polygon>& obstacle_list, std::vector<std::pair<int,Polygon>>& victim_list, Polygon& gate, const std::string& config_folder){
-    throw std::logic_error( "STUDENT FUNCTION - PROCESS MAP - NOT IMPLEMENTED" );   
-  }
-
-  bool findRobot(const cv::Mat& img_in, const double scale, Polygon& triangle, double& x, double& y, double& theta, const std::string& config_folder){
-    throw std::logic_error( "STUDENT FUNCTION - FIND ROBOT - NOT IMPLEMENTED" );    
-  }
-
-  bool planPath(const Polygon& borders, const std::vector<Polygon>& obstacle_list, const std::vector<Polygon>& gate_list, const std::vector<float> x, const std::vector<float> y, const std::vector<float> theta, std::vector<Path>& path, const std::string& config_folder)
+  void loadImage(cv::Mat &img_out, const std::string &config_folder)
   {
-    //throw std::logic_error( "STUDENT FUNCTION - PLAN PATH - NOT IMPLEMENTED" );
+    throw std::logic_error("STUDENT FUNCTION - LOAD IMAGE - NOT IMPLEMENTED");
+  }
 
-    logger* log_test = new logger;
-	  log_test -> set_log_path("test_log.txt");
-	  log_test -> add_event("Code started\n");
+  void genericImageListener(const cv::Mat &img_in, std::string topic, const std::string &config_folder)
+  {
+    throw std::logic_error("STUDENT FUNCTION - IMAGE LISTENER - NOT CORRECTLY IMPLEMENTED");
+  }
+
+  bool extrinsicCalib(const cv::Mat &img_in, std::vector<cv::Point3f> object_points, const cv::Mat &camera_matrix, cv::Mat &rvec, cv::Mat &tvec, const std::string &config_folder)
+  {
+    throw std::logic_error("STUDENT FUNCTION - EXTRINSIC CALIB - NOT IMPLEMENTED");
+  }
+
+  void imageUndistort(const cv::Mat &img_in, cv::Mat &img_out,
+                      const cv::Mat &cam_matrix, const cv::Mat &dist_coeffs, const std::string &config_folder)
+  {
+
+    throw std::logic_error("STUDENT FUNCTION - IMAGE UNDISTORT - NOT IMPLEMENTED");
+  }
+
+  void findPlaneTransform(const cv::Mat &cam_matrix, const cv::Mat &rvec,
+                          const cv::Mat &tvec, const std::vector<cv::Point3f> &object_points_plane,
+                          const std::vector<cv::Point2f> &dest_image_points_plane,
+                          cv::Mat &plane_transf, const std::string &config_folder)
+  {
+    throw std::logic_error("STUDENT FUNCTION - FIND PLANE TRANSFORM - NOT IMPLEMENTED");
+  }
+
+  void unwarp(const cv::Mat &img_in, cv::Mat &img_out, const cv::Mat &transf,
+              const std::string &config_folder)
+  {
+    throw std::logic_error("STUDENT FUNCTION - UNWRAP - NOT IMPLEMENTED");
+  }
+
+  bool processMap(const cv::Mat &img_in, const double scale, std::vector<Polygon> &obstacle_list, std::vector<std::pair<int, Polygon>> &victim_list, Polygon &gate, const std::string &config_folder)
+  {
+    throw std::logic_error("STUDENT FUNCTION - PROCESS MAP - NOT IMPLEMENTED");
+  }
+
+  bool findRobot(const cv::Mat &img_in, const double scale, Polygon &triangle, double &x, double &y, double &theta, const std::string &config_folder)
+  {
+    throw std::logic_error("STUDENT FUNCTION - FIND ROBOT - NOT IMPLEMENTED");
+  }
+
+  bool planPath(const Polygon &borders, const std::vector<Polygon> &obstacle_list, const std::vector<Polygon> &gate_list, const std::vector<float> x, const std::vector<float> y, const std::vector<float> theta, std::vector<Path> &path, const std::string &config_folder)
+  {
+    // throw std::logic_error( "STUDENT FUNCTION - PLAN PATH - NOT IMPLEMENTED" );
+
+    logger *log_test = new logger;
+    log_test->set_log_path("test_log.txt");
+    log_test->add_event("Code started\n");
     points_map arena(log_test);
 
     // Add arena limits
     point_list *arena_limits = new point_list;
-    for(int i=0;i<borders.size();i++)
+    for (int i = 0; i < borders.size(); i++)
     {
-      arena_limits->add_node(new point_node(borders[i].x,borders[i].y));
+      arena_limits->add_node(new point_node(borders[i].x*scale, borders[i].y*scale));
     }
     arena.add_arena_points(arena_limits);
 
     // Add obstacles
     point_list *pol;
-    for(int i = 0; i < obstacle_list.size();i++)
+    for (int i = 0; i < obstacle_list.size(); i++)
     {
       pol = new point_list;
-      cout << "Poligono " << i+1<<"\n";
-      for(int j=0;j<obstacle_list[i].size();j++)
+      cout << "Poligono " << i + 1 << "\n";
+      for (int j = 0; j < obstacle_list[i].size(); j++)
       {
-        pol->add_node(new point_node(obstacle_list[i][j].x,obstacle_list[i][j].y));
-        cout << obstacle_list[i][j].x<<":"<<obstacle_list[i][j].y<<" ";
+        pol->add_node(new point_node(obstacle_list[i][j].x*scale, obstacle_list[i][j].y*scale));
+        cout << obstacle_list[i][j].x << ":" << obstacle_list[i][j].y << " ";
       }
       cout << "\n";
       arena.add_obstacle(new polygon(pol));
     }
 
     // Add gates
-    for(int i = 0; i < gate_list.size();i++)
+    for (int i = 0; i < gate_list.size(); i++)
     {
       pol = new point_list;
-      for(int j=0;j<gate_list[i].size();j++)
+      for (int j = 0; j < gate_list[i].size(); j++)
       {
-        pol->add_node(new point_node(gate_list[i][j].x,gate_list[i][j].y));
+        pol->add_node(new point_node(gate_list[i][j].x*scale, gate_list[i][j].y*scale));
       }
       arena.add_gate(new polygon(pol));
     }
-    
-    arena.merge_obstacles();
-    arena.make_free_space_cells();
-    log_test -> add_event("Created Roadmap");
 
-    Robot* c_1 = new Robot("Catcher_1", catcher); 
-    test_map.add_robot(c_1);
-    
-    Robot* f_1 = new Robot("Fugitive_1", fugitive); 
-    test_map.add_robot(f_1);
+    // arena.merge_obstacles();
+    // arena.make_free_space_cells();
+    log_test->add_event("Created Roadmap");
 
-    // test_map.set_robot_position(c_1->ID, 1, -2);
-    // test_map.set_robot_position(f_1->ID, -0.5, -0.5);
+    Robot *c_1 = new Robot("Catcher_1", catcher);
+    arena.add_robot(c_1);
 
-    Mat img_arena = arena.plot_arena(800,800, true);
+    Robot *f_1 = new Robot("Fugitive_1", fugitive);
+    arena.add_robot(f_1);
+
+    arena.set_robot_position(c_1->ID, x[0]*scale, y[0]*scale);
+    arena.set_robot_position(f_1->ID, x[1]*scale, y[1]*scale);
+
+    Mat img_arena = arena.plot_arena(800, 800, true);
     imshow("Arena", img_arena);
     waitKey(0);
-  
+
     return true;
   }
 }
-

@@ -268,7 +268,7 @@ Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons){
 	tmp = free_space -> head;
 	while(tmp != NULL){
 		img_arena = plot_points(tmp->pl, img_arena, Scalar(0, 255, 255),
-								true, 2);
+								true, 1);
 		tmp = tmp->pnext;
 	};
 
