@@ -1,6 +1,7 @@
 #include "student_image_elab_interface.hpp"
 #include "student_planning_interface.hpp"
 #include "Roadmap/roadmap.h"
+#include "Dubins/dubins.h"
 
 #include <stdexcept>
 #include <sstream>
@@ -70,7 +71,7 @@ namespace student
     point_list *arena_limits = new point_list;
     for (int i = 0; i < borders.size(); i++)
     {
-      arena_limits->add_node(new point_node(borders[i].x*scale, borders[i].y*scale));
+      arena_limits->add_node(new point_node(borders[i].x * scale, borders[i].y * scale));
     }
     arena.add_arena_points(arena_limits);
 
@@ -82,7 +83,7 @@ namespace student
       cout << "Poligono " << i + 1 << "\n";
       for (int j = 0; j < obstacle_list[i].size(); j++)
       {
-        pol->add_node(new point_node(obstacle_list[i][j].x*scale, obstacle_list[i][j].y*scale));
+        pol->add_node(new point_node(obstacle_list[i][j].x * scale, obstacle_list[i][j].y * scale));
         cout << obstacle_list[i][j].x << ":" << obstacle_list[i][j].y << " ";
       }
       cout << "\n";
@@ -95,13 +96,13 @@ namespace student
       pol = new point_list;
       for (int j = 0; j < gate_list[i].size(); j++)
       {
-        pol->add_node(new point_node(gate_list[i][j].x*scale, gate_list[i][j].y*scale));
+        pol->add_node(new point_node(gate_list[i][j].x * scale, gate_list[i][j].y * scale));
       }
       arena.add_gate(new polygon(pol));
     }
 
-    // arena.merge_obstacles();
-    // arena.make_free_space_cells();
+    arena.merge_obstacles();
+    arena.make_free_space_cells();
     log_test->add_event("Created Roadmap");
 
     Robot *c_1 = new Robot("Catcher_1", catcher);
@@ -110,10 +111,65 @@ namespace student
     Robot *f_1 = new Robot("Fugitive_1", fugitive);
     arena.add_robot(f_1);
 
-    arena.set_robot_position(c_1->ID, x[0]*scale, y[0]*scale);
-    arena.set_robot_position(f_1->ID, x[1]*scale, y[1]*scale);
+    arena.set_robot_position(c_1->ID, x[0] * scale, y[0] * scale);
+    arena.set_robot_position(f_1->ID, x[1] * scale, y[1] * scale);
+
+    cout <<"CAZZO\n" << x[1] <<":"<<y[1]<<endl; 
+
+    World_representation abstract_arena = World_representation(
+        arena.free_space,
+        arena.gates,
+        arena.robot,
+        log_test);
+        
+    // abstract_arena.info();
+    // abstract_arena.to_pddl("Pddl/problem_catcher.pddl");
+    // abstract_arena.to_pddl("Pddl/problem_fugitive.pddl", "fugitive_catcher",
+    //                        "fugitive_catcher", true);
 
     Mat img_arena = arena.plot_arena(800, 800, true);
+
+    /**********************************************
+     * TO MOVE
+     ***********************************************/
+    // vector<string> f_path = abstract_arena.world_robots["Fugitive_1"]->plan;
+
+    // // cout << abstract_arena.world_free_cells["Cell_1"].cell->centroid->y<<endl;
+
+    // double fx_path[f_path.size() + 1];
+    // double fy_path[f_path.size() + 1];
+    // double fth_path[f_path.size() + 1];
+
+    // for (int i = 0; i < f_path.size(); i++)
+    // {
+    //   string word;
+    //   stringstream iss(f_path[i]);
+    //   vector<string> path;
+    //   while (iss >> word)
+    //     path.push_back(word);
+    //   path[3].resize(path[3].size() - 1);
+
+    //   fx_path[i] = abstract_arena.world_free_cells[path[2]].cell->centroid->x;
+    //   fy_path[i] = abstract_arena.world_free_cells[path[2]].cell->centroid->y;
+    //   fth_path[i] = 0;
+
+    //   if (i == f_path.size() - 1)
+    //   {
+    //     fx_path[i + 1] = abstract_arena.world_gates[path[3]].cell->centroid->x;
+    //     fy_path[i + 1] = abstract_arena.world_gates[path[3]].cell->centroid->y;
+    //     fth_path[i + 1] = fth_path[i + 1] + 10;
+    //   }
+    // }
+
+    // int pidx;
+    // curve c;
+    // for (int i = 0; i < f_path.size(); i++)
+    // {
+    //   tie(pidx, c) = dubins(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1], fy_path[i + 1], fth_path[i + 1], 10);
+    //   if (pidx > 0)
+    //     img_arena = plotdubins(c, "r", "g", "b", img_arena);
+    // }
+    /**********************************************/
     imshow("Arena", img_arena);
     waitKey(0);
 

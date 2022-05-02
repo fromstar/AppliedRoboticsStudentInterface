@@ -683,7 +683,7 @@ World_representation:: World_representation(list_of_polygons* cells,
 	polygon* pol_pointer = cells->head;
 	int cells_counter = 0;
 	while(pol_pointer != NULL){
-		World_node temp = World_node("Cell_" + to_string(cells_counter),
+		World_node temp = World_node("cell_" + to_string(cells_counter),
 									 pol_pointer);
 		add_cell(temp);
 		pol_pointer = pol_pointer->pnext;
@@ -695,7 +695,7 @@ World_representation:: World_representation(list_of_polygons* cells,
 	cells_counter = 0;
 	pol_pointer = gate_cells->head;
 	while(pol_pointer != NULL){
-		World_node temp = World_node("Gate_" + to_string(cells_counter),
+		World_node temp = World_node("gate_" + to_string(cells_counter),
 									 pol_pointer);
 		add_cell(temp, true);
 		pol_pointer = pol_pointer->pnext;
