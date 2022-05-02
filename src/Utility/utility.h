@@ -163,5 +163,6 @@ bool check(double, double, double, double, double, double, double, double);
 Mat plot_points(point_list *, Mat, Scalar, bool, int thickness=1);
 void sort(double_list *, point_list *);
 tuple <double, double> get_new_point(double,double,double,double);
+string exec(const char *cmd);
 
 #endif

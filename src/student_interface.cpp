@@ -2,6 +2,7 @@
 #include "student_planning_interface.hpp"
 #include "Roadmap/roadmap.h"
 #include "Dubins/dubins.h"
+#include <thread>
 
 #include <stdexcept>
 #include <sstream>
@@ -114,27 +115,26 @@ namespace student
     arena.set_robot_position(c_1->ID, x[0] * scale, y[0] * scale);
     arena.set_robot_position(f_1->ID, x[1] * scale, y[1] * scale);
 
-    cout <<"CAZZO\n" << x[1] <<":"<<y[1]<<endl; 
-
     World_representation abstract_arena = World_representation(
         arena.free_space,
         arena.gates,
         arena.robot,
         log_test);
-        
-    // abstract_arena.info();
-    // abstract_arena.to_pddl("Pddl/problem_catcher.pddl");
-    // abstract_arena.to_pddl("Pddl/problem_fugitive.pddl", "fugitive_catcher",
-    //                        "fugitive_catcher", true);
+
+    abstract_arena.info();
+    abstract_arena.to_pddl("Pddl/problem_catcher.pddl");
+    abstract_arena.to_pddl("Pddl/problem_fugitive.pddl", "fugitive_catcher",
+                           "fugitive_catcher", true);
+    // kill(getpid());
 
     Mat img_arena = arena.plot_arena(800, 800, true);
 
     /**********************************************
      * TO MOVE
-     ***********************************************/
+    //  ***********************************************/
     // vector<string> f_path = abstract_arena.world_robots["Fugitive_1"]->plan;
 
-    // // cout << abstract_arena.world_free_cells["Cell_1"].cell->centroid->y<<endl;
+    // // // cout << abstract_arena.world_free_cells["Cell_1"].cell->centroid->y<<endl;
 
     // double fx_path[f_path.size() + 1];
     // double fy_path[f_path.size() + 1];
@@ -158,6 +158,7 @@ namespace student
     //     fx_path[i + 1] = abstract_arena.world_gates[path[3]].cell->centroid->x;
     //     fy_path[i + 1] = abstract_arena.world_gates[path[3]].cell->centroid->y;
     //     fth_path[i + 1] = fth_path[i + 1] + 10;
+    //     cout << fx_path[i + 1] << ":" << fy_path[i + 1] << endl;
     //   }
     // }
 

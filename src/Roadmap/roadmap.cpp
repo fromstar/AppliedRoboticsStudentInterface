@@ -1,6 +1,8 @@
 #include "roadmap.h"
 #include <vector>
 #include <sys/stat.h>  // used to create folders
+#include <iostream>
+#include <fstream>
 
 // #include <boost/geometry.hpp>
 // #include <boost/geometry/geometries/point_xy.hpp>
@@ -797,7 +799,6 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 			};
 		};
 	};
-	
 	// 2 Write connections among gates and cells.
 	for (map<string, World_node>::iterator it_g = world_gates.begin();
 		 it_g != world_gates.end(); ++it_g){
@@ -863,6 +864,10 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 				vector<string> fugitive_plans;
 
 				// make temporary folder for the plans.
+				// system("mkdir .tmp");
+				// l->add_event("Temporary folder for planning correctly "
+				// 				 "created");
+
 				int tmp_folder = mkdir(".tmp", 0777);
 				if (tmp_folder != 0){
 					l->add_event("Temporary folder for planning correctly "
@@ -939,10 +944,18 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 	// Write ending of the pddl file
 	pddl_file += "\n)";
 
-	FILE* pddl_out = fopen(path_pddl_problem_file.c_str(), "w");
-	fprintf(pddl_out, "%s", pddl_file.c_str());  //write files out
-	fclose(pddl_out);
-	l -> add_event("Ended Creation of pddl problem file.");
+	// FILE* pddl_out = fopen(path_pddl_problem_file.c_str(), "w");
+	// /***********************************FPRINTF CAUSA ERRORE PROCESS HAS DIED OCCHIO**********************/
+	// fprintf(pddl_out, "%s", pddl_file.c_str());  //write files out
+	// fclose(pddl_out);
+
+	ofstream myfile(path_pddl_problem_file.c_str());
+	if(myfile.is_open())
+	{
+		myfile << pddl_file.c_str();
+		myfile.close();
+		l -> add_event("Ended Creation of pddl problem file.");
+	}
 };
 
 void World_representation::info(){
