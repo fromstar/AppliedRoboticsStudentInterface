@@ -132,44 +132,45 @@ namespace student
     /**********************************************
      * TO MOVE
     //  ***********************************************/
-    // vector<string> f_path = abstract_arena.world_robots["Fugitive_1"]->plan;
+    vector<string> f_path = abstract_arena.world_robots["Fugitive_1"]->plan;
 
-    // // // cout << abstract_arena.world_free_cells["Cell_1"].cell->centroid->y<<endl;
+    // // cout << abstract_arena.world_free_cells["Cell_1"].cell->centroid->y<<endl;
 
-    // double fx_path[f_path.size() + 1];
-    // double fy_path[f_path.size() + 1];
-    // double fth_path[f_path.size() + 1];
+    double fx_path[f_path.size()];
+    double fy_path[f_path.size()];
+    double fth_path[f_path.size()];
 
-    // for (int i = 0; i < f_path.size(); i++)
-    // {
-    //   string word;
-    //   stringstream iss(f_path[i]);
-    //   vector<string> path;
-    //   while (iss >> word)
-    //     path.push_back(word);
-    //   path[3].resize(path[3].size() - 1);
 
-    //   fx_path[i] = abstract_arena.world_free_cells[path[2]].cell->centroid->x;
-    //   fy_path[i] = abstract_arena.world_free_cells[path[2]].cell->centroid->y;
-    //   fth_path[i] = 0;
+    for (int i = 0; i < f_path.size() -1; i++)
+    {
+      string word;
+      stringstream iss(f_path[i]);
+      vector<string> path;
+      while (iss >> word)
+        path.push_back(word);
+      path[3].resize(path[3].size() - 1);
 
-    //   if (i == f_path.size() - 1)
-    //   {
-    //     fx_path[i + 1] = abstract_arena.world_gates[path[3]].cell->centroid->x;
-    //     fy_path[i + 1] = abstract_arena.world_gates[path[3]].cell->centroid->y;
-    //     fth_path[i + 1] = fth_path[i + 1] + 10;
-    //     cout << fx_path[i + 1] << ":" << fy_path[i + 1] << endl;
-    //   }
-    // }
+      fx_path[i] = abstract_arena.world_free_cells[path[2]].cell->centroid->x;
+      fy_path[i] = abstract_arena.world_free_cells[path[2]].cell->centroid->y;
+      fth_path[i] = 0;
 
-    // int pidx;
-    // curve c;
-    // for (int i = 0; i < f_path.size(); i++)
-    // {
-    //   tie(pidx, c) = dubins(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1], fy_path[i + 1], fth_path[i + 1], 10);
-    //   if (pidx > 0)
-    //     img_arena = plotdubins(c, "r", "g", "b", img_arena);
-    // }
+      if (i == f_path.size() - 2)
+      {
+        fx_path[i + 1] = abstract_arena.world_gates[path[3]].cell->centroid->x;
+        fy_path[i + 1] = abstract_arena.world_gates[path[3]].cell->centroid->y;
+        fth_path[i + 1] = fth_path[i + 1] + 10;
+        cout << fx_path[i + 1] << ":" << fy_path[i + 1] << endl;
+      }
+    }
+
+    int pidx;
+    curve c;
+    for (int i = 0; i < f_path.size() -1; i++)
+    {
+      tie(pidx, c) = dubins(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1], fy_path[i + 1], fth_path[i + 1], 10);
+      if (pidx > 0)
+        img_arena = plotdubins(c, "r", "g", "b", img_arena);
+    }
     /**********************************************/
     imshow("Arena", img_arena);
     waitKey(0);
