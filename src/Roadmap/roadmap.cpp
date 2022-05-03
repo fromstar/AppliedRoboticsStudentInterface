@@ -1021,6 +1021,7 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 					}
 
 					fugitive_plans.pop_back();
+					fugitive_plans.pop_back();
 					all_plans.push_back(fugitive_plans);
 				};
 
