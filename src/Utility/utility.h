@@ -156,6 +156,16 @@ typedef struct polygon{
   	void info();
 }polygon;
 
+typedef struct list_of_polygons
+{
+	polygon *head = NULL;
+	polygon *tail = NULL;
+	int size = 0;
+
+	void add_polygon(polygon *p);
+	void append_other_list(list_of_polygons *p);
+} list_of_polygons;
+
 double sinc(double);
 double mod2pi(double);
 double rangeSymm(double);

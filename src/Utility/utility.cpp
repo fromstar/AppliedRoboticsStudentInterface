@@ -561,6 +561,34 @@ void polygon::info()
 	centroid->Print();
 };
 
+void list_of_polygons::add_polygon(polygon *p)
+{
+	if (head == NULL)
+	{
+		head = p;
+		tail = head;
+		return;
+	}
+	tail->pnext = p;
+	tail = tail->pnext;
+	size += 1;
+};
+
+void list_of_polygons::append_other_list(list_of_polygons *p)
+{
+	if (head == NULL)
+	{
+		head = p->head;
+		tail = p->tail;
+	}
+	else
+	{
+		tail->pnext = p->head;
+		tail = p->tail;
+	};
+	size += p->size;
+};
+
 string exec(const char *cmd)
 {
 	std::array<char, 128> buffer;

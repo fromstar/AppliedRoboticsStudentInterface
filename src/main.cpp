@@ -177,9 +177,12 @@ void test()
 		test_map.robot,
 		log_test);
 	abstract_arena.info();
+	
+	/*
 	abstract_arena.to_pddl("Pddl/problem_catcher.pddl");
 	abstract_arena.to_pddl("Pddl/problem_fugitive.pddl", "fugitive_catcher",
 						   "fugitive_catcher", true);
+	*/
 
 	// test_map.reduce_arena();
 
@@ -189,7 +192,8 @@ void test()
 	vector<string> f_path = abstract_arena.world_robots["Fugitive_1"]->plan;
 
 	// cout << abstract_arena.world_free_cells["Cell_1"].cell->centroid->y<<endl;
-
+	
+	/*
 	double fx_path[f_path.size()+1];
 	double fy_path[f_path.size()+1];
 	double fth_path[f_path.size()+1];
@@ -219,10 +223,12 @@ void test()
 	curve c;	
 	for(int i=0;i<f_path.size();i++)
 	{
-		tie(pidx,c) = dubins(fx_path[i],fy_path[i],fth_path[i],fx_path[i+1],fy_path[i+1],fth_path[i+1],10);
+		tie(pidx,c) = dubins(fx_path[i], fy_path[i], fth_path[i], fx_path[i+1],
+							 fy_path[i+1], fth_path[i+1], 10);
 		if(pidx > 0)
 			img_arena = plotdubins(c, "r","g","b", img_arena);
 	}
+	*/
 
 	/*End draw dubins path*/
 
