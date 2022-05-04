@@ -77,7 +77,6 @@ void World_representation::add_cell(World_node cell, bool gate)
  */
 World_representation::World_representation(list_of_polygons *cells,
 										   list_of_polygons *gate_cells,
-										   map<string, Robot *> agents,
 										   logger *log)
 {
 	l = log;
@@ -109,35 +108,7 @@ World_representation::World_representation(list_of_polygons *cells,
 
 	l->add_event("Added gates cells to world representation");
 
-	world_robots = agents;
-
-	l->add_event("Added robot agents to world representation");
 	l->add_event("End world representation creation");
-};
-
-/**
- * This function runs the planner and saves it to the specified plan file.
- * The default location of the plan is the current working directory and
- * the filename is MyPlan.plan
- * @param planner_path: string. Is the path in which the callable executable
- * file of the planner is located.
- * @param domain_file_path: string. Is the path of the domain file to use.
- * @patma problem_file_path: string. Is the path of the problem file to use.
- */
-void run_planner(string planner_path, string domain_file_path,
-				 string problem_file_path, string plan_path = "MyPlan.plan")
-{
-
-	cout << "called planner for: " << planner_path << endl
-		 << domain_file_path
-		 << endl
-		 << problem_file_path << endl
-		 << plan_path << endl;
-
-	string command = "exec " + planner_path + " --alias lama-first " +
-					 "--plan-file " + plan_path + " " +
-					 domain_file_path + " " + problem_file_path;
-	system(command.c_str());
 };
 
 /**
@@ -153,6 +124,9 @@ void run_planner(string planner_path, string domain_file_path,
  * @param fugitive: bool. Tells whether or not the problem file has been
  * created for a fugitive-type agent. This flag changes the goal to achieve.
  */
+
+
+/*
 void World_representation::to_pddl(string path_pddl_problem_file,
 								   string problem_name,
 								   string domain_name,
@@ -276,15 +250,6 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 				// The safest one -> must find way to interlace catcher and gate
 				// distance
 
-				/*
-				int escape_gate = ((rand()%world_gates.size()-1))+1;
-				map<string, World_node>::iterator it_g = world_gates.begin();
-				for(int i=0; i < escape_gate; i++){++it_g;};
-				// cout << it_r -> first.c_str() << " " << it_g -> first.c_str() << endl;
-				pddl_file += "\t\t\t( is_in " + it_r->first + " " +
-							 it_g->first + " )\n";
-				*/
-
 				// make variable to store the best_plan.
 				vector<string> fugitive_plans;
 
@@ -405,7 +370,7 @@ void World_representation::to_pddl(string path_pddl_problem_file,
 		pddl_out.close();
 	}
 };
-
+*/
 void World_representation::info()
 {
 	cout << "World representation contains:\n\t"
@@ -413,7 +378,5 @@ void World_representation::info()
 		 << world_free_cells.size() << " Cells\n\t"
 		 << "- "
 		 << world_gates.size() << " Gates\n\t"
-		 << "- "
-		 << world_robots.size() << " Robots"
 		 << endl;
 };

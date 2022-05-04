@@ -3,7 +3,6 @@
 
 #include "../Utility/utility.h"
 #include "../Log/logger.h"
-#include "../Robot_manager/robots.h"
 
 /**
  * \struct World_node
@@ -37,15 +36,17 @@ typedef struct World_representation
 	logger *l = NULL;
 	map<string, World_node> world_free_cells;
 	map<string, World_node> world_gates;
-	map<string, Robot *> world_robots;
+	// map<string, Robot *> world_robots;
 
 	World_representation(list_of_polygons *cells, list_of_polygons *gate_cells,
-						 map<string, Robot *> agents, logger *log = new logger());
+						 logger *log = new logger());
 	void add_cell(World_node cell, bool gate = false);
+	/*
 	void to_pddl(string path_pddl_problem_file = "problem.pddl",
 				 string problem_name = "fugitive_catcher",
 				 string domain_name = "fugitive_catcher",
 				 bool fugitive_agent = false);
+	*/
 	void info();
 
 } World_representation;

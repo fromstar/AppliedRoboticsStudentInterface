@@ -1,0 +1,44 @@
+#include "robot_manager.h"
+
+void robot_manager::add_robot(Robot* r, string f_path){
+	switch(r->type){
+		case catcher:
+			catchers[r->ID] = new robot_catcher(r, f_path);
+			break;
+		case fugitive:
+			fugitives[r->ID] = new robot_fugitive(r, f_path);
+			break;
+		default:
+			// All robots not fugitives are treated as potential thrests
+			// hence catchers
+			catchers[r->ID] = new robot_catcher(r, f_path);
+			break;
+	};
+
+};
+
+void robot_manager::parse_map_robots(map<string, Robot*> map_r, string f_path){
+	for( map<string, Robot*>::iterator it = map_r.begin(); it != map_r.end();
+		 ++it){
+		add_robot(it->second, f_path);
+	};
+};
+
+void robot_manager::trade_fugitives(){
+	if (fugitives.size() == catchers.size()){
+		map<string, robot_fugitive*>::iterator it_f = fugitives.begin();
+		map<string, robot_catcher*>::iterator it_c = catchers.begin();
+		
+		// it_f = ++it_f;
+		// it_c = ++it_c;
+
+		it_f -> second -> add_antagonist(it_c->second->self);
+		it_c -> second -> add_antagonist(it_f->second->self);
+	};
+};
+
+void robot_manager::info(){
+	cout << "Robot Menager info:" << endl
+		 << "\tCatchers available: " << catchers.size() << endl
+		 << "\tFugitives available: " << fugitives.size() << endl;
+};

@@ -174,10 +174,19 @@ void test()
 	World_representation abstract_arena = World_representation(
 		test_map.free_space,
 		test_map.gates,
-		test_map.robot,
 		log_test);
 	abstract_arena.info();
 	
+	robot_manager rm;	
+
+	rm.parse_map_robots(test_map.robot);
+	map<string, robot_fugitive*>::iterator it;
+	it = rm.fugitives.begin();
+	it -> second -> make_pddl_domain_file(abstract_arena);
+	it -> second -> make_pddl_problem_file(abstract_arena);
+	rm.info();
+	// rm.trade_fugitives();
+
 	/*
 	abstract_arena.to_pddl("Pddl/problem_catcher.pddl");
 	abstract_arena.to_pddl("Pddl/problem_fugitive.pddl", "fugitive_catcher",
@@ -189,7 +198,7 @@ void test()
 	Mat img_arena = test_map.plot_arena(800, 800, true);
 
 	/*Draw dubins path*/
-	vector<string> f_path = abstract_arena.world_robots["Fugitive_1"]->plan;
+	// vector<string> f_path = abstract_arena.world_robots["Fugitive_1"]->plan;
 
 	// cout << abstract_arena.world_free_cells["Cell_1"].cell->centroid->y<<endl;
 	
