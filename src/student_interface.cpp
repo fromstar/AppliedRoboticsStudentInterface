@@ -159,7 +159,6 @@ namespace student
         fx_path[i + 1] = abstract_arena.world_gates[path[3]].cell->centroid->x;
         fy_path[i + 1] = abstract_arena.world_gates[path[3]].cell->centroid->y;
         fth_path[i + 1] = fth_path[i + 1] + 10;
-        cout << fx_path[i + 1] << ":" << fy_path[i + 1] << endl;
       }
     }
 
@@ -167,9 +166,15 @@ namespace student
     curve c;
 
     tie(pidx, c) = dubins(abstract_arena.world_robots["Fugitive_1"]->location->x, abstract_arena.world_robots["Fugitive_1"]->location->y, 0, fx_path[0], fy_path[0], fth_path[0], 10);
+
+    /*CHECK IF THE DUBINS CURVE INTERSECT WITH ARENA OR OBSTACLES*/
+    // point_list * pts;
+    // double_list *t;
+    // tie(pts,t) = intersCircleLine();
+
     if (pidx > 0)
         img_arena = plotdubins(c, "r", "g", "b", img_arena);
-
+      
     for (int i = 0; i < f_path.size(); i++)
     {
       tie(pidx, c) = dubins(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1], fy_path[i + 1], fth_path[i + 1], 10);

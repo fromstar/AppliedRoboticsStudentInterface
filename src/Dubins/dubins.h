@@ -17,8 +17,9 @@
 using namespace cv;
 using namespace std;
 
+// k = angle curvature -> 1/k radius curvature
 struct arc{
-	double x0, y0, th0, k, L, xf, yf, thf;
+	double x0, y0, th0, k, L, xf, yf, thf, xc, yc, r;
 }typedef arc;
 
 struct curve{
@@ -37,7 +38,7 @@ tuple <bool, double, double, double> LSR(double, double, double);
 tuple <bool, double, double, double> RSL(double, double, double);
 tuple <bool, double, double, double> RLR(double, double, double);
 tuple <bool, double, double, double> LRL(double, double, double);
-tuple <double, double, double> circline(double, double, double, double, double);
+tuple <double, double, double, double, double, double> circline(double, double, double, double, double, bool);
 Mat plotarc(arc, string, Mat);
 Mat plotdubins(curve, string, string, string, Mat );
 void python_plot(curve, string, string, string);
@@ -45,5 +46,6 @@ tuple <point_list *, double_list *> intersLineLine(double, double, double, doubl
 double cross2D(double *, double *);
 double dot2D(double *, double *);
 tuple <point_list *, double_list *> intersCircleLine(double, double, double, double, double, double, double);
+tuple <double, double, double> get_circle_center(double, double, double, double, double, double);
 
 #endif
