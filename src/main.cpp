@@ -162,10 +162,10 @@ void test()
 
 	log_test->add_event("Created Roadmap");
 
-	Robot *c_1 = new Robot("Catcher_1", catcher);
+	Robot *c_1 = new Robot("catcher_1", catcher);
 	test_map.add_robot(c_1);
 
-	Robot *f_1 = new Robot("Fugitive_1", fugitive);
+	Robot *f_1 = new Robot("fugitive_1", fugitive);
 	test_map.add_robot(f_1);
 
 	test_map.set_robot_position(c_1->ID, 1, -2);
@@ -184,7 +184,7 @@ void test()
 	it = rm.fugitives.begin();
 	it -> second -> make_pddl_domain_file(abstract_arena);
 	it -> second -> make_pddl_problem_file(abstract_arena);
-	rm.info();
+	rm.info(true);
 	// rm.trade_fugitives();
 
 	/*

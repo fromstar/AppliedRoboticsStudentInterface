@@ -118,6 +118,7 @@ void Robot::info()
 	// Print plan if available
 	if (plan.size() != 0)
 	{
+		cout << "Plan:" << endl;
 		for (int i = 0; i < plan.size(); i++)
 		{
 			cout << "\t- " << i << ": " << plan[i] << endl;
@@ -336,32 +337,24 @@ void robot_fugitive::make_pddl_problem_file(World_representation wr){
 				}else{
 					cout << "Unable to open output stream" << endl;
 				};
-				run_planner("/home/" + string(getenv("USER")) +
-							"/.planutils/packages/downward/run",
-							filesPath + "/" + "domain_" + self->ID + ".pddl",
-							filesPath + "/" + tmp_name + ".pddl",
-							filesPath + "/" + tmp_name + ".plan");
-				string tmp_line;
-				ifstream pddl_in(filesPath + "/" + tmp_name + ".plan");
-				vector<string> tmp_plan;
-				if (pddl_in.is_open()){
-					while(pddl_in){
-						getline(pddl_in, tmp_line);
-						tmp_plan.push_back(tmp_line);
-					};
-					tmp_plan.pop_back();
-					all_plans.push_back(tmp_plan);
-				}else{
-					cout << "Unable to open input plan file" << endl;
-				};
+				all_plans.push_back(make_plan(false, "domain_" + self->ID,
+											  tmp_name, tmp_name));
 			};
 			int idx_least = 0;
+
 			for(int i=0; i<all_plans.size(); i++){
 				if (all_plans[i].size() < all_plans[idx_least].size()){
 					idx_least = i;
 				};
 			};
+
+			// identify desire and write goal
+			it_1 = wr.world_gates.begin();
+			for (int i=0; i<idx_least; i++){
+				++it_1;
+			};
 			self->set_plan(all_plans[idx_least]);
+			self->set_desire("( is_in "+ self->ID + " " + it_1->first + " )");
 			break;
 		};
 		case undeterministic:{
@@ -390,12 +383,35 @@ void robot_fugitive::make_pddl_problem_file(World_representation wr){
 
 };
 
-void robot_fugitive::make_plan(){
+vector<string> robot_fugitive::make_plan(bool apply, string domain_name, 
+										 string problem_name,
+										 string plan_name){
 	run_planner("/home/" + string(getenv("USER")) +
 				"/.planutils/packages/downward/run",
-				filesPath + "/" + "domain_" + self->ID + ".pddl",
-				filesPath + "/" + "problem_" + self->ID + ".pddl",
-				filesPath + "/" + self->ID + ".plan");
+				filesPath + "/" + domain_name + ".pddl",
+				filesPath + "/" + problem_name + ".pddl",
+				filesPath + "/" + plan_name + ".plan");
+	string tmp_line;
+	ifstream pddl_in(filesPath + "/" + plan_name + ".plan");
+	vector<string> tmp_plan;
+	if (pddl_in.is_open()){
+		while(pddl_in){
+			getline(pddl_in, tmp_line);
+			tmp_plan.push_back(tmp_line);
+		};
+	}else{
+		cout << "Unable to open input plan file, probably no plan found"
+			 << endl;
+	};
+	
+	// using ifstream returns an empty line after the last one in file
+	tmp_plan.pop_back(); // remove empty line
+	tmp_plan.pop_back(); // remove cost line
+
+	if (apply){
+		self->set_plan(tmp_plan);
+	};
+	return tmp_plan;
 };
 
 /**
@@ -411,7 +427,7 @@ void robot_fugitive::info(){
 			cout << "\t- " << antagonists[i]->ID << endl;
 		};
 	};
-	cout << endl << "Path to PDDL files: " << filesPath << endl;
+	cout << "Path to PDDL files: " << filesPath << endl;
 };
 
 /**
@@ -454,7 +470,7 @@ void robot_catcher::info(){
 			cout << "\t- " << antagonists[i]->ID << endl;
 		};
 	};
-	cout << endl << "Path to PDDL files: " << filesPath << endl;
+	cout << "Path to PDDL files: " << filesPath << endl;
 };
 
 /**

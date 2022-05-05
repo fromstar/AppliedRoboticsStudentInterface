@@ -37,8 +37,25 @@ void robot_manager::trade_fugitives(){
 	};
 };
 
-void robot_manager::info(){
+void robot_manager::info(bool detailed){
 	cout << "Robot Menager info:" << endl
 		 << "\tCatchers available: " << catchers.size() << endl
 		 << "\tFugitives available: " << fugitives.size() << endl;
+	if (detailed){
+		map<string, robot_fugitive*>::iterator it_f;
+		map<string, robot_catcher*>::iterator it_c;
+
+		cout << string(80, '-') << endl;
+		// print info for fugitives
+		for (it_f=fugitives.begin(); it_f != fugitives.end(); ++it_f){
+			it_f -> second -> info();
+			cout << endl;
+		};
+		// print info for catchers
+		for (it_c=catchers.begin(); it_c != catchers.end(); ++it_c){
+			it_c -> second -> info();
+			cout << endl;
+		};
+		cout << string(80, '-') << endl;
+	};
 };

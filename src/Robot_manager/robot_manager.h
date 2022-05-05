@@ -12,7 +12,7 @@ typedef struct robot_manager{
 	void parse_map_robots(map<string, Robot*> map_r, string f_path=".tmp");
 	void add_robot(Robot* r, string f_path=".tmp");
 	void trade_fugitives();
-	void info();
+	void info(bool detailed=false);
 }robot_manager;
 
 #endif
