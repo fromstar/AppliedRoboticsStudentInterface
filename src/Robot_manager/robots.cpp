@@ -2,9 +2,22 @@
 #include <sys/stat.h>
 #include <../boost/geometry.hpp>
 #include <fstream>
+#include <bits/stdc++.h>
 
 using pt = boost::geometry::model::d2::point_xy<double>;
 using Polygon_boost = boost::geometry::model::polygon<pt>;
+
+vector<string> string_to_vector(string sentence, string token){
+	stringstream ss(sentence);
+	string word;
+	vector<string> tmp;
+	while( ss >> word){
+		if (word != token){
+			tmp.push_back(word);
+		};
+	};
+	return tmp;
+};
 
 /**
  * \fun 
@@ -184,7 +197,7 @@ void robot_fugitive::write_file(string file_name, string what_to_write,
 
 };
 
-void robot_fugitive::make_pddl_domain_file(World_representation wr){
+string robot_fugitive::make_pddl_domain_file(World_representation wr){
 	// Define name of the domain
 	string domain_name = "domain_" + self->ID;
 
@@ -231,9 +244,10 @@ void robot_fugitive::make_pddl_domain_file(World_representation wr){
 	// make folder if it doesn't exist
 	int tmp_folder = mkdir(filesPath.c_str(), 0777);
 	write_file(domain_name, domain_file, ".pddl");
+	return domain_name;
 };
 
-void robot_fugitive::make_pddl_problem_file(World_representation wr){
+string robot_fugitive::make_pddl_problem_file(World_representation wr){
 	int tmp_folder = mkdir(filesPath.c_str(), 0777);
 
 	// Define name of the problem
@@ -357,6 +371,7 @@ void robot_fugitive::make_pddl_problem_file(World_representation wr){
 			};
 			self->set_plan(all_plans[idx_least]);
 			self->set_desire("( is_in "+ self->ID + " " + it_1->first + " )");
+			return problem_name + "_" + it_1->first;
 			break;
 		};
 		case undeterministic: {
@@ -375,6 +390,7 @@ void robot_fugitive::make_pddl_problem_file(World_representation wr){
 			write_file(tmp_problem_name, tmp_file, ".pddl");
 			make_plan(true, "domain_" + self->ID, tmp_problem_name,
 					  tmp_problem_name);
+			return tmp_problem_name;
 			break;
 		};
 		case aware: {
@@ -383,7 +399,7 @@ void robot_fugitive::make_pddl_problem_file(World_representation wr){
 				cout << "No antagonist found, use method \"trade_fugitives()\""
 						" on the robot manager if any antagonist exists"
 					 << endl;
-				return;
+				return "NaN";
 			};
 
 			// Chose the gate which distance is less or equal than the
@@ -475,6 +491,7 @@ void robot_fugitive::make_pddl_problem_file(World_representation wr){
 				++it_g;
 			};
 			self->set_desire("( is_in " + self->ID + " " + it_g->first + " )");
+			return problem_name + "_" + it_g->first;
 			break;
 		};
 
@@ -544,16 +561,172 @@ void robot_catcher::add_antagonist(Robot* r_ant){
 	antagonists.push_back(r_ant);
 };
 
-bool robot_catcher::make_pddl_domain_file(World_representation wr){
-	return true;
+void robot_catcher::write_file(string file_name, string what_to_write,
+		  		  			   string extension){
+	ofstream file_out(filesPath + "/" + file_name + extension);
+	if (file_out.is_open()){
+		file_out << what_to_write;
+		file_out.close();
+	}else{
+		cout << "Unable to open output stream" << endl;
+	};
 };
 
-bool robot_catcher::make_pddl_problem_file(World_representation wr){
-	return true;
+void robot_catcher::make_pddl_files(World_representation wr,
+									behaviour_fugitive b_ant){
+	if (antagonists.size() == 0){
+		cout << "No antagonists assigned to " << self->ID
+			 << " try running the method \"trade_fugitives()\" of the struct"
+			 << " robot manager." << endl;
+		return;
+	};
+
+	// Write pddl header
+	string pddl_domain = "(define (domain domain_" + self->ID + ")\n";
+
+	// Write requirements
+	pddl_domain += "\t(:requirements\n"
+				   "\t\t:strips :typing :negative-preconditions\n"
+				   "\t\t:disjunctive-preconditions\n"
+				   "\t\t:conditional-effects\n"
+				   "\t)\n";
+	
+	// create plans for each antagonists -> used to make an aware decision
+	for(int i=0; i<antagonists.size(); i++){
+		robot_fugitive ghost_fugitive = robot_fugitive(antagonists[i],
+													   ".tmp", b_ant);
+		// Suppose that the catcher is the only threat
+		ghost_fugitive.add_antagonist(self);
+		string g_domain_name = ghost_fugitive.make_pddl_domain_file(wr);
+		string g_problem_name = ghost_fugitive.make_pddl_problem_file(wr);
+		string id_ghost = ghost_fugitive.self->ID;
+		antagonists_plans[id_ghost]=ghost_fugitive.make_plan(false,
+															 g_domain_name,
+															 g_problem_name,
+															 g_problem_name);
+	};
+
+	set<string> cells;
+	map<string, vector<string>>::iterator it;
+
+	// find subset of cells used in the plans of the antagonists
+	for(it=antagonists_plans.begin(); it != antagonists_plans.end(); ++it){
+		// iterate until last step of plan to avoid to misclassify the gate
+		for(int i=0; i<it->second.size()-1; it++){
+			vector<string> temp = string_to_vector(it->second[i], " ");
+			for(int j=temp.size()-1; j > temp.size()-3; j--){
+				cells.insert(temp[j]);
+			};
+		};
+	};
+
+	// write types
+	pddl_domain += "\t(:types\n"
+				   "\t\tfugitive catcher - robot\n";
+	for(int i=0; i<antagonists.size(); i++){
+		pddl_domain += "\t\t" + antagonists[i]->ID + " - fugitive\n";
+	};
+	pddl_domain += "\t\tcell gate - location\n";
+	for(set<string>::iterator it_s=cells.begin(); it_s != cells.end(); ++it_s){
+		pddl_domain += "\t\t" + *it_s + " - cell\n";
+	};
+	pddl_domain += "\t)\n";
+
+	// write predicates
+	pddl_domain += "\t(:predicates\n"
+				   "\t\t(is_in ?r - robot ?loc - location)\n"
+				   "\t\t(connected ?loc_start - location ?loc_end - location)\n"
+				   "\t\t(captured ?r - fugitive)\n"
+				   "\t)\n";
+
+	// write actions
+	pddl_domain += "\t(:action move\n"
+				   "\t\t:parameters\n"
+				   "\t\t\t(\n"
+				   "\t\t\t?r_c - catcher\n"
+				   "\t\t\t?loc_start - location\n"
+				   "\t\t\t?loc_end - location\n";
+	for(int i=0; i<antagonists.size(); i++){
+		vector<string> tmp_s = string_to_vector(antagonists[i]->ID, "_");
+		pddl_domain += "\t\t\t?r_f_" + tmp_s[tmp_s.size()-1] + " - " + 
+					   antagonists[i]->ID + "\n";
+	};
+
+	for(set<string>::iterator it_s=cells.begin(); it_s != cells.end(); ++it_s){
+		vector<string> tmp_s = string_to_vector(*it_s, "_");
+		pddl_domain += "\t\t\t?c_" + tmp_s[tmp_s.size()-1] +
+					   " - " + *it_s + "\n";
+	};
+	pddl_domain += "\t\t\t)\n";
+
+	// write preconditions
+	pddl_domain += "\t\t:precondition\n"
+				   "\t\t\t(and\n"
+				   "\t\t\t\t(is_in ?r_c ?loc_start)\n"
+				   "\t\t\t\t(or\n"
+				   "\t\t\t\t\t( connected ?loc_start ?loc_end )\n"
+				   "\t\t\t\t\t( connected ?loc_end ?loc_start )\n"
+				   "\t\t\t\t)\n"
+				   "\t\t\t)\n";
+
+	// write effects
+	pddl_domain += "\t\t:effect\n"
+				   "\t\t\t(and\n"
+				   "\t\t\t\t( not ( is_in ?r_c ?loc_start ) )\n"
+				   "\t\t\t\t( is_in ?r_c ?loc_end )\n";
+	for(it=antagonists_plans.begin(); it != antagonists_plans.end(); ++it){
+		pddl_domain += "\t\t\t\t; Plan for fugitive: " + it->first;
+		// make a condition for each step of the plan
+		vector<string> tmp_s = string_to_vector(it->first, "_");
+		for(int i=0; i<it->second.size()-1; i++){
+			vector<string> tmp_plan_p1 = string_to_vector(it->second[i], " ");
+			vector<string> tmp_plan_p2 = string_to_vector(
+											tmp_plan_p1[tmp_plan_p1.size()-1],
+											")");
+			vector<string> cell_s = string_to_vector(tmp_plan_p1[tmp_plan_p1.size()-2], "_");
+			vector<string> cell_e = string_to_vector(tmp_plan_p2[0], "_");
+
+			pddl_domain += "\t\t\t\t(when\n"
+						   "\t\t\t\t\t(is_in ?r_f_" + tmp_s[tmp_s.size()-1] +
+						   " ?c_" + cell_s[cell_s.size()-1] + " )\n"
+						   "\t\t\t\t\t(and\n"
+						   "\t\t\t\t\t\t( is_in ?r_f_" + tmp_s[tmp_s.size()-1]+
+						   " ?c_" + cell_e[cell_e.size()-1] + " )\n"
+						   "\t\t\t\t\t\t( not ( is_in ?r_f_" +
+						   tmp_s[tmp_s.size()-1] + " ?c_" +
+						   cell_s[cell_s.size()-1] + " ) )"
+						   "\n\t\t\t\t\t)\n"
+						   "\t\t\t\t\t)\n";
+			pddl_domain += "\t\t\t\t)\n";
+		};
+	};
+	pddl_domain += "\t\t\t)\n";
+	pddl_domain += "\t)\n";
+
+	pddl_domain += "\t(:action capture\n"
+				   "\t\t:parameters (?r_catcher - catcher "
+				   		"?r_fugitive - fugitive ?loc - cell)\n"
+					"\t\t:precondition\n"
+					"\t\t\t(and\n"
+					"\t\t\t\t( is_in ?r_catcher ?loc)\n"
+					"\t\t\t\t( is_in ?r_fugitive ?loc)\n"
+					"\t\t\t)\n"
+					"\t\t:effect ( captured ?r_fugitive)\n";
+	pddl_domain += "\t)\n";
+
+	// Write end of pddl domain
+	pddl_domain += "\n)";
+
+	// Write domain file to disk
+	int tmp_folder = mkdir(filesPath.c_str(), 0777);
+	write_file("domain_" + self->ID, pddl_domain, ".pddl");
 };
 
-bool robot_catcher::make_plan(){
-	return true;
+// bool robot_catcher::make_pddl_problem_file(World_representation wr){
+// 	return true;
+// };
+
+void robot_catcher::make_plan(){
 };
 
 /**

@@ -115,8 +115,8 @@ typedef struct robot_fugitive {
   // Methods
   void add_antagonist(Robot* r_ant);
   void set_behaviour(behaviour_fugitive b);
-  void make_pddl_domain_file(World_representation wr);
-  void make_pddl_problem_file(World_representation wr);
+  string make_pddl_domain_file(World_representation wr);
+  string make_pddl_problem_file(World_representation wr);
   void write_file(string file_name, string what_to_write,
 		  		  string extension=".pddl");
   vector<string> make_plan(bool apply=false, string domain_name="domain",
@@ -146,15 +146,18 @@ typedef struct robot_fugitive {
 typedef struct robot_catcher {
   Robot *self = NULL;
   vector<Robot*> antagonists;
+  map<string, vector<string>> antagonists_plans;
   string filesPath;
   
   robot_catcher(Robot* _self, string path=".tmp");
 
   // Methods
   void add_antagonist(Robot* r_ant);
-  bool make_pddl_domain_file(World_representation wr);
-  bool make_pddl_problem_file(World_representation wr);
-  bool make_plan();
+  void write_file(string file_name, string what_to_write,
+		  		  string extension=".pddl");
+  void make_pddl_files(World_representation wr,
+		  			   behaviour_fugitive b_ant=least_steps);
+  void make_plan();
   void info();
 } robot_catcher;
 
@@ -164,4 +167,6 @@ typedef struct robot_catcher {
  */
 void run_planner(string planner_path, string domain_file_path,
 				 string problem_file_path, string plan_path);
+
+vector<string> string_to_vector(string sentence, string token);
 #endif
