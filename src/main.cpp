@@ -182,11 +182,15 @@ void test()
 	rm.parse_map_robots(test_map.robot);
 	rm.trade_fugitives();
 
-	map<string, robot_fugitive*>::iterator it;
+	map<string, robot_catcher*>::iterator it;
+	/*
 	it = rm.fugitives.begin();
 	it->second->set_behaviour(aware);
 	it -> second -> make_pddl_domain_file(abstract_arena);
 	it -> second -> make_pddl_problem_file(abstract_arena);
+	*/
+	it = rm.catchers.begin();
+	it->second -> make_pddl_files(abstract_arena);
 	rm.info(true);
 
 	/*
