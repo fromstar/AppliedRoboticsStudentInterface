@@ -116,6 +116,8 @@ typedef struct robot_fugitive {
   void set_behaviour(behaviour_fugitive b);
   void make_pddl_domain_file(World_representation wr);
   void make_pddl_problem_file(World_representation wr);
+  void write_file(string file_name, string what_to_write,
+		  		  string extension=".pddl");
   vector<string> make_plan(bool apply=false, string domain_name="domain",
 		  				   string problem_name="problem",
 						   string plan_name="MyPlan");

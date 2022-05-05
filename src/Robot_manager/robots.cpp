@@ -170,6 +170,18 @@ void robot_fugitive::set_behaviour(behaviour_fugitive b){
 	behaviour = b;
 };
 
+void robot_fugitive::write_file(string file_name, string what_to_write,
+								string extension){
+	ofstream file_out(filesPath + "/" + file_name + extension);
+	if (file_out.is_open()){
+		file_out << what_to_write;
+		file_out.close();
+	}else{
+		cout << "Unable to open output stream" << endl;
+	};
+
+};
+
 void robot_fugitive::make_pddl_domain_file(World_representation wr){
 	// Define name of the domain
 	string domain_name = "domain_" + self->ID;
@@ -216,13 +228,7 @@ void robot_fugitive::make_pddl_domain_file(World_representation wr){
 	
 	// make folder if it doesn't exist
 	int tmp_folder = mkdir(filesPath.c_str(), 0777);
-	ofstream pddl_out(filesPath + "/" + domain_name + ".pddl");
-	if (pddl_out.is_open()){
-		pddl_out << domain_file;
-		pddl_out.close();
-	}else{
-		cout << "Unable to open output stream" << endl;
-	};
+	write_file(domain_name, domain_file, ".pddl");
 };
 
 void robot_fugitive::make_pddl_problem_file(World_representation wr){
@@ -330,13 +336,7 @@ void robot_fugitive::make_pddl_problem_file(World_representation wr){
 				string tmp_out = problem_file + "\t\t( is_in " + self->ID +
 								 " " + it_1->first + " )\n\t)\n\n)";
 				string tmp_name = problem_name + "_" + it_1->first;
-				ofstream pddl_out(filesPath + "/" + tmp_name + ".pddl");
-				if (pddl_out.is_open()){
-					pddl_out << tmp_out;
-					pddl_out.close();
-				}else{
-					cout << "Unable to open output stream" << endl;
-				};
+				write_file(tmp_name, tmp_out, ".pddl");
 				all_plans.push_back(make_plan(false, "domain_" + self->ID,
 											  tmp_name, tmp_name));
 			};
@@ -357,10 +357,25 @@ void robot_fugitive::make_pddl_problem_file(World_representation wr){
 			self->set_desire("( is_in "+ self->ID + " " + it_1->first + " )");
 			break;
 		};
-		case undeterministic:{
+		case undeterministic: {
+			cout << "In undeterministic branch" << endl;
+			// chose gate randomly
+			srand(time(0));
+			int idx_gate = rand()%wr.world_gates.size();
+			map<string, World_node>::iterator it_g=wr.world_gates.begin();
+			for (int i=0; i<idx_gate; i++){
+				++it_g;
+			};
+			self->set_desire("( is_in " + self->ID + " " + it_g->first + " )");
+			string tmp_file = problem_file + "\t\t" + self->desire +
+							  "\n\t)\n\n)";
+			string tmp_problem_name = problem_name + "_" + it_g->first;
+			write_file(tmp_problem_name, tmp_file, ".pddl");
+			make_plan(true, "domain_" + self->ID, tmp_problem_name,
+					  tmp_problem_name);
 			break;
 		};
-		case aware:{
+		case aware: {
 			break;
 		};
 
