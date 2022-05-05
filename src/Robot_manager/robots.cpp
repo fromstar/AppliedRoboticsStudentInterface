@@ -157,9 +157,11 @@ string robot_fugitive::get_behaviour(){
  * @param path: string. Is the path in which the robot pddl files will be
  * created.
  */
-robot_fugitive::robot_fugitive(Robot* _self, string path){
+robot_fugitive::robot_fugitive(Robot* _self, string path,
+							   behaviour_fugitive b){
 	self = _self;
 	filesPath = path;
+	behaviour = b;
 };
 
 void robot_fugitive::add_antagonist(Robot* r_ant){
@@ -376,26 +378,107 @@ void robot_fugitive::make_pddl_problem_file(World_representation wr){
 			break;
 		};
 		case aware: {
+			// Check if behaviour can be done
+			if (antagonists.size() == 0){
+				cout << "No antagonist found, use method \"trade_fugitives()\""
+						" on the robot manager if any antagonist exists"
+					 << endl;
+				return;
+			};
+
+			// Chose the gate which distance is less or equal than the
+			// distance from the fugitive to its antagonists.
+			map<string, World_node>::iterator it_g;
+			map<string, World_node>::iterator it_c;
+
+			// vector<string> antagonists_locations;
+			vector<vector<string>> antagonists_distance;
+			vector<vector<string>> gates_distance;
+			
+			// Compute distance from fugitive to gates
+			int counter = 0;
+			int idx_min_dist = 0;
+			int prev_dist = 0;
+			for(it_g=wr.world_gates.begin(); it_g != wr.world_gates.end();
+				++it_g){
+				string tmp_out = problem_file + "\t\t( is_in " + self->ID +
+								 " " + it_g->first + " )\n\t)\n\n)";
+				string tmp_name = problem_name + "_" + it_g->first;
+				write_file(tmp_name, tmp_out, ".pddl");
+				vector<string> plan = make_plan(false, "domain_" + self->ID,
+										 		tmp_name, tmp_name);
+				if (counter==0){ // computes min distance index gate
+					prev_dist=plan.size();
+				}else{
+					if (plan.size() < gates_distance[idx_min_dist].size()){
+						idx_min_dist = counter;
+					};
+				}
+				;
+				gates_distance.push_back(plan);
+				counter++;
+			};
+
+			// compute distance from fugitive to antagonists
+			for (int i=0; i<antagonists.size(); i++){
+				pt antagonist_pos = pt(antagonists[i]->location->x,
+									   antagonists[i]->location->y);
+				for(it_c=wr.world_free_cells.begin();
+					it_c != wr.world_free_cells.end(); ++it_c){
+					Polygon_boost cell = it_c->second.cell->to_boost_polygon();
+					if(boost::geometry::covered_by(antagonist_pos, cell)){
+						// antagonists_locations.push_back(it_c->first);
+						string tmp_out = problem_file + "\t\t( is_in " +
+										 self->ID + " " + it_c->first +
+										 " )\n\t)\n\n)";
+						string tmp_name = problem_name + "_" +
+										  antagonists[i]->ID;
+						write_file(tmp_name, tmp_out, ".pddl");
+						antagonists_distance.push_back(make_plan(
+														false,
+														"domain_" + self->ID,
+														tmp_name, tmp_name));
+						break; // can only be in one location.
+					};
+				};
+			};
+
+			// Apply rule to chose which gate
+			// Step 1: find nearest catcher to the fugitive
+			int idx_near=0;
+			for (int i=0; i<antagonists_distance.size(); i++){
+				if (antagonists_distance[i] < antagonists_distance[idx_near]){
+					idx_near = i;
+				};
+			};
+			// Step 2: find gate which distance is less or equal than the
+			// minimum distance between fugitive and antagonists.
+			int idx_gate = -1;
+			for (int i=0; i<gates_distance.size(); i++){
+				if (gates_distance[i].size() < antagonists_distance[idx_near].size()){
+					if (gates_distance[i].size() < gates_distance[idx_gate].size()){
+						idx_gate = i;
+					};
+				};
+			};
+			if (idx_gate == -1){
+				idx_gate = idx_near;
+				cout << "No gates satisfying the needs found, relying on "
+						"minimum distance" << endl;
+			};
+			
+			// set_plan
+			self->set_plan(gates_distance[idx_gate]);
+			// set desire
+			it_g = wr.world_gates.begin();
+			for(int i=0; i<idx_gate; i++){
+				++it_g;
+			};
+			self->set_desire("( is_in " + self->ID + " " + it_g->first + " )");
 			break;
 		};
 
 	};
-	/*
-	problem_file += "\t)\n";
-
-	// Write file end
-	problem_file += "\n)";
-	
-	// make folder if it doesn't exist
-	ofstream pddl_out(filesPath + "/" + problem_name + ".pddl");
-	if (pddl_out.is_open()){
-		pddl_out << problem_file;
-		pddl_out.close();
-	}else{
-		cout << "Unable to open output stream" << endl;
-	};
-	*/
-
 };
 
 vector<string> robot_fugitive::make_plan(bool apply, string domain_name, 

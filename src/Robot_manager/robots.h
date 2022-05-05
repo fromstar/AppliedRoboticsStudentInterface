@@ -109,7 +109,8 @@ typedef struct robot_fugitive {
   vector<Robot*> antagonists;
   string filesPath;
 
-  robot_fugitive(Robot* _self, string path=".tmp");
+  robot_fugitive(Robot* _self, string path=".tmp",
+		  		 behaviour_fugitive behaviour=least_steps);
 
   // Methods
   void add_antagonist(Robot* r_ant);

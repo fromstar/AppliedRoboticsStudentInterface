@@ -180,13 +180,14 @@ void test()
 	robot_manager rm;	
 
 	rm.parse_map_robots(test_map.robot);
+	rm.trade_fugitives();
+
 	map<string, robot_fugitive*>::iterator it;
 	it = rm.fugitives.begin();
-	it->second->set_behaviour(undeterministic);
+	it->second->set_behaviour(aware);
 	it -> second -> make_pddl_domain_file(abstract_arena);
 	it -> second -> make_pddl_problem_file(abstract_arena);
 	rm.info(true);
-	// rm.trade_fugitives();
 
 	/*
 	abstract_arena.to_pddl("Pddl/problem_catcher.pddl");
