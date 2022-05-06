@@ -2,6 +2,7 @@
 #include "student_planning_interface.hpp"
 #include "Roadmap/roadmap.h"
 #include "Dubins/dubins.h"
+#include "World_representation/world_representation.h"
 #include <thread>
 
 #include <stdexcept>
@@ -115,16 +116,32 @@ namespace student
     arena.set_robot_position(c_1->ID, x[0] * scale, y[0] * scale);
     arena.set_robot_position(f_1->ID, x[1] * scale, y[1] * scale);
 
+    // Create world representaion
     World_representation abstract_arena = World_representation(
         arena.free_space,
         arena.gates,
-        arena.robot,
         log_test);
 
     abstract_arena.info();
-    abstract_arena.to_pddl("Pddl/problem_catcher.pddl");
-    abstract_arena.to_pddl("Pddl/problem_fugitive.pddl", "fugitive_catcher",
-                           "fugitive_catcher", true);
+
+    robot_manager rm;
+
+    rm.add_robot(f_1);
+    rm.add_robot(c_1);
+
+    // rm.parse_map_robots(arena.robot);
+    rm.trade_fugitives();
+
+    map<string, robot_fugitive *>::iterator it;
+    it = rm.fugitives.begin();
+    it->second->set_behaviour(aware);
+    it->second->make_pddl_domain_file(abstract_arena);
+    it->second->make_pddl_problem_file(abstract_arena);
+    rm.info(true);
+
+    // abstract_arena.to_pddl("Pddl/problem_catcher.pddl");
+    // abstract_arena.to_pddl("Pddl/problem_fugitive.pddl", "fugitive_catcher",
+    //                        "fugitive_catcher", true);
     // kill(getpid());
 
     Mat img_arena = arena.plot_arena(800, 800, true);
@@ -132,14 +149,12 @@ namespace student
     /**********************************************
      * TO MOVE
     //  ***********************************************/
-    vector<string> f_path = abstract_arena.world_robots["Fugitive_1"]->plan;
-
+    vector<string> f_path = it->second->self->plan;
     // // cout << abstract_arena.world_free_cells["Cell_1"].cell->centroid->y<<endl;
 
     double fx_path[f_path.size() + 1];
     double fy_path[f_path.size() + 1];
     double fth_path[f_path.size() + 1];
-
 
     for (int i = 0; i < f_path.size(); i++)
     {
@@ -150,6 +165,7 @@ namespace student
         path.push_back(word);
       path[3].resize(path[3].size() - 1);
 
+
       fx_path[i] = abstract_arena.world_free_cells[path[2]].cell->centroid->x;
       fy_path[i] = abstract_arena.world_free_cells[path[2]].cell->centroid->y;
       fth_path[i] = 0;
@@ -158,14 +174,14 @@ namespace student
       {
         fx_path[i + 1] = abstract_arena.world_gates[path[3]].cell->centroid->x;
         fy_path[i + 1] = abstract_arena.world_gates[path[3]].cell->centroid->y;
-        fth_path[i + 1] = fth_path[i + 1] + 10;
+        fth_path[i + 1] = fth_path[i];
       }
     }
 
     int pidx;
     curve c;
 
-    tie(pidx, c) = dubins(abstract_arena.world_robots["Fugitive_1"]->location->x, abstract_arena.world_robots["Fugitive_1"]->location->y, 0, fx_path[0], fy_path[0], fth_path[0], 10);
+    tie(pidx, c) = dubins(it->second->self->location->x,it->second->self->location->y, 0, fx_path[0], fy_path[0], fth_path[0], 10);
 
     /*CHECK IF THE DUBINS CURVE INTERSECT WITH ARENA OR OBSTACLES*/
     // point_list * pts;
@@ -173,13 +189,15 @@ namespace student
     // tie(pts,t) = intersCircleLine();
 
     if (pidx > 0)
-        img_arena = plotdubins(c, "r", "g", "b", img_arena);
-      
+      img_arena = plotdubins(c, "r", "g", "b", img_arena);
+
     for (int i = 0; i < f_path.size(); i++)
     {
       tie(pidx, c) = dubins(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1], fy_path[i + 1], fth_path[i + 1], 10);
       if (pidx > 0)
         img_arena = plotdubins(c, "r", "g", "b", img_arena);
+      else
+        cout << "CAZZO: " << pidx << endl << "i: " << i << endl;
     }
     /**********************************************/
     imshow("Arena", img_arena);

@@ -17,11 +17,14 @@ include_directories(
 
 ## CREATE EXECUTABLE LIBRARY
 add_library(student SHARED
-   src/student_interface.cpp
    src/Roadmap/roadmap.cpp
    src/Utility/utility.cpp
    src/Dubins/dubins.cpp
    src/Log/logger.cpp
+   src/World_representation/world_representation.cpp
+   src/Robot_manager/robot_manager.cpp
+   src/Robot_manager/robots.cpp
+   src/student_interface.cpp
 )
 
 target_link_libraries(student
