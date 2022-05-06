@@ -3,6 +3,7 @@
 #include <../boost/geometry.hpp>
 #include <fstream>
 #include <bits/stdc++.h>
+#include <filesystem>
 
 using pt = boost::geometry::model::d2::point_xy<double>;
 using Polygon_boost = boost::geometry::model::polygon<pt>;
@@ -373,8 +374,11 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr){
 								 " " + it_1->first + " )\n\t)\n\n)";
 				string tmp_name = problem_name + "_" + it_1->first;
 				write_file(tmp_name, tmp_out, ".pddl");
-				all_plans.push_back(make_plan(false, "domain_" + self->ID,
+				all_plans.push_back(make_plan(false, domain_name,
 											  tmp_name, tmp_name));
+				
+				// remove files, they are useless now -> also checked in future
+				remove((filesPath + "/" + tmp_name + ".plan").c_str());
 			};
 			int idx_least = 0;
 
@@ -408,8 +412,12 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr){
 							  "\n\t)\n\n)";
 			string tmp_problem_name = problem_name + "_" + it_g->first;
 			write_file(tmp_problem_name, tmp_file, ".pddl");
-			make_plan(true, "domain_" + self->ID, tmp_problem_name,
+			make_plan(true, domain_name, tmp_problem_name,
 					  tmp_problem_name);
+			
+			// Remove useless files.
+			remove((filesPath + "/" + tmp_problem_name + ".plan").c_str());
+
 			return tmp_problem_name;
 			break;
 		};
@@ -443,6 +451,10 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr){
 				write_file(tmp_name, tmp_out, ".pddl");
 				vector<string> plan = make_plan(false, "domain_" + self->ID,
 										 		tmp_name, tmp_name);
+
+				// Remove useless files
+				remove((filesPath + "/" + tmp_name + ".plan").c_str());
+
 				if (counter==0){ // computes min distance index gate
 					prev_dist=plan.size();
 				}else{
@@ -474,6 +486,8 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr){
 														false,
 														"domain_" + self->ID,
 														tmp_name, tmp_name));
+						// Remove plan
+						remove((filesPath + "/" + tmp_name + ".plan").c_str());
 						break; // can only be in one location.
 					};
 				};
@@ -629,6 +643,8 @@ void robot_catcher::make_pddl_files(World_representation wr,
 															 g_domain_name,
 															 g_problem_name,
 															 g_problem_name);
+		// Remove file
+		remove((filesPath + "/" + g_problem_name + ".plan").c_str());
 	};
 
 	set<string> cells;
@@ -853,7 +869,12 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	write_file(problem_name, pddl_problem, ".pddl");
 
 	//make and aply plan for the catcher
-	make_plan(true, domain_name, problem_name, "catcher_plan");
+	string plan_name = "catcher_plan";
+	make_plan(true, domain_name, problem_name, plan_name);
+
+	// Remove plan
+	remove((filesPath + "/" +  plan_name + ".plan").c_str());
+
 };
 
 /**
@@ -879,6 +900,7 @@ vector<string> robot_catcher::make_plan(bool apply, string domain_name,
 				filesPath + "/" + domain_name + ".pddl",
 				filesPath + "/" + problem_name + ".pddl",
 				filesPath + "/" + plan_name + ".plan");
+	
 	string tmp_line;
 	ifstream pddl_in(filesPath + "/" + plan_name + ".plan");
 	vector<string> tmp_plan;
