@@ -167,7 +167,7 @@ namespace student
 
       fx_path[i] = abstract_arena.world_free_cells[path[2]].cell->centroid->x;
       fy_path[i] = abstract_arena.world_free_cells[path[2]].cell->centroid->y;
-      fth_path[i] = 3.14;
+      fth_path[i] = 3.14/2;
 
       if (i == f_path.size() - 1)
       {

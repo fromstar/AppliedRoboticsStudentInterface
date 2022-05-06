@@ -612,10 +612,10 @@ double get_angle(double xc, double yc, double x, double y)
 
 bool is_in_arc(double th0, double thf, double th)
 {
-	cout << "th0: " << th0 <<endl;
-	cout << "thf" << thf << endl;
-	cout << "th" << th << endl;
-	if(th >= th0 && th <= thf)
+	cout << "start: " << th0 <<endl;
+	cout << "end: " << thf << endl;
+	cout << "angle: " << th << endl;
+	if(th <= th0 && th >= thf)
 		return true;
 	return false;
 }
