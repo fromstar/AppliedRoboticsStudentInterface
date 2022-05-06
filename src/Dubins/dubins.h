@@ -8,6 +8,7 @@
 #include <assert.h>	
 #include "../clipper/cpp/clipper.hpp"
 #include "../Utility/utility.h"
+#include "../Roadmap/roadmap.h"
 
 /*
  * Compile command:
@@ -47,5 +48,7 @@ double cross2D(double *, double *);
 double dot2D(double *, double *);
 tuple <point_list *, double_list *> intersCircleLine(double, double, double, double, double, double, double);
 tuple <double, double, double> get_circle_center(double, double, double, double, double, double);
+curve dubins_no_inter(double, double, double, double, double, double, double, points_map);
+bool pt_in_arc(point_node *, arc);
 
 #endif

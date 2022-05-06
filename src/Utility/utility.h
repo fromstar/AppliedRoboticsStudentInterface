@@ -174,5 +174,6 @@ Mat plot_points(point_list *, Mat, Scalar, bool, int thickness=1);
 void sort(double_list *, point_list *);
 tuple <double, double> get_new_point(double,double,double,double);
 string exec(const char *cmd);
-
+double get_angle(double,double,double,double);
+bool is_in_arc(double,double,double);
 #endif

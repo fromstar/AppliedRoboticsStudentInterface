@@ -154,7 +154,7 @@ namespace student
 
     double fx_path[f_path.size() + 1];
     double fy_path[f_path.size() + 1];
-    double fth_path[f_path.size() + 1];
+    double fth_path[f_path.size() + 1]; // Radiants!
 
     for (int i = 0; i < f_path.size(); i++)
     {
@@ -165,10 +165,9 @@ namespace student
         path.push_back(word);
       path[3].resize(path[3].size() - 1);
 
-
       fx_path[i] = abstract_arena.world_free_cells[path[2]].cell->centroid->x;
       fy_path[i] = abstract_arena.world_free_cells[path[2]].cell->centroid->y;
-      fth_path[i] = 0;
+      fth_path[i] = 3.14;
 
       if (i == f_path.size() - 1)
       {
@@ -178,26 +177,21 @@ namespace student
       }
     }
 
-    int pidx;
     curve c;
 
-    tie(pidx, c) = dubins(it->second->self->location->x,it->second->self->location->y, 0, fx_path[0], fy_path[0], fth_path[0], 10);
+    c = dubins_no_inter(it->second->self->location->x, it->second->self->location->y, 0, fx_path[0], fy_path[0], fth_path[0], 10, arena);
 
     /*CHECK IF THE DUBINS CURVE INTERSECT WITH ARENA OR OBSTACLES*/
     // point_list * pts;
     // double_list *t;
     // tie(pts,t) = intersCircleLine();
 
-    if (pidx > 0)
-      img_arena = plotdubins(c, "r", "g", "b", img_arena);
+    img_arena = plotdubins(c, "r", "g", "b", img_arena);
 
     for (int i = 0; i < f_path.size(); i++)
     {
-      tie(pidx, c) = dubins(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1], fy_path[i + 1], fth_path[i + 1], 10);
-      if (pidx > 0)
-        img_arena = plotdubins(c, "r", "g", "b", img_arena);
-      else
-        cout << "CAZZO: " << pidx << endl << "i: " << i << endl;
+      c = dubins_no_inter(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1], fy_path[i + 1], fth_path[i + 1], 10, arena);
+      img_arena = plotdubins(c, "r", "g", "b", img_arena);
     }
     /**********************************************/
     imshow("Arena", img_arena);

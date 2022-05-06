@@ -437,7 +437,6 @@ tuple<point_list *, double_list *> intersCircleLine(double a, double b, double r
 	{
 		x = x1 * t1 + x2 * (1 - t1);
 		y = y1 * t1 + y2 * (1 - t1);
-		Point pt(x, y);
 		pts->add_node(new point_node(x, y));
 		t->add_node(new double_node(t1));
 		cout << "NODO AGGIUNTO\n";
@@ -500,4 +499,109 @@ tuple<double, double, double> get_circle_center(double x1, double y1, double x2,
 	double r = sqrt(sqr_of_r);
 
 	return make_tuple(h, k, r);
+}
+
+curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, double thf, double Kmax, points_map arena)
+{
+	int pidx;
+	int k = 0;
+	bool intersection[3] = {true, true, true};
+
+	double_list *p;
+	point_list *pts = NULL;
+	polygon *it;
+	Edge *edges = NULL;
+	curve c;
+
+	tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf + k, Kmax);
+	while (intersection[0] || intersection[1] || intersection[2])
+	{
+
+		tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf + k, Kmax);
+
+		// Curve exist
+		if (pidx > 0)
+		{
+			// Check intersection curve with arena
+			// edges = polygon(arena.arena).edgify()->head;
+
+			// 		while (edges != NULL && !intersection[0] && !intersection[1] && !intersection[2])
+			// 		{
+			// 			point_node *p0 = edges->points->head;
+			// 			point_node *p1 = edges->points->tail;
+
+			// 			tie(pts, p) = intersCircleLine(c.a1.xc, c.a1.yc, c.a1.r, p0->x, p0->y, p1->x, p1->y);
+			// 			if (pts->head == NULL)
+			// 				intersection[0] = false;
+			// 			else if (!pt_in_arc(pts->head, c.a1))
+			// 				intersection[0] = false;
+
+			// 			tie(pts, p) = intersCircleLine(c.a2.xc, c.a2.yc, c.a2.r, p0->x, p0->y, p1->x, p1->y);
+			// 			if (pts->head == NULL)
+			// 				intersection[1] = false;
+			// 			else if (!pt_in_arc(pts->head, c.a2))
+			// 				intersection[1] = false;
+
+			// 			tie(pts, p) = intersCircleLine(c.a3.xc, c.a3.yc, c.a3.r, p0->x, p0->y, p1->x, p1->y);
+			// 			if (pts->head == NULL)
+			// 				intersection[2] = false;
+			// 			else if (!pt_in_arc(pts->head, c.a2))
+			// 				intersection[2] = false;
+
+			// 			edges = edges->next;
+			// 		}
+
+			// 		Check intersection curve with polygons
+			it = arena.obstacles->offset_head;
+			while (it != NULL || intersection[0] || intersection[1] || intersection[2])
+			{
+				edges = it->edgify()->head;
+
+				while (edges != NULL || intersection[0] || intersection[1] || intersection[2])
+				{
+					point_node *p0 = edges->points->head;
+					point_node *p1 = edges->points->tail;
+
+					tie(pts, p) = intersCircleLine(c.a1.xc, c.a1.yc, c.a1.r, p0->x, p0->y, p1->x, p1->y);
+					if (pts == NULL)
+						intersection[0] = false;
+					else if (!pt_in_arc(pts->head, c.a1))
+						intersection[0] = false;
+
+					tie(pts, p) = intersCircleLine(c.a2.xc, c.a2.yc, c.a2.r, p0->x, p0->y, p1->x, p1->y);
+					if (pts == NULL)
+						intersection[1] = false;
+					else if (!pt_in_arc(pts->head, c.a2))
+						intersection[1] = false;
+
+					tie(pts, p) = intersCircleLine(c.a3.xc, c.a3.yc, c.a3.r, p0->x, p0->y, p1->x, p1->y);
+					if (pts == NULL)
+						intersection[2] = false;
+					else if (!pt_in_arc(pts->head, c.a2))
+						intersection[2] = false;
+
+					edges = edges->next;
+				}
+				it = it->pnext;
+			}
+		}
+
+		k++;
+	}
+
+	return c;
+}
+
+bool pt_in_arc(point_node *pts, arc a)
+{
+	double angle;
+	while (pts != NULL)
+	{
+		angle = get_angle(a.xc, a.yc, pts->x, pts->y);
+		if (is_in_arc(a.th0, a.thf, angle)){}
+			return true;
+
+		pts = pts->pnext;
+	}
+	return false;
 }
