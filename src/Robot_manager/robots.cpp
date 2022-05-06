@@ -7,6 +7,26 @@
 using pt = boost::geometry::model::d2::point_xy<double>;
 using Polygon_boost = boost::geometry::model::polygon<pt>;
 
+/**
+ * \fun
+ * Use this function to return a word with the first letter capital.
+ * It is useful on the problem file.
+ * @param word: string. Is the input word.
+ * @return capitalized word: string.
+ */
+string upperify(string word){
+	word[0] = toupper(word[0]);
+	return word;
+};
+
+/**
+ * \fun
+ * This function allows to split a string with respect to a precise token
+ * @param sentence: string. Is the string to split.
+ * @param token: string. Is the token that when found will trigger the spliting.
+ *
+ * @return tmp: vector<string>. Is the list containing the input string splitted.
+ */
 vector<string> string_to_vector(string sentence, string token){
 	stringstream ss(sentence);
 	string word;
@@ -494,7 +514,10 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr){
 			return problem_name + "_" + it_g->first;
 			break;
 		};
-
+		default:{
+			return "NaN";
+			break;
+		};
 	};
 };
 
@@ -573,7 +596,7 @@ void robot_catcher::write_file(string file_name, string what_to_write,
 };
 
 void robot_catcher::make_pddl_files(World_representation wr,
-									behaviour_fugitive b_ant){
+									behaviour_fugitive b_ant, bool do_plan){
 	if (antagonists.size() == 0){
 		cout << "No antagonists assigned to " << self->ID
 			 << " try running the method \"trade_fugitives()\" of the struct"
@@ -581,8 +604,10 @@ void robot_catcher::make_pddl_files(World_representation wr,
 		return;
 	};
 
+	string domain_name = "domain_" + self->ID;
+
 	// Write pddl header
-	string pddl_domain = "(define (domain domain_" + self->ID + ")\n";
+	string pddl_domain = "(define (domain " + domain_name + ")\n";
 
 	// Write requirements
 	pddl_domain += "\t(:requirements\n"
@@ -697,10 +722,10 @@ void robot_catcher::make_pddl_files(World_representation wr,
 						   cell_s[cell_s.size()-1] + " ) )"
 						   "\n\t\t\t\t\t)\n"
 						   "\t\t\t\t\t)\n";
-			pddl_domain += "\t\t\t\t)\n";
+			pddl_domain += "\t\t\t\t)";
 		};
 	};
-	pddl_domain += "\t\t\t)\n";
+	pddl_domain += "\n\t\t\t)\n";
 	pddl_domain += "\t)\n";
 
 	pddl_domain += "\t(:action capture\n"
@@ -719,14 +744,144 @@ void robot_catcher::make_pddl_files(World_representation wr,
 
 	// Write domain file to disk
 	int tmp_folder = mkdir(filesPath.c_str(), 0777);
-	write_file("domain_" + self->ID, pddl_domain, ".pddl");
+	write_file(domain_name, pddl_domain, ".pddl");
+
+	// Write problem file ----------------------------------------------------
+	
+	string problem_name = "problem_" + self->ID;
+	string pddl_problem = "(define (problem " + problem_name + " )\n"
+						  "\t(:domain " + domain_name + ")\n";
+
+	// write objects
+	pddl_problem += "\t(:objects\n";
+	
+	// Part 1: write cells
+	string upper_id;
+	map<string, World_node>::iterator it_node;
+	for(it_node=wr.world_free_cells.begin();
+		it_node != wr.world_free_cells.end(); ++it_node){
+		pddl_problem += "\t\t" + upperify(it_node->first) + " - ";
+		if (cells.count(it_node->first) != 0){
+			pddl_problem += it_node->first + "\n"; 
+		}else{
+			pddl_problem += "cell\n";
+		};
+	};
+	
+	// Part 2: write gates
+	for(it_node=wr.world_gates.begin(); it_node != wr.world_gates.end();
+		++it_node){
+		pddl_problem += "\t\t" + upperify(it_node->first) + " - gate\n";
+	};
+
+	// Part 3: write agents
+	pddl_problem += "\t\t" + upperify(self->ID) + " - " +
+					self->get_type() + "\n";
+
+	for(int i=0; i<antagonists.size(); i++){
+		pddl_problem += "\t\t" + upperify(antagonists[i]->ID) + " - " +
+						antagonists[i]->get_type() + "\n";
+	};
+
+	pddl_problem += "\t)\n";
+	
+	// Write initial state
+	pddl_problem += "\t(:init\n";
+	for(it_node = wr.world_free_cells.begin();
+		it_node != wr.world_free_cells.end(); ++it_node){
+		map<string, World_node>::iterator tmp;
+		for(tmp=wr.world_free_cells.begin(); tmp != wr.world_free_cells.end();
+			++tmp){
+			if (it_node != tmp){
+				Polygon_boost cell_p = it_node->second.cell->to_boost_polygon();
+				Polygon_boost tmp_c = tmp->second.cell->to_boost_polygon();
+				if (boost::geometry::touches(cell_p, tmp_c)){
+					// write line
+					pddl_problem += "\t\t( connected " +
+									upperify(it_node->first) + " " +
+									upperify(tmp->first) + " )\n";
+				};
+			};
+		};
+	};
+
+	// Write initial location of the agents
+	pt self_location = pt(self->location->x, self->location->y);
+	for(it_node=wr.world_free_cells.begin();
+		it_node!=wr.world_free_cells.end(); ++it_node){
+		Polygon_boost cell_p = it_node->second.cell->to_boost_polygon();
+		if(boost::geometry::covered_by(self_location, cell_p)){
+			pddl_problem += "\t\t( is_in " + upperify(self->ID) + " " +
+							upperify(it_node->first) + ")\n";
+			break;
+		};
+	};
+	for(int i=0; i<antagonists.size(); i++){
+		pt ant_location = pt(antagonists[i]->location->x,
+							 antagonists[i]->location->y);
+		for(it_node=wr.world_free_cells.begin();
+			it_node!=wr.world_free_cells.end(); ++it_node){
+			Polygon_boost cell_p = it_node->second.cell->to_boost_polygon();
+			if(boost::geometry::covered_by(ant_location, cell_p)){
+				pddl_problem += "\t\t( is_in " + upperify(antagonists[i]->ID)
+								+ " " +	upperify(it_node->first) + ")\n";
+				break;
+			};
+		};
+	};
+	pddl_problem += "\t)\n";
+	
+	// wrtie goal
+	pddl_problem += "\t(:goal\n";
+	int ant_size = antagonists.size();
+	if (ant_size > 1){
+		pddl_problem += "\t\t(and\n";
+	};
+	for(int i=0; i<ant_size; i++){
+		pddl_problem += "\t\t\t ( captured " + upperify(antagonists[i]->ID) +
+						" )\n";
+	};
+	if (ant_size > 1){
+		pddl_problem += "\t\t)\n";
+	};
+	pddl_problem += "\t)\n";
+
+	// write file end
+	pddl_problem += ")\n";
+
+	// write file to disk
+	write_file(problem_name, pddl_problem, ".pddl");
 };
 
-// bool robot_catcher::make_pddl_problem_file(World_representation wr){
-// 	return true;
-// };
+vector<string> robot_catcher::make_plan(bool apply, string domain_name, 
+										 string problem_name,
+										 string plan_name){
+	run_planner("/home/" + string(getenv("USER")) +
+				"/.planutils/packages/downward/run",
+				filesPath + "/" + domain_name + ".pddl",
+				filesPath + "/" + problem_name + ".pddl",
+				filesPath + "/" + plan_name + ".plan");
+	string tmp_line;
+	ifstream pddl_in(filesPath + "/" + plan_name + ".plan");
+	vector<string> tmp_plan;
+	if (pddl_in.is_open()){
+		while(pddl_in){
+			getline(pddl_in, tmp_line);
+			tmp_plan.push_back(tmp_line);
+		};
+	}else{
+		cout << "Unable to open input plan file, probably no plan found"
+			 << endl;
+	};
+	
+	// using ifstream returns an empty line after the last one in file
+	tmp_plan.pop_back(); // remove empty line
+	tmp_plan.pop_back(); // remove cost line
 
-void robot_catcher::make_plan(){
+	if (apply){
+		self->set_plan(tmp_plan);
+	};
+	return tmp_plan;
 };
 
 /**

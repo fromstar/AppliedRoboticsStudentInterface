@@ -20,7 +20,7 @@ void test()
 	logger *log_test = new logger;
 	log_test->set_log_path("test_log.txt");
 
-	log_test->add_event("Code started\n");
+	log_test->add_event("Code started");
 	points_map test_map(log_test);
 
 	// Define arena limits
