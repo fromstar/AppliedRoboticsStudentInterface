@@ -416,7 +416,7 @@ tuple<point_list *, double_list *> intersCircleLine(double a, double b, double r
 	{
 		double_list *dnull = NULL;
 		point_list *pnull = NULL;
-		cout << "DELTA: " << delta << endl;
+		// cout << "DELTA: " << delta << endl;
 		return make_tuple(pnull, dnull);
 	}
 	else
@@ -439,18 +439,18 @@ tuple<point_list *, double_list *> intersCircleLine(double a, double b, double r
 		y = y1 * t1 + y2 * (1 - t1);
 		pts->add_node(new point_node(x, y));
 		t->add_node(new double_node(t1));
-		cout << "NODO AGGIUNTO\n";
+		// cout << "NODO AGGIUNTO\n";
 	}
 	if (t2 >= 0 && t2 <= 1 && t2 != t1)
 	{
 		x = x1 * t2 + x2 * (1 - t2);
 		y = y1 * t2 + y2 * (1 - t2);
 		Point pt(x, y);
-		cout << typeid(pt.x).name() << endl;
+		// cout << typeid(pt.x).name() << endl;
 		pts->add_node(new point_node(x, y));
 
 		t->add_node(new double_node(t2));
-		cout << "NODO AGGIUNTO\n";
+		// cout << "NODO AGGIUNTO\n";
 	}
 	sort(t, pts);
 	return make_tuple(pts, t);
@@ -511,9 +511,10 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 	point_list *pts = NULL;
 	polygon *it;
 	Edge *edges = NULL;
+	point_node *pnt;
 	curve c;
 
-	tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf + k, Kmax);
+	// tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf + k, Kmax);
 	while (intersection[0] || intersection[1] || intersection[2])
 	{
 
@@ -523,41 +524,46 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 		if (pidx > 0)
 		{
 			// Check intersection curve with arena
-			// edges = polygon(arena.arena).edgify()->head;
+			pnt = arena.arena->head;
 
-			// 		while (edges != NULL && !intersection[0] && !intersection[1] && !intersection[2])
-			// 		{
-			// 			point_node *p0 = edges->points->head;
-			// 			point_node *p1 = edges->points->tail;
+			while (pnt != NULL)
+			{
+				point_node *pnt_next;
 
-			// 			tie(pts, p) = intersCircleLine(c.a1.xc, c.a1.yc, c.a1.r, p0->x, p0->y, p1->x, p1->y);
-			// 			if (pts->head == NULL)
-			// 				intersection[0] = false;
-			// 			else if (!pt_in_arc(pts->head, c.a1))
-			// 				intersection[0] = false;
+				if (pnt->pnext != NULL)
+					pnt_next = pnt->pnext;
+				else
+					pnt_next = arena.arena->head;
 
-			// 			tie(pts, p) = intersCircleLine(c.a2.xc, c.a2.yc, c.a2.r, p0->x, p0->y, p1->x, p1->y);
-			// 			if (pts->head == NULL)
-			// 				intersection[1] = false;
-			// 			else if (!pt_in_arc(pts->head, c.a2))
-			// 				intersection[1] = false;
+				tie(pts, p) = intersCircleLine(c.a1.xc, c.a1.yc, c.a1.r, pnt->x, pnt->y, pnt_next->x, pnt_next->y);
+				if (pts == NULL)
+					intersection[0] = false;
+				// Check if the intersection point are included in the dubin arc
+				else if (!pt_in_arc(pts->head, c.a1))
+					intersection[0] = false;
 
-			// 			tie(pts, p) = intersCircleLine(c.a3.xc, c.a3.yc, c.a3.r, p0->x, p0->y, p1->x, p1->y);
-			// 			if (pts->head == NULL)
-			// 				intersection[2] = false;
-			// 			else if (!pt_in_arc(pts->head, c.a2))
-			// 				intersection[2] = false;
+				tie(pts, p) = intersCircleLine(c.a2.xc, c.a2.yc, c.a2.r, pnt->x, pnt->y, pnt_next->x, pnt_next->y);
+				if (pts == NULL)
+					intersection[1] = false;
+				else if (!pt_in_arc(pts->head, c.a2))
+					intersection[1] = false;
 
-			// 			edges = edges->next;
-			// 		}
+				tie(pts, p) = intersCircleLine(c.a3.xc, c.a3.yc, c.a3.r, pnt->x, pnt->y, pnt_next->x, pnt_next->y);
+				if (pts == NULL)
+					intersection[2] = false;
+				else if (!pt_in_arc(pts->head, c.a3))
+					intersection[2] = false;
 
-			// 		Check intersection curve with polygons
+				pnt = pnt->pnext;
+			}
+
+			// Check intersection curve with polygons
 			it = arena.obstacles->offset_head;
-			while (it != NULL || intersection[0] || intersection[1] || intersection[2])
+			while (it != NULL)
 			{
 				edges = it->edgify()->head;
 
-				while (edges != NULL || intersection[0] || intersection[1] || intersection[2])
+				while (edges != NULL)
 				{
 					point_node *p0 = edges->points->head;
 					point_node *p1 = edges->points->tail;
@@ -577,7 +583,7 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 					tie(pts, p) = intersCircleLine(c.a3.xc, c.a3.yc, c.a3.r, p0->x, p0->y, p1->x, p1->y);
 					if (pts == NULL)
 						intersection[2] = false;
-					else if (!pt_in_arc(pts->head, c.a2))
+					else if (!pt_in_arc(pts->head, c.a3))
 						intersection[2] = false;
 
 					edges = edges->next;
@@ -594,12 +600,24 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 
 bool pt_in_arc(point_node *pts, arc a)
 {
-	double angle;
+	double angle, start, end;
+	// Get the circonference angle of given point in it
+	start = get_angle(a.xc, a.yc, a.x0, a.y0);
+	end = get_angle(a.xc, a.yc, a.xf, a.yf);
+
 	while (pts != NULL)
 	{
 		angle = get_angle(a.xc, a.yc, pts->x, pts->y);
-		if (is_in_arc(a.th0, a.thf, angle)){}
+
+		cout << "start_angle: " << start << endl;
+		cout << "end_angle: " << end << endl;
+		cout << "angle_angle: " << angle << endl;
+		
+		// check if the angle point is included between the starting and ending angles.
+		if (is_in_arc(start, end, angle))
+		{
 			return true;
+		}
 
 		pts = pts->pnext;
 	}
