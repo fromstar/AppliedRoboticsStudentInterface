@@ -851,8 +851,26 @@ void robot_catcher::make_pddl_files(World_representation wr,
 
 	// write file to disk
 	write_file(problem_name, pddl_problem, ".pddl");
+
+	//make and aply plan for the catcher
+	make_plan(true, domain_name, problem_name, "catcher_plan");
 };
 
+/**
+ * \fun make_plan
+ * Use this method to call the planner over the domain and problem files to
+ * generate the plan.
+ * @param apply: bool. Set the flag to true if the plan found has to be saved
+ * inside the homonymous variable in the self attribute.
+ * @param domain_name: string. Is the path in which the domain file can be
+ * found.
+ * @param problem_name: string. Is the path in which the problem file can be
+ * found.
+ * @param plan_name: string. Is the path and name in which to save the plan
+ * file.
+ *
+ * @return vector<string>: the plan found.
+ */
 vector<string> robot_catcher::make_plan(bool apply, string domain_name, 
 										 string problem_name,
 										 string plan_name){
@@ -885,6 +903,7 @@ vector<string> robot_catcher::make_plan(bool apply, string domain_name,
 };
 
 /**
+ * \fun info()
  * This method is used to print relevant informations regarding the catcher
  * robot.
  */
@@ -900,6 +919,7 @@ void robot_catcher::info(){
 };
 
 /**
+ * \fun run_planner
  * This function runs the planner and saves it to the specified plan file.
  * The default location of the plan is the current working directory and
  * the filename is MyPlan.plan

@@ -171,5 +171,10 @@ typedef struct robot_catcher {
 void run_planner(string planner_path, string domain_file_path,
 				 string problem_file_path, string plan_path);
 
+/**
+ * \fun string_to_vector(string sentence, string token).
+ * Use this function to split a string with respect to a token.
+ * @return vector<string>
+ */
 vector<string> string_to_vector(string sentence, string token);
 #endif
