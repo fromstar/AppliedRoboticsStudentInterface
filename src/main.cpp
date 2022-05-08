@@ -158,7 +158,7 @@ void test()
 
 	test_map.merge_obstacles();
 
-	test_map.make_free_space_cells();
+	test_map.make_free_space_cells_squares(3);
 
 	log_test->add_event("Created Roadmap");
 
@@ -170,7 +170,7 @@ void test()
 
 	test_map.set_robot_position(c_1->ID, 1, -2);
 	test_map.set_robot_position(f_1->ID, -0.5, -0.5);
-
+	/*
 	World_representation abstract_arena = World_representation(
 		test_map.free_space,
 		test_map.gates,
@@ -181,7 +181,7 @@ void test()
 
 	rm.parse_map_robots(test_map.robot);
 	rm.trade_fugitives();
-
+	*/
 	map<string, robot_catcher*>::iterator it;
 	/*
 	it = rm.fugitives.begin();
@@ -189,9 +189,9 @@ void test()
 	it -> second -> make_pddl_domain_file(abstract_arena);
 	it -> second -> make_pddl_problem_file(abstract_arena);
 	*/
-	it = rm.catchers.begin();
-	it->second -> make_pddl_files(abstract_arena);
-	rm.info(true);
+	// it = rm.catchers.begin();
+	// it->second -> make_pddl_files(abstract_arena);
+	// rm.info(true);
 
 	/*
 	abstract_arena.to_pddl("Pddl/problem_catcher.pddl");

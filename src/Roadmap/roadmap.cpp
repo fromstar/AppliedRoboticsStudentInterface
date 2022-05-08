@@ -168,11 +168,12 @@ Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons)
 	}
 
 	// plot free_space
+	cout << endl << "Plotting free space" << endl;
 	tmp = free_space->head;
 	while (tmp != NULL)
 	{
 		img_arena = plot_points(tmp->pl, img_arena, Scalar(0, 255, 255),
-								true, 1);
+								true, 3);
 		tmp = tmp->pnext;
 	};
 
@@ -403,6 +404,14 @@ list_of_polygons *subset_polygon(polygon *p, int levels)
 vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
 											vector<Polygon_boost> obstacles)
 {
+
+	if(arena.size() == 0){
+		cout << "Arena vector is empty -> segmentation fault" << endl;
+	};
+	if(obstacles.size() == 0){
+		cout << "Arena vector is empty -> segmentation fault" << endl;
+	};
+
 	vector<Polygon_boost> output;
 	vector<Polygon_boost> tmp_output;
 
@@ -442,6 +451,100 @@ vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
 	return arena;
 };
 
+
+
+void points_map::make_free_space_cells_squares(int res){
+	// generate arena subsetting
+	list_of_polygons *tmp_list = new list_of_polygons();
+	tmp_list->add_polygon(new polygon(arena));
+	
+	for(int i=0; i<res; i++){
+		polygon *tmp_pol = tmp_list->head;
+		list_of_polygons *tmp_output = new list_of_polygons();
+		while(tmp_pol != NULL){
+			Edge_list *e_list = tmp_pol->edgify();
+			Edge *tmp = e_list->head;
+
+			Edge *start = e_list->head;
+			while(start != NULL){
+				Edge *end;
+				if(start->next == NULL){
+					end = e_list->head;
+				}else{
+					end = start->next;
+				};
+			
+				point_list * pl_temp = new point_list();
+				pl_temp->add_node(new point_node(tmp_pol->centroid->x,
+												 tmp_pol->centroid->y));
+				pl_temp->add_node(start->middle_point());
+				pl_temp->add_node(start->points->tail);
+				pl_temp->add_node(end->middle_point());
+				
+				polygon *cell = new polygon(pl_temp);
+				tmp_output -> add_polygon(cell);
+
+				start = start->next;
+			};
+		tmp_pol = tmp_pol->pnext;
+		};
+		tmp_list = tmp_output;
+	};
+	
+	polygon *tmp_pol;
+
+	// convert cells to boost polygons
+	vector<Polygon_boost> cells;
+	tmp_pol = tmp_list->head;
+	while(tmp_pol != NULL){
+		cells.push_back(tmp_pol->to_boost_polygon());
+		tmp_pol = tmp_pol->pnext;
+	};
+	cout << "Cells in vector: " << cells.size() << endl;
+
+	// convert obstacles to boost ones
+	vector<Polygon_boost> ob_boost;
+	tmp_pol = obstacles->offset_head;
+	while(tmp_pol != NULL){
+		ob_boost.push_back(tmp_pol->to_boost_polygon());
+		tmp_pol = tmp_pol->pnext;
+	};
+
+	// add gates to list of obstacles	
+	tmp_pol = gates->head;
+	while(tmp_pol != NULL){
+		ob_boost.push_back(tmp_pol->to_boost_polygon());
+		tmp_pol = tmp_pol->pnext;
+	};
+
+	// Remove obstacles from the cells
+
+	vector<Polygon_boost> output;
+	for(int i_o=0; i_o != ob_boost.size(); i_o++){
+		for(int i_c=0; i_c != cells.size(); i_c++){
+			if (bg::intersects(cells[i_c], ob_boost[i_o])){
+				bg::difference(cells[i_c], ob_boost[i_o], output);
+				cells[i_c] = output[output.size()-1];
+			};
+		};
+	};
+	
+	list_of_polygons *new_cells = new list_of_polygons();
+	cout << "Cells in vector: " << cells.size() << endl;
+	for(int i=0; i<cells.size(); i++){
+		polygon *p = new polygon(boost_polygon_to_point_list(cells[i]));
+		new_cells -> add_polygon(p);
+	};
+	tmp_list = new_cells;
+	
+	polygon *pol_pointer = tmp_list->head;
+	while(pol_pointer != NULL){
+		free_space -> add_polygon(pol_pointer);
+		pol_pointer = pol_pointer->pnext;
+	};
+};
+
+
 /**
  * This function is used to detect the free space in the arena provided.
  * The algorithm works by subtracting to the arena the obstacles identified
@@ -451,8 +554,8 @@ vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
  * retaining only the free space in it.
  * @param[in] res: int. Is the resolution to apply at the arena subsetting.
  */
-void points_map::make_free_space_cells(int res)
-{
+void points_map::make_free_space_cells_triangular(int res)
+{	
 	// Subset arena -> free space idealization
 	polygon *_arena = new polygon(arena);
 	list_of_polygons *_arena_subset = subset_polygon(_arena, res);

@@ -50,7 +50,8 @@ typedef struct points_map
 	void add_obstacle(polygon *ob);
 	void add_gate(polygon *gt);
 	void merge_obstacles();
-	void make_free_space_cells(int res = 3);
+	void make_free_space_cells_triangular(int res = 3);
+	void make_free_space_cells_squares(int res=2);
 	void print_info();
 	Mat plot_arena(int x_dim, int y_dim, bool show_original_polygons = true);
 	void del_map();
@@ -60,6 +61,7 @@ typedef struct points_map
 
 // outsider functions
 point_list *boost_polygon_to_point_list(Polygon_boost p);
+polygon *boost_polygon_to_polygon(Polygon_boost p);
 list_of_polygons *subset_polygon(polygon *p, int levels = 1);
 vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
 											vector<Polygon_boost> obstacles);

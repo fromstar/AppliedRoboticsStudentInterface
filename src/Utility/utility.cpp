@@ -167,17 +167,25 @@ void Edge::info()
 	printf("Slope: %f\n", *slope);
 };
 
+point_node* Edge::middle_point(){
+	double mid_x = ((points->head->x + points->tail->x))/2;
+	double mid_y = ((points->head->y + points->tail->y))/2;
+	return new point_node(mid_x, mid_y);
+};
+
 void Edge_list::add_edge(Edge *e)
 {
 	if (head == NULL)
 	{
 		head = e;
 		tail = head;
+		size++;
 		return;
 	};
 
 	tail->next = e;
 	tail = tail->next;
+	size++;
 };
 
 void Edge_list::info()
@@ -201,8 +209,8 @@ Edge_list::~Edge_list()
 	};
 };
 
-Mat plot_points(point_list *pl, Mat arena, Scalar colorline, bool isPolygon_boost,
-				int thickness)
+Mat plot_points(point_list *pl, Mat arena, Scalar colorline, bool isPolygon,
+				int thickness, bool show)
 {
 	if (pl != NULL)
 	{
@@ -214,17 +222,34 @@ Mat plot_points(point_list *pl, Mat arena, Scalar colorline, bool isPolygon_boos
 			Point pt1((n1->x * SCALE_1) + SCALE_2, (n1->y * -SCALE_1) + SCALE_2);
 			Point pt2((n2->x * SCALE_1) + SCALE_2, (n2->y * -SCALE_1) + SCALE_2);
 			line(arena, pt1, pt2, colorline, thickness);
+			if (show){
+				cout << "Plotting Line: "
+					 << "[" << (n1->x * SCALE_1) + SCALE_2 << ":"
+					 << (n1->y * -SCALE_1) + SCALE_2 << "]\t"
+					 << "[" << (n2->x * SCALE_1) + SCALE_2 << ":"
+					 << ((n2->y * -SCALE_1) + SCALE_2) << "]" << endl;
+			};
 			/*cout<<"P1 x: " << n1->x<<" y: " <<n1->y <<endl;
 			cout<<"P2 x: " << n2->x<<" y: " <<n2->y <<endl;
 			cout<<"Line drawed\n";*/
 			n1 = n1->pnext;
 		}
 
-		if (isPolygon_boost) // close the polygon connecting the last point with the firts one
-			line(arena, Point((n1->x * SCALE_1) + SCALE_2, (n1->y * -SCALE_1) + SCALE_2),
+		if (isPolygon){ // close the polygon connecting the last point with the firts one
+			line(arena, Point((pl->tail->x * SCALE_1) + SCALE_2,
+							  (pl->tail->y * -SCALE_1) + SCALE_2),
 				 Point((pl->head->x * SCALE_1) + SCALE_2,
 					   (pl->head->y * -SCALE_1) + SCALE_2),
 				 colorline, thickness);
+			if (show){
+				cout << "Plotting Line: "
+					 << "[" << (n1->x * SCALE_1) + SCALE_2 << ":"
+					 << (n1->y * -SCALE_1) + SCALE_2 << "]\t"
+					 << "[" << (pl->head->x * SCALE_1) + SCALE_2 << ":"
+					 << ((pl->head->y * -SCALE_1) + SCALE_2) << "]" << endl;
+			};
+		};
+				
 	}
 	return arena;
 }
@@ -557,7 +582,7 @@ void polygon::concatenate(polygon *p)
 void polygon::info()
 {
 	pl->print_list();
-	printf("Polygon_boost centroid: ");
+	printf("Polygon centroid: ");
 	centroid->Print();
 };
 

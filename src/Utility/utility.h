@@ -88,8 +88,7 @@ typedef struct Edge{
 
 	// methods
 	void info();
-	void draw(cv::Mat img, cv::Scalar color=cv::Scalar(255, 255, 255),
-			  int thickness=1);
+	point_node* middle_point();
 	point_node* intersection(Edge *e);
 	~Edge();
 }Edge;
@@ -108,6 +107,7 @@ typedef struct Edge_list{
 	//Edge *edge = NULL;
 	Edge *head = NULL;
 	Edge *tail = NULL;
+	int size = 0;
 
 	void add_edge(Edge *e);
 	void info();
@@ -170,7 +170,8 @@ double sinc(double);
 double mod2pi(double);
 double rangeSymm(double);
 bool check(double, double, double, double, double, double, double, double);
-Mat plot_points(point_list *, Mat, Scalar, bool, int thickness=1);
+Mat plot_points(point_list *, Mat, Scalar, bool, int thickness=1,
+				bool show=false);
 void sort(double_list *, point_list *);
 tuple <double, double> get_new_point(double,double,double,double);
 string exec(const char *cmd);
