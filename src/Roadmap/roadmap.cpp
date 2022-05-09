@@ -511,18 +511,21 @@ void points_map::make_free_space_cells_squares(int res){
 	};
 
 	// add gates to list of obstacles	
+	/*
 	tmp_pol = gates->head;
 	while(tmp_pol != NULL){
 		ob_boost.push_back(tmp_pol->to_boost_polygon());
 		tmp_pol = tmp_pol->pnext;
 	};
+	*/
 
 	// Remove obstacles from the cells
 
 	vector<Polygon_boost> output;
 	for(int i_o=0; i_o != ob_boost.size(); i_o++){
 		for(int i_c=0; i_c != cells.size(); i_c++){
-			if (bg::intersects(cells[i_c], ob_boost[i_o])){
+			if (bg::intersects(cells[i_c], ob_boost[i_o]) ||
+				bg::covered_by(cells[i_c], ob_boost[i_o])){
 				bg::difference(cells[i_c], ob_boost[i_o], output);
 				cells[i_c] = output[output.size()-1];
 			};
@@ -530,7 +533,6 @@ void points_map::make_free_space_cells_squares(int res){
 	};
 	
 	list_of_polygons *new_cells = new list_of_polygons();
-	cout << "Cells in vector: " << cells.size() << endl;
 	for(int i=0; i<cells.size(); i++){
 		polygon *p = new polygon(boost_polygon_to_point_list(cells[i]));
 		new_cells -> add_polygon(p);

@@ -329,9 +329,10 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr){
 		for(it_2 = wr.world_gates.begin(); it_2 != wr.world_gates.end();
 			++it_2){
 			Polygon_boost p2 = it_2 -> second.cell -> to_boost_polygon();
-			if (boost::geometry::touches(p1, p2)){
-				problem_file += "\t\t( connected " + it_1->first + " " +
-								it_2->first + " )\n";
+			if (boost::geometry::intersects(p1, p2) ||
+				boost::geometry::covered_by(p2, p1)){
+				problem_file += "\t\t( is_in " + it_2->first + " " +
+								it_1->first + " )\n";
 			};
 		};
 	};
