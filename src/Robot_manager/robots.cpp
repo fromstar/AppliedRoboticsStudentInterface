@@ -213,7 +213,9 @@ void robot_fugitive::write_file(string file_name, string what_to_write,
 		file_out << what_to_write;
 		file_out.close();
 	}else{
-		cout << "Unable to open output stream" << endl;
+		string error_msg = "Unable to open output stream towards " + file_name;
+		throw std::logic_error(error_msg);
+		// cout << "Unable to open output stream" << endl;
 	};
 
 };
@@ -613,9 +615,15 @@ void robot_catcher::write_file(string file_name, string what_to_write,
 void robot_catcher::make_pddl_files(World_representation wr,
 									behaviour_fugitive b_ant, bool do_plan){
 	if (antagonists.size() == 0){
+		string error_msg = "No antagonists assigned to " + self->ID +
+						   " try running the method \"trade_fugitives()\""
+						   " of the struct Robot_manager.\n";
+		throw std::logic_error(error_msg);
+		/*
 		cout << "No antagonists assigned to " << self->ID
 			 << " try running the method \"trade_fugitives()\" of the struct"
 			 << " robot manager." << endl;
+		*/
 		return;
 	};
 
@@ -911,8 +919,12 @@ vector<string> robot_catcher::make_plan(bool apply, string domain_name,
 			tmp_plan.push_back(tmp_line);
 		};
 	}else{
-		cout << "Unable to open input plan file, probably no plan found"
-			 << endl;
+		string error_msg = "Unable to open input plan file. Either folder "
+						   "permission error or No plan Fout -> exit code 12";
+		throw std::logic_error(error_msg);
+
+		// cout << "Unable to open input plan file, probably no plan found"
+		//	 << endl;
 	};
 	
 	// using ifstream returns an empty line after the last one in file
