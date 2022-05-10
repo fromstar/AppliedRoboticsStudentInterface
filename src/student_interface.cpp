@@ -99,12 +99,14 @@ namespace student
       for (int j = 0; j < gate_list[i].size(); j++)
       {
         pol->add_node(new point_node(gate_list[i][j].x * scale, gate_list[i][j].y * scale));
+        cout << "p" << j+1 << " " << gate_list[i][j].x<<":"<<gate_list[i][j].y << endl; 
       }
       arena.add_gate(new polygon(pol));
     }
 
     arena.merge_obstacles();
-    arena.make_free_space_cells();
+
+    arena.make_free_space_cells_squares();
     log_test->add_event("Created Roadmap");
 
     Robot *c_1 = new Robot("Catcher_1", catcher);
@@ -115,42 +117,36 @@ namespace student
 
     arena.set_robot_position(c_1->ID, x[0] * scale, y[0] * scale);
     arena.set_robot_position(f_1->ID, x[1] * scale, y[1] * scale);
-
     // Create world representaion
     World_representation abstract_arena = World_representation(
         arena.free_space,
         arena.gates,
         log_test);
 
-    abstract_arena.info();
-
     robot_manager rm;
 
     rm.add_robot(f_1);
     rm.add_robot(c_1);
 
-    // rm.parse_map_robots(arena.robot);
     rm.trade_fugitives();
+
+    rm.info(true);
+
+    abstract_arena.info();
 
     map<string, robot_fugitive *>::iterator it;
     it = rm.fugitives.begin();
     it->second->set_behaviour(aware);
     it->second->make_pddl_domain_file(abstract_arena);
     it->second->make_pddl_problem_file(abstract_arena);
-    rm.info(true);
-
-    // abstract_arena.to_pddl("Pddl/problem_catcher.pddl");
-    // abstract_arena.to_pddl("Pddl/problem_fugitive.pddl", "fugitive_catcher",
-    //                        "fugitive_catcher", true);
-    // kill(getpid());
 
     Mat img_arena = arena.plot_arena(800, 800, true);
 
-    /**********************************************
-     * TO MOVE
-    //  ***********************************************/
+    // /**********************************************
+    //  * TO MOVE
+    // //  ***********************************************/
     vector<string> f_path = it->second->self->plan;
-    // // cout << abstract_arena.world_free_cells["Cell_1"].cell->centroid->y<<endl;
+    // // // cout << abstract_arena.world_free_cells["Cell_1"].cell->centroid->y<<endl;
 
     double fx_path[f_path.size() + 1];
     double fy_path[f_path.size() + 1];
