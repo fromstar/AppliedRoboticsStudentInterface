@@ -219,9 +219,30 @@ point_list *boost_polygon_to_point_list(Polygon_boost p)
 		
 		pl->add_node(new point_node(x, y));
 	}
-	// pl->pop();
-	return pl;
+	point_list* new_pol_list = pl->pop();
+	return new_pol_list;
 };
+
+
+polygon *boost_polygon_to_polygon(Polygon_boost p)
+{
+	point_list *pl = new point_list();
+	pt new_centroid;
+	boost::geometry::centroid(p, new_centroid);
+	for (auto it = boost::begin(boost::geometry::exterior_ring(p));
+		 it != boost::end(boost::geometry::exterior_ring(p)); ++it)
+	{
+		double x = bg::get<0>(*it);
+		double y = bg::get<1>(*it);
+		
+		pl->add_node(new point_node(x, y));
+	}
+	point_list* new_pol_list = pl->pop();
+	polygon *new_pol = new polygon(new_pol_list);
+	new_pol->centroid = new point_node(new_centroid.x(), new_centroid.y());
+	return new_pol;
+};
+
 
 /**
  * This function is used to merge the obstacles that touch each others in the
@@ -413,10 +434,10 @@ vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
 {
 
 	if(arena.size() == 0){
-		cout << "Arena vector is empty -> segmentation fault" << endl;
+		cout << "Arena vector is empty." << endl;
 	};
 	if(obstacles.size() == 0){
-		cout << "Arena vector is empty -> segmentation fault" << endl;
+		cout << "Obstacle vector is empty." << endl;
 	};
 
 	vector<Polygon_boost> output;
@@ -498,6 +519,7 @@ void points_map::make_free_space_cells_squares(int res){
 		tmp_list = tmp_output;
 	};
 	
+
 	polygon *tmp_pol;
 
 	// convert cells to boost polygons
@@ -529,7 +551,6 @@ void points_map::make_free_space_cells_squares(int res){
 
 	// Remove obstacles from the cells
 	
-	/*
 	vector<Polygon_boost> output;
 	for(int i_o=0; i_o != ob_boost.size(); i_o++){
 		for(int i_c=0; i_c != cells.size(); i_c++){
@@ -539,18 +560,17 @@ void points_map::make_free_space_cells_squares(int res){
 			};
 		};
 	};
-	*/
 
 	cells = difference_of_vectors(cells, ob_boost);
 	
 	list_of_polygons *new_cells = new list_of_polygons();
 	for(int i=0; i<cells.size(); i++){
-		polygon *p = new polygon(boost_polygon_to_point_list(cells[i]));
-		p->recompute_centroid();
+		polygon *p = boost_polygon_to_polygon(cells[i]);
+		// p->recompute_centroid();
 		new_cells -> add_polygon(p);
 	};
 	tmp_list = new_cells;
-	
+
 	polygon *pol_pointer = tmp_list->head;
 	while(pol_pointer != NULL){
 		free_space -> add_polygon(pol_pointer);

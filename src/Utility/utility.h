@@ -61,7 +61,7 @@ struct point_list{
 	void append_list(point_list *e);
 	void print_list();
 	void delete_list();
-	void pop();	
+	point_list* pop();
 }typedef point_list;
 
 /**

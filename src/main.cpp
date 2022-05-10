@@ -26,10 +26,10 @@ void test()
 	// Define arena limits
 
 	point_list *map_limits = new point_list;
-	map_limits->add_node(new point_node(-1.0, -4.0));
-	map_limits->add_node(new point_node(-1.0, 1.0));
-	map_limits->add_node(new point_node(4.0, 1.0));
-	map_limits->add_node(new point_node(4.0, -4.0));
+	map_limits->add_node(new point_node(-1.0, -3.5));
+	map_limits->add_node(new point_node(-1.0, 1.5));
+	map_limits->add_node(new point_node(4.0, 1.5));
+	map_limits->add_node(new point_node(4.0, -3.5));
 	test_map.add_arena_points(map_limits);
 
 	// Add obstacles
@@ -143,19 +143,32 @@ void test()
 
 	// Add gates
 	pol = new point_list;
-	pol->add_node(new point_node(2, -4));
-	pol->add_node(new point_node(3, -4));
-	pol->add_node(new point_node(3, -3.5));
-	pol->add_node(new point_node(2, -3.5));
+	pol->add_node(new point_node(1.1973, 0.94965));
+	pol->add_node(new point_node(1.1934, 1.04325));
+	pol->add_node(new point_node(1.39815, 1.0452));
+	pol->add_node(new point_node(1.4001, 0.9516));
 	test_map.add_gate(new polygon(pol));
 
+	/*
+	polygon *gate_pol = new polygon(pol);
+	Polygon_boost gate_ob = gate_pol->to_boost_polygon();
+
+	polygon *p_arena = new polygon(map_limits);
+	Polygon_boost boost_arena = p_arena->to_boost_polygon();
+
+	if(boost::geometry::covered_by(gate_ob, boost_arena)){
+		cout << "Gate inside arena" << endl;
+	};
+	*/
+
+	/*
 	pol = new point_list;
 	pol->add_node(new point_node(-1, -1));
 	pol->add_node(new point_node(-1, 0));
 	pol->add_node(new point_node(-0.5, 0));
 	pol->add_node(new point_node(-0.5, -1));
 	test_map.add_gate(new polygon(pol));
-
+	*/
 	test_map.merge_obstacles();
 
 	test_map.make_free_space_cells_squares(3);
@@ -170,7 +183,7 @@ void test()
 
 	test_map.set_robot_position(c_1->ID, 1, -2);
 	test_map.set_robot_position(f_1->ID, -0.5, -0.5);
-	/*
+	
 	World_representation abstract_arena = World_representation(
 		test_map.free_space,
 		test_map.gates,
@@ -181,14 +194,14 @@ void test()
 
 	rm.parse_map_robots(test_map.robot);
 	rm.trade_fugitives();
-	*/
-	map<string, robot_catcher*>::iterator it;
-	/*
+
+	map<string, robot_fugitive*>::iterator it;
+
 	it = rm.fugitives.begin();
 	it->second->set_behaviour(aware);
 	it -> second -> make_pddl_domain_file(abstract_arena);
 	it -> second -> make_pddl_problem_file(abstract_arena);
-	*/
+
 	// it = rm.catchers.begin();
 	// it->second -> make_pddl_files(abstract_arena);
 	// rm.info(true);

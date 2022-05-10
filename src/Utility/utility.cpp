@@ -81,15 +81,16 @@ void point_list::add_node(point_node *node, int iterations)
 	};
 }
 
-void point_list::pop(){
+point_list* point_list::pop(){
 	point_node *tmp = head;
-	while(tmp->pnext->pnext != NULL){
+	point_list *new_list = new point_list;
+	while(tmp->pnext != NULL){
+		new_list->add_node(new point_node(tmp->x, tmp->y));
 		tmp = tmp->pnext;
 	};
-	tmp->pnext->~point_node();
-	tmp->pnext = NULL;
-	tail = tmp;
+	return new_list;
 };
+
 
 void point_list::append_list(point_list *e)
 {
