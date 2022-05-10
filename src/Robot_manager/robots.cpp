@@ -322,7 +322,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr){
 		};
 	};
 
-	// gates connected with cells
+	// gates in cells
 	for(it_1=wr.world_free_cells.begin(); it_1 != wr.world_free_cells.end();
 		++it_1){
 		Polygon_boost p1 = it_1 -> second.cell -> to_boost_polygon();
@@ -331,7 +331,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr){
 			Polygon_boost p2 = it_2 -> second.cell -> to_boost_polygon();
 			if (boost::geometry::intersects(p1, p2) ||
 				boost::geometry::covered_by(p2, p1)){
-				problem_file += "\t\t( is_in " + it_2->first + " " +
+				problem_file += "\t\t( connected " + it_2->first + " " +
 								it_1->first + " )\n";
 			};
 		};

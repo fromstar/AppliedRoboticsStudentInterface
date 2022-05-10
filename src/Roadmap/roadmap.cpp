@@ -524,8 +524,7 @@ void points_map::make_free_space_cells_squares(int res){
 	vector<Polygon_boost> output;
 	for(int i_o=0; i_o != ob_boost.size(); i_o++){
 		for(int i_c=0; i_c != cells.size(); i_c++){
-			if (bg::intersects(cells[i_c], ob_boost[i_o]) ||
-				bg::covered_by(cells[i_c], ob_boost[i_o])){
+			if (bg::intersects(cells[i_c], ob_boost[i_o])){
 				bg::difference(cells[i_c], ob_boost[i_o], output);
 				cells[i_c] = output[output.size()-1];
 			};
