@@ -115,8 +115,8 @@ namespace student
     Robot *f_1 = new Robot("Fugitive_1", fugitive);
     arena.add_robot(f_1);
 
-    arena.set_robot_position(c_1->ID, x[0] * scale, y[0] * scale);
-    arena.set_robot_position(f_1->ID, x[1] * scale, y[1] * scale);
+    arena.set_robot_position(f_1->ID, x[0] * scale, y[0] * scale);
+    arena.set_robot_position(c_1->ID, x[1] * scale, y[1] * scale);
     // Create world representaion
     World_representation abstract_arena = World_representation(
         arena.free_space,
@@ -130,7 +130,7 @@ namespace student
 
     rm.trade_fugitives();
 
-    rm.info(true);
+    // rm.info(true);
 
     abstract_arena.info();
 
@@ -139,6 +139,8 @@ namespace student
     it->second->set_behaviour(aware);
     it->second->make_pddl_domain_file(abstract_arena);
     it->second->make_pddl_problem_file(abstract_arena);
+	
+	// it->second->info();
 
     Mat img_arena = arena.plot_arena(800, 800, true);
 

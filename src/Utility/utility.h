@@ -60,7 +60,8 @@ struct point_list{
 	void add_node(point_node *, int iterations=1);
 	void append_list(point_list *e);
 	void print_list();
-	void delete_list();	
+	void delete_list();
+	void pop();	
 }typedef point_list;
 
 /**
@@ -152,6 +153,7 @@ typedef struct polygon{
 	Edge_list* edgify();
   	polygon* add_offset(double offset);  // Our polygon class
   	void concatenate(polygon *p);
+	void recompute_centroid();
 	Polygon_boost to_boost_polygon();  // Polygon_boost of boost lybrary
   	void info();
 }polygon;

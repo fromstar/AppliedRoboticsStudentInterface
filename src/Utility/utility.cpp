@@ -81,6 +81,16 @@ void point_list::add_node(point_node *node, int iterations)
 	};
 }
 
+void point_list::pop(){
+	point_node *tmp = head;
+	while(tmp->pnext->pnext != NULL){
+		tmp = tmp->pnext;
+	};
+	tmp->pnext->~point_node();
+	tmp->pnext = NULL;
+	tail = tmp;
+};
+
 void point_list::append_list(point_list *e)
 {
 	tail->pnext = e->head;
@@ -399,6 +409,18 @@ polygon::polygon(point_list *pls)
 	}
 };
 
+void polygon::recompute_centroid(){
+	point_node *tmp = pl->head;
+	double x_sum=0;
+	double y_sum=0;
+	while(tmp != NULL){
+		x_sum += tmp->x;
+		y_sum += tmp->y;
+		tmp = tmp->pnext;
+	};
+	centroid =  new point_node(x_sum/pl->size, y_sum/pl->size);
+};
+
 polygon::~polygon()
 {
 	pl->delete_list();
@@ -637,9 +659,9 @@ double get_angle(double xc, double yc, double x, double y)
 
 bool is_in_arc(double th0, double thf, double th)
 {
-	cout << "start: " << th0 <<endl;
-	cout << "end: " << thf << endl;
-	cout << "angle: " << th << endl;
+	// cout << "start: " << th0 <<endl;
+	// cout << "end: " << thf << endl;
+	// cout << "angle: " << th << endl;
 	if(th <= th0 && th >= thf)
 		return true;
 	return false;

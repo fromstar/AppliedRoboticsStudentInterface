@@ -608,11 +608,13 @@ bool pt_in_arc(point_node *pts, arc a)
 	while (pts != NULL)
 	{
 		angle = get_angle(a.xc, a.yc, pts->x, pts->y);
-
+		
+		/*
 		cout << "start_angle: " << start << endl;
 		cout << "end_angle: " << end << endl;
 		cout << "angle_angle: " << angle << endl;
-		
+		*/
+
 		// check if the angle point is included between the starting and ending angles.
 		if (is_in_arc(start, end, angle))
 		{

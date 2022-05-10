@@ -173,7 +173,13 @@ Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons)
 	while (tmp != NULL)
 	{
 		img_arena = plot_points(tmp->pl, img_arena, Scalar(0, 255, 255),
-								true, 3);
+								true, 1);
+		
+		point_list *free_space_centroid = new point_list;
+		free_space_centroid->add_node(tmp->centroid->copy());
+		free_space_centroid->add_node(tmp->centroid->copy());
+		img_arena = plot_points(free_space_centroid, img_arena, Scalar(0, 255, 255),
+								false, 5);
 		tmp = tmp->pnext;
 	};
 
@@ -210,9 +216,10 @@ point_list *boost_polygon_to_point_list(Polygon_boost p)
 	{
 		double x = bg::get<0>(*it);
 		double y = bg::get<1>(*it);
-
+		
 		pl->add_node(new point_node(x, y));
 	}
+	// pl->pop();
 	return pl;
 };
 
@@ -497,6 +504,7 @@ void points_map::make_free_space_cells_squares(int res){
 	vector<Polygon_boost> cells;
 	tmp_pol = tmp_list->head;
 	while(tmp_pol != NULL){
+		cout << "Before becaming boost: " << tmp_pol->pl->size << endl;
 		cells.push_back(tmp_pol->to_boost_polygon());
 		tmp_pol = tmp_pol->pnext;
 	};
@@ -520,7 +528,8 @@ void points_map::make_free_space_cells_squares(int res){
 	*/
 
 	// Remove obstacles from the cells
-
+	
+	/*
 	vector<Polygon_boost> output;
 	for(int i_o=0; i_o != ob_boost.size(); i_o++){
 		for(int i_c=0; i_c != cells.size(); i_c++){
@@ -530,10 +539,14 @@ void points_map::make_free_space_cells_squares(int res){
 			};
 		};
 	};
+	*/
+
+	cells = difference_of_vectors(cells, ob_boost);
 	
 	list_of_polygons *new_cells = new list_of_polygons();
 	for(int i=0; i<cells.size(); i++){
 		polygon *p = new polygon(boost_polygon_to_point_list(cells[i]));
+		p->recompute_centroid();
 		new_cells -> add_polygon(p);
 	};
 	tmp_list = new_cells;
