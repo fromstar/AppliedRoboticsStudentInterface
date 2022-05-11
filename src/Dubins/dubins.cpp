@@ -558,38 +558,38 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 			}
 
 			// Check intersection curve with polygons
-			it = arena.obstacles->offset_head;
-			while (it != NULL)
-			{
-				edges = it->edgify()->head;
+			// it = arena.obstacles->offset_head;
+			// while (it != NULL)
+			// {
+			// 	edges = it->edgify()->head;
 
-				while (edges != NULL)
-				{
-					point_node *p0 = edges->points->head;
-					point_node *p1 = edges->points->tail;
+			// 	while (edges != NULL)
+			// 	{
+			// 		point_node *p0 = edges->points->head;
+			// 		point_node *p1 = edges->points->tail;
 
-					tie(pts, p) = intersCircleLine(c.a1.xc, c.a1.yc, c.a1.r, p0->x, p0->y, p1->x, p1->y);
-					if (pts == NULL)
-						intersection[0] = false;
-					else if (!pt_in_arc(pts->head, c.a1))
-						intersection[0] = false;
+			// 		tie(pts, p) = intersCircleLine(c.a1.xc, c.a1.yc, c.a1.r, p0->x, p0->y, p1->x, p1->y);
+			// 		if (pts == NULL)
+			// 			intersection[0] = false;
+			// 		else if (!pt_in_arc(pts->head, c.a1))
+			// 			intersection[0] = false;
 
-					tie(pts, p) = intersCircleLine(c.a2.xc, c.a2.yc, c.a2.r, p0->x, p0->y, p1->x, p1->y);
-					if (pts == NULL)
-						intersection[1] = false;
-					else if (!pt_in_arc(pts->head, c.a2))
-						intersection[1] = false;
+			// 		tie(pts, p) = intersCircleLine(c.a2.xc, c.a2.yc, c.a2.r, p0->x, p0->y, p1->x, p1->y);
+			// 		if (pts == NULL)
+			// 			intersection[1] = false;
+			// 		else if (!pt_in_arc(pts->head, c.a2))
+			// 			intersection[1] = false;
 
-					tie(pts, p) = intersCircleLine(c.a3.xc, c.a3.yc, c.a3.r, p0->x, p0->y, p1->x, p1->y);
-					if (pts == NULL)
-						intersection[2] = false;
-					else if (!pt_in_arc(pts->head, c.a3))
-						intersection[2] = false;
+			// 		tie(pts, p) = intersCircleLine(c.a3.xc, c.a3.yc, c.a3.r, p0->x, p0->y, p1->x, p1->y);
+			// 		if (pts == NULL)
+			// 			intersection[2] = false;
+			// 		else if (!pt_in_arc(pts->head, c.a3))
+			// 			intersection[2] = false;
 
-					edges = edges->next;
-				}
-				it = it->pnext;
-			}
+			// 		edges = edges->next;
+			// 	}
+			// 	it = it->pnext;
+			// }
 		}
 
 		k++;

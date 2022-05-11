@@ -1,0 +1,4 @@
+(move fugitive_1 cell_37 cell_18)
+(move fugitive_1 cell_18 cell_28)
+(move fugitive_1 cell_28 gate_0)
+; cost = 3 (unit cost)

@@ -1,0 +1,1060 @@
+[01/04/2022 - 19:08:53]: Code started
+
+[01/04/2022 - 19:08:53]: Obstacles in touch merged
+
+[01/04/2022 - 19:08:53]: Arena subsetted
+[01/04/2022 - 19:08:53]: Arena converted to boost
+[01/04/2022 - 19:08:53]: Obstacles converted to boost
+[01/04/2022 - 19:08:53]: Arena gates added to obstacles list
+[01/04/2022 - 19:08:53]: Free space generated
+[01/04/2022 - 19:08:53]: Created Roadmap
+[01/04/2022 - 19:08:53]: Created world representation
+[01/04/2022 - 19:08:53]: Added free space cells to world representation
+[01/04/2022 - 19:08:53]: Added gates cells to world representation
+[01/04/2022 - 19:08:53]: Added robot agents to world representation
+[01/04/2022 - 19:08:53]: End world representation creation
+[01/04/2022 - 19:08:53]: Started Creation of pddl problem file.
+[01/04/2022 - 19:08:53]: Ended Creation of pddl problem file.
+[01/04/2022 - 19:08:53]: Started Creation of pddl problem file.
+[01/04/2022 - 19:08:53]: Unable to create temporary folder
+[01/04/2022 - 19:08:54]: Ended Creation of pddl problem file.
+[02/04/2022 - 18:29:36]: Code started
+
+[02/04/2022 - 18:29:36]: Obstacles in touch merged
+
+[02/04/2022 - 18:29:36]: Arena subsetted
+[02/04/2022 - 18:29:36]: Arena converted to boost
+[02/04/2022 - 18:29:36]: Obstacles converted to boost
+[02/04/2022 - 18:29:36]: Arena gates added to obstacles list
+[02/04/2022 - 18:29:36]: Free space generated
+[02/04/2022 - 18:29:36]: Created Roadmap
+[02/04/2022 - 18:29:36]: Created world representation
+[02/04/2022 - 18:29:36]: Added free space cells to world representation
+[02/04/2022 - 18:29:36]: Added gates cells to world representation
+[02/04/2022 - 18:29:36]: Added robot agents to world representation
+[02/04/2022 - 18:29:36]: End world representation creation
+[02/04/2022 - 18:29:36]: Started Creation of pddl problem file.
+[02/04/2022 - 18:29:36]: Ended Creation of pddl problem file.
+[02/04/2022 - 18:29:36]: Started Creation of pddl problem file.
+[02/04/2022 - 18:29:36]: Temporary folder for planning correctly created
+[02/04/2022 - 18:29:37]: Ended Creation of pddl problem file.
+[02/04/2022 - 18:30:24]: Code started
+
+[02/04/2022 - 18:30:24]: Obstacles in touch merged
+
+[02/04/2022 - 18:30:24]: Arena subsetted
+[02/04/2022 - 18:30:24]: Arena converted to boost
+[02/04/2022 - 18:30:24]: Obstacles converted to boost
+[02/04/2022 - 18:30:24]: Arena gates added to obstacles list
+[02/04/2022 - 18:30:24]: Free space generated
+[02/04/2022 - 18:30:24]: Created Roadmap
+[02/04/2022 - 18:30:24]: Created world representation
+[02/04/2022 - 18:30:24]: Added free space cells to world representation
+[02/04/2022 - 18:30:24]: Added gates cells to world representation
+[02/04/2022 - 18:30:24]: Added robot agents to world representation
+[02/04/2022 - 18:30:24]: End world representation creation
+[02/04/2022 - 18:30:24]: Started Creation of pddl problem file.
+[02/04/2022 - 18:30:24]: Ended Creation of pddl problem file.
+[02/04/2022 - 18:30:24]: Started Creation of pddl problem file.
+[02/04/2022 - 18:30:24]: Temporary folder for planning correctly created
+[02/04/2022 - 18:30:26]: Ended Creation of pddl problem file.
+[02/04/2022 - 18:31:14]: Code started
+
+[02/04/2022 - 18:31:14]: Obstacles in touch merged
+
+[02/04/2022 - 18:31:14]: Arena subsetted
+[02/04/2022 - 18:31:14]: Arena converted to boost
+[02/04/2022 - 18:31:14]: Obstacles converted to boost
+[02/04/2022 - 18:31:14]: Arena gates added to obstacles list
+[02/04/2022 - 18:31:14]: Free space generated
+[02/04/2022 - 18:31:14]: Created Roadmap
+[02/04/2022 - 18:31:14]: Created world representation
+[02/04/2022 - 18:31:14]: Added free space cells to world representation
+[02/04/2022 - 18:31:14]: Added gates cells to world representation
+[02/04/2022 - 18:31:14]: Added robot agents to world representation
+[02/04/2022 - 18:31:14]: End world representation creation
+[02/04/2022 - 18:31:14]: Started Creation of pddl problem file.
+[02/04/2022 - 18:31:14]: Ended Creation of pddl problem file.
+[02/04/2022 - 18:31:14]: Started Creation of pddl problem file.
+[02/04/2022 - 18:31:14]: Temporary folder for planning correctly created
+[02/04/2022 - 18:31:16]: Ended Creation of pddl problem file.
+[02/04/2022 - 18:32:07]: Code started
+
+[02/04/2022 - 18:32:07]: Obstacles in touch merged
+
+[02/04/2022 - 18:32:07]: Arena subsetted
+[02/04/2022 - 18:32:07]: Arena converted to boost
+[02/04/2022 - 18:32:07]: Obstacles converted to boost
+[02/04/2022 - 18:32:07]: Arena gates added to obstacles list
+[02/04/2022 - 18:32:07]: Free space generated
+[02/04/2022 - 18:32:07]: Created Roadmap
+[02/04/2022 - 18:32:07]: Created world representation
+[02/04/2022 - 18:32:07]: Added free space cells to world representation
+[02/04/2022 - 18:32:07]: Added gates cells to world representation
+[02/04/2022 - 18:32:07]: Added robot agents to world representation
+[02/04/2022 - 18:32:07]: End world representation creation
+[02/04/2022 - 18:32:07]: Started Creation of pddl problem file.
+[02/04/2022 - 18:32:07]: Ended Creation of pddl problem file.
+[02/04/2022 - 18:32:07]: Started Creation of pddl problem file.
+[02/04/2022 - 18:32:07]: Temporary folder for planning correctly created
+[02/04/2022 - 18:32:09]: Ended Creation of pddl problem file.
+[02/04/2022 - 18:33:43]: Code started
+
+[02/04/2022 - 18:33:43]: Obstacles in touch merged
+
+[02/04/2022 - 18:33:43]: Arena subsetted
+[02/04/2022 - 18:33:43]: Arena converted to boost
+[02/04/2022 - 18:33:43]: Obstacles converted to boost
+[02/04/2022 - 18:33:43]: Arena gates added to obstacles list
+[02/04/2022 - 18:33:43]: Free space generated
+[02/04/2022 - 18:33:43]: Created Roadmap
+[02/04/2022 - 18:33:43]: Created world representation
+[02/04/2022 - 18:33:43]: Added free space cells to world representation
+[02/04/2022 - 18:33:43]: Added gates cells to world representation
+[02/04/2022 - 18:33:43]: Added robot agents to world representation
+[02/04/2022 - 18:33:43]: End world representation creation
+[02/04/2022 - 18:33:43]: Started Creation of pddl problem file.
+[02/04/2022 - 18:33:43]: Ended Creation of pddl problem file.
+[02/04/2022 - 18:33:43]: Started Creation of pddl problem file.
+[02/04/2022 - 18:33:44]: Temporary folder for planning correctly created
+[02/04/2022 - 18:33:45]: Ended Creation of pddl problem file.
+[02/04/2022 - 18:54:07]: Code started
+
+[02/04/2022 - 18:54:07]: Obstacles in touch merged
+
+[02/04/2022 - 18:54:07]: Arena subsetted
+[02/04/2022 - 18:54:07]: Arena converted to boost
+[02/04/2022 - 18:54:07]: Obstacles converted to boost
+[02/04/2022 - 18:54:07]: Arena gates added to obstacles list
+[02/04/2022 - 18:54:07]: Free space generated
+[02/04/2022 - 18:54:07]: Created Roadmap
+[02/04/2022 - 18:54:07]: Created world representation
+[02/04/2022 - 18:54:07]: Added free space cells to world representation
+[02/04/2022 - 18:54:07]: Added gates cells to world representation
+[02/04/2022 - 18:54:07]: Added robot agents to world representation
+[02/04/2022 - 18:54:07]: End world representation creation
+[02/04/2022 - 18:54:07]: Started Creation of pddl problem file.
+[02/04/2022 - 18:54:07]: Ended Creation of pddl problem file.
+[02/04/2022 - 18:54:07]: Started Creation of pddl problem file.
+[02/04/2022 - 18:54:07]: Temporary folder for planning correctly created
+[02/04/2022 - 18:54:09]: Ended Creation of pddl problem file.
+[02/04/2022 - 18:57:13]: Code started
+
+[02/04/2022 - 18:57:13]: Obstacles in touch merged
+
+[02/04/2022 - 18:57:13]: Arena subsetted
+[02/04/2022 - 18:57:13]: Arena converted to boost
+[02/04/2022 - 18:57:13]: Obstacles converted to boost
+[02/04/2022 - 18:57:13]: Arena gates added to obstacles list
+[02/04/2022 - 18:57:13]: Free space generated
+[02/04/2022 - 18:57:13]: Created Roadmap
+[02/04/2022 - 18:57:13]: Created world representation
+[02/04/2022 - 18:57:13]: Added free space cells to world representation
+[02/04/2022 - 18:57:13]: Added gates cells to world representation
+[02/04/2022 - 18:57:13]: Added robot agents to world representation
+[02/04/2022 - 18:57:13]: End world representation creation
+[02/04/2022 - 18:57:13]: Started Creation of pddl problem file.
+[02/04/2022 - 18:57:13]: Ended Creation of pddl problem file.
+[02/04/2022 - 18:57:13]: Started Creation of pddl problem file.
+[02/04/2022 - 18:57:13]: Temporary folder for planning correctly created
+[02/04/2022 - 18:57:15]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:02:12]: Code started
+
+[02/04/2022 - 19:02:12]: Obstacles in touch merged
+
+[02/04/2022 - 19:02:12]: Arena subsetted
+[02/04/2022 - 19:02:12]: Arena converted to boost
+[02/04/2022 - 19:02:12]: Obstacles converted to boost
+[02/04/2022 - 19:02:12]: Arena gates added to obstacles list
+[02/04/2022 - 19:02:12]: Free space generated
+[02/04/2022 - 19:02:12]: Created Roadmap
+[02/04/2022 - 19:02:12]: Created world representation
+[02/04/2022 - 19:02:12]: Added free space cells to world representation
+[02/04/2022 - 19:02:12]: Added gates cells to world representation
+[02/04/2022 - 19:02:12]: Added robot agents to world representation
+[02/04/2022 - 19:02:12]: End world representation creation
+[02/04/2022 - 19:02:12]: Started Creation of pddl problem file.
+[02/04/2022 - 19:02:12]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:02:12]: Started Creation of pddl problem file.
+[02/04/2022 - 19:02:12]: Temporary folder for planning correctly created
+[02/04/2022 - 19:02:14]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:08:09]: Code started
+
+[02/04/2022 - 19:08:09]: Obstacles in touch merged
+
+[02/04/2022 - 19:08:09]: Arena subsetted
+[02/04/2022 - 19:08:09]: Arena converted to boost
+[02/04/2022 - 19:08:09]: Obstacles converted to boost
+[02/04/2022 - 19:08:09]: Arena gates added to obstacles list
+[02/04/2022 - 19:08:09]: Free space generated
+[02/04/2022 - 19:08:09]: Created Roadmap
+[02/04/2022 - 19:08:09]: Created world representation
+[02/04/2022 - 19:08:09]: Added free space cells to world representation
+[02/04/2022 - 19:08:09]: Added gates cells to world representation
+[02/04/2022 - 19:08:09]: Added robot agents to world representation
+[02/04/2022 - 19:08:09]: End world representation creation
+[02/04/2022 - 19:08:09]: Started Creation of pddl problem file.
+[02/04/2022 - 19:08:09]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:08:09]: Started Creation of pddl problem file.
+[02/04/2022 - 19:08:10]: Temporary folder for planning correctly created
+[02/04/2022 - 19:08:11]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:08:58]: Code started
+
+[02/04/2022 - 19:08:58]: Obstacles in touch merged
+
+[02/04/2022 - 19:08:58]: Arena subsetted
+[02/04/2022 - 19:08:58]: Arena converted to boost
+[02/04/2022 - 19:08:58]: Obstacles converted to boost
+[02/04/2022 - 19:08:58]: Arena gates added to obstacles list
+[02/04/2022 - 19:08:58]: Free space generated
+[02/04/2022 - 19:08:58]: Created Roadmap
+[02/04/2022 - 19:08:58]: Created world representation
+[02/04/2022 - 19:08:58]: Added free space cells to world representation
+[02/04/2022 - 19:08:58]: Added gates cells to world representation
+[02/04/2022 - 19:08:58]: Added robot agents to world representation
+[02/04/2022 - 19:08:58]: End world representation creation
+[02/04/2022 - 19:08:58]: Started Creation of pddl problem file.
+[02/04/2022 - 19:08:58]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:08:58]: Started Creation of pddl problem file.
+[02/04/2022 - 19:08:58]: Temporary folder for planning correctly created
+[02/04/2022 - 19:09:00]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:09:58]: Code started
+
+[02/04/2022 - 19:09:58]: Obstacles in touch merged
+
+[02/04/2022 - 19:09:58]: Arena subsetted
+[02/04/2022 - 19:09:58]: Arena converted to boost
+[02/04/2022 - 19:09:58]: Obstacles converted to boost
+[02/04/2022 - 19:09:58]: Arena gates added to obstacles list
+[02/04/2022 - 19:09:59]: Free space generated
+[02/04/2022 - 19:09:59]: Created Roadmap
+[02/04/2022 - 19:09:59]: Created world representation
+[02/04/2022 - 19:09:59]: Added free space cells to world representation
+[02/04/2022 - 19:09:59]: Added gates cells to world representation
+[02/04/2022 - 19:09:59]: Added robot agents to world representation
+[02/04/2022 - 19:09:59]: End world representation creation
+[02/04/2022 - 19:09:59]: Started Creation of pddl problem file.
+[02/04/2022 - 19:09:59]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:09:59]: Started Creation of pddl problem file.
+[02/04/2022 - 19:09:59]: Temporary folder for planning correctly created
+[02/04/2022 - 19:10:01]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:10:46]: Code started
+
+[02/04/2022 - 19:10:46]: Obstacles in touch merged
+
+[02/04/2022 - 19:10:46]: Arena subsetted
+[02/04/2022 - 19:10:46]: Arena converted to boost
+[02/04/2022 - 19:10:46]: Obstacles converted to boost
+[02/04/2022 - 19:10:46]: Arena gates added to obstacles list
+[02/04/2022 - 19:10:47]: Free space generated
+[02/04/2022 - 19:10:47]: Created Roadmap
+[02/04/2022 - 19:10:47]: Created world representation
+[02/04/2022 - 19:10:47]: Added free space cells to world representation
+[02/04/2022 - 19:10:47]: Added gates cells to world representation
+[02/04/2022 - 19:10:47]: Added robot agents to world representation
+[02/04/2022 - 19:10:47]: End world representation creation
+[02/04/2022 - 19:10:47]: Started Creation of pddl problem file.
+[02/04/2022 - 19:10:47]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:10:47]: Started Creation of pddl problem file.
+[02/04/2022 - 19:10:47]: Temporary folder for planning correctly created
+[02/04/2022 - 19:10:48]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:11:24]: Code started
+
+[02/04/2022 - 19:11:24]: Obstacles in touch merged
+
+[02/04/2022 - 19:11:24]: Arena subsetted
+[02/04/2022 - 19:11:24]: Arena converted to boost
+[02/04/2022 - 19:11:24]: Obstacles converted to boost
+[02/04/2022 - 19:11:24]: Arena gates added to obstacles list
+[02/04/2022 - 19:11:24]: Free space generated
+[02/04/2022 - 19:11:24]: Created Roadmap
+[02/04/2022 - 19:11:24]: Created world representation
+[02/04/2022 - 19:11:24]: Added free space cells to world representation
+[02/04/2022 - 19:11:24]: Added gates cells to world representation
+[02/04/2022 - 19:11:24]: Added robot agents to world representation
+[02/04/2022 - 19:11:24]: End world representation creation
+[02/04/2022 - 19:11:24]: Started Creation of pddl problem file.
+[02/04/2022 - 19:11:24]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:11:24]: Started Creation of pddl problem file.
+[02/04/2022 - 19:11:24]: Temporary folder for planning correctly created
+[02/04/2022 - 19:11:26]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:12:19]: Code started
+
+[02/04/2022 - 19:12:19]: Obstacles in touch merged
+
+[02/04/2022 - 19:12:19]: Arena subsetted
+[02/04/2022 - 19:12:19]: Arena converted to boost
+[02/04/2022 - 19:12:19]: Obstacles converted to boost
+[02/04/2022 - 19:12:19]: Arena gates added to obstacles list
+[02/04/2022 - 19:12:19]: Free space generated
+[02/04/2022 - 19:12:19]: Created Roadmap
+[02/04/2022 - 19:12:19]: Created world representation
+[02/04/2022 - 19:12:19]: Added free space cells to world representation
+[02/04/2022 - 19:12:19]: Added gates cells to world representation
+[02/04/2022 - 19:12:19]: Added robot agents to world representation
+[02/04/2022 - 19:12:19]: End world representation creation
+[02/04/2022 - 19:12:19]: Started Creation of pddl problem file.
+[02/04/2022 - 19:12:19]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:12:19]: Started Creation of pddl problem file.
+[02/04/2022 - 19:12:20]: Temporary folder for planning correctly created
+[02/04/2022 - 19:12:21]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:13:32]: Code started
+
+[02/04/2022 - 19:13:32]: Obstacles in touch merged
+
+[02/04/2022 - 19:13:32]: Arena subsetted
+[02/04/2022 - 19:13:32]: Arena converted to boost
+[02/04/2022 - 19:13:32]: Obstacles converted to boost
+[02/04/2022 - 19:13:32]: Arena gates added to obstacles list
+[02/04/2022 - 19:13:32]: Free space generated
+[02/04/2022 - 19:13:32]: Created Roadmap
+[02/04/2022 - 19:13:32]: Created world representation
+[02/04/2022 - 19:13:32]: Added free space cells to world representation
+[02/04/2022 - 19:13:32]: Added gates cells to world representation
+[02/04/2022 - 19:13:32]: Added robot agents to world representation
+[02/04/2022 - 19:13:32]: End world representation creation
+[02/04/2022 - 19:13:32]: Started Creation of pddl problem file.
+[02/04/2022 - 19:13:32]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:13:32]: Started Creation of pddl problem file.
+[02/04/2022 - 19:13:33]: Temporary folder for planning correctly created
+[02/04/2022 - 19:13:34]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:22:38]: Code started
+
+[02/04/2022 - 19:22:38]: Obstacles in touch merged
+
+[02/04/2022 - 19:22:38]: Arena subsetted
+[02/04/2022 - 19:22:38]: Arena converted to boost
+[02/04/2022 - 19:22:38]: Obstacles converted to boost
+[02/04/2022 - 19:22:38]: Arena gates added to obstacles list
+[02/04/2022 - 19:22:38]: Free space generated
+[02/04/2022 - 19:22:38]: Created Roadmap
+[02/04/2022 - 19:22:38]: Created world representation
+[02/04/2022 - 19:22:38]: Added free space cells to world representation
+[02/04/2022 - 19:22:38]: Added gates cells to world representation
+[02/04/2022 - 19:22:38]: Added robot agents to world representation
+[02/04/2022 - 19:22:38]: End world representation creation
+[02/04/2022 - 19:22:38]: Started Creation of pddl problem file.
+[02/04/2022 - 19:22:38]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:22:38]: Started Creation of pddl problem file.
+[02/04/2022 - 19:22:39]: Temporary folder for planning correctly created
+[02/04/2022 - 19:22:40]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:23:15]: Code started
+
+[02/04/2022 - 19:23:15]: Obstacles in touch merged
+
+[02/04/2022 - 19:23:15]: Arena subsetted
+[02/04/2022 - 19:23:15]: Arena converted to boost
+[02/04/2022 - 19:23:15]: Obstacles converted to boost
+[02/04/2022 - 19:23:15]: Arena gates added to obstacles list
+[02/04/2022 - 19:23:15]: Free space generated
+[02/04/2022 - 19:23:15]: Created Roadmap
+[02/04/2022 - 19:23:15]: Created world representation
+[02/04/2022 - 19:23:15]: Added free space cells to world representation
+[02/04/2022 - 19:23:15]: Added gates cells to world representation
+[02/04/2022 - 19:23:15]: Added robot agents to world representation
+[02/04/2022 - 19:23:15]: End world representation creation
+[02/04/2022 - 19:23:15]: Started Creation of pddl problem file.
+[02/04/2022 - 19:23:16]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:23:16]: Started Creation of pddl problem file.
+[02/04/2022 - 19:23:16]: Temporary folder for planning correctly created
+[02/04/2022 - 19:23:17]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:23:52]: Code started
+
+[02/04/2022 - 19:23:52]: Obstacles in touch merged
+
+[02/04/2022 - 19:23:52]: Arena subsetted
+[02/04/2022 - 19:23:52]: Arena converted to boost
+[02/04/2022 - 19:23:52]: Obstacles converted to boost
+[02/04/2022 - 19:23:52]: Arena gates added to obstacles list
+[02/04/2022 - 19:23:52]: Free space generated
+[02/04/2022 - 19:23:52]: Created Roadmap
+[02/04/2022 - 19:23:52]: Created world representation
+[02/04/2022 - 19:23:52]: Added free space cells to world representation
+[02/04/2022 - 19:23:52]: Added gates cells to world representation
+[02/04/2022 - 19:23:52]: Added robot agents to world representation
+[02/04/2022 - 19:23:52]: End world representation creation
+[02/04/2022 - 19:23:52]: Started Creation of pddl problem file.
+[02/04/2022 - 19:23:52]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:23:52]: Started Creation of pddl problem file.
+[02/04/2022 - 19:23:52]: Temporary folder for planning correctly created
+[02/04/2022 - 19:23:54]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:26:32]: Code started
+
+[02/04/2022 - 19:26:32]: Obstacles in touch merged
+
+[02/04/2022 - 19:26:32]: Arena subsetted
+[02/04/2022 - 19:26:32]: Arena converted to boost
+[02/04/2022 - 19:26:32]: Obstacles converted to boost
+[02/04/2022 - 19:26:32]: Arena gates added to obstacles list
+[02/04/2022 - 19:26:32]: Free space generated
+[02/04/2022 - 19:26:32]: Created Roadmap
+[02/04/2022 - 19:26:32]: Created world representation
+[02/04/2022 - 19:26:32]: Added free space cells to world representation
+[02/04/2022 - 19:26:32]: Added gates cells to world representation
+[02/04/2022 - 19:26:32]: Added robot agents to world representation
+[02/04/2022 - 19:26:32]: End world representation creation
+[02/04/2022 - 19:26:32]: Started Creation of pddl problem file.
+[02/04/2022 - 19:26:32]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:26:32]: Started Creation of pddl problem file.
+[02/04/2022 - 19:26:32]: Temporary folder for planning correctly created
+[02/04/2022 - 19:26:34]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:36:23]: Code started
+
+[02/04/2022 - 19:36:23]: Obstacles in touch merged
+
+[02/04/2022 - 19:36:23]: Arena subsetted
+[02/04/2022 - 19:36:23]: Arena converted to boost
+[02/04/2022 - 19:36:23]: Obstacles converted to boost
+[02/04/2022 - 19:36:23]: Arena gates added to obstacles list
+[02/04/2022 - 19:36:23]: Free space generated
+[02/04/2022 - 19:36:23]: Created Roadmap
+[02/04/2022 - 19:36:23]: Created world representation
+[02/04/2022 - 19:36:23]: Added free space cells to world representation
+[02/04/2022 - 19:36:23]: Added gates cells to world representation
+[02/04/2022 - 19:36:23]: Added robot agents to world representation
+[02/04/2022 - 19:36:23]: End world representation creation
+[02/04/2022 - 19:36:23]: Started Creation of pddl problem file.
+[02/04/2022 - 19:36:24]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:36:24]: Started Creation of pddl problem file.
+[02/04/2022 - 19:36:24]: Temporary folder for planning correctly created
+[02/04/2022 - 19:36:25]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:37:15]: Code started
+
+[02/04/2022 - 19:37:15]: Obstacles in touch merged
+
+[02/04/2022 - 19:37:15]: Arena subsetted
+[02/04/2022 - 19:37:15]: Arena converted to boost
+[02/04/2022 - 19:37:15]: Obstacles converted to boost
+[02/04/2022 - 19:37:15]: Arena gates added to obstacles list
+[02/04/2022 - 19:37:15]: Free space generated
+[02/04/2022 - 19:37:15]: Created Roadmap
+[02/04/2022 - 19:37:15]: Created world representation
+[02/04/2022 - 19:37:15]: Added free space cells to world representation
+[02/04/2022 - 19:37:15]: Added gates cells to world representation
+[02/04/2022 - 19:37:15]: Added robot agents to world representation
+[02/04/2022 - 19:37:15]: End world representation creation
+[02/04/2022 - 19:37:15]: Started Creation of pddl problem file.
+[02/04/2022 - 19:37:15]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:37:15]: Started Creation of pddl problem file.
+[02/04/2022 - 19:37:15]: Temporary folder for planning correctly created
+[02/04/2022 - 19:37:17]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:46:43]: Code started
+
+[02/04/2022 - 19:46:43]: Obstacles in touch merged
+
+[02/04/2022 - 19:46:43]: Arena subsetted
+[02/04/2022 - 19:46:43]: Arena converted to boost
+[02/04/2022 - 19:46:43]: Obstacles converted to boost
+[02/04/2022 - 19:46:43]: Arena gates added to obstacles list
+[02/04/2022 - 19:46:43]: Free space generated
+[02/04/2022 - 19:46:43]: Created Roadmap
+[02/04/2022 - 19:46:43]: Created world representation
+[02/04/2022 - 19:46:43]: Added free space cells to world representation
+[02/04/2022 - 19:46:43]: Added gates cells to world representation
+[02/04/2022 - 19:46:43]: Added robot agents to world representation
+[02/04/2022 - 19:46:43]: End world representation creation
+[02/04/2022 - 19:46:43]: Started Creation of pddl problem file.
+[02/04/2022 - 19:46:44]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:46:44]: Started Creation of pddl problem file.
+[02/04/2022 - 19:46:44]: Temporary folder for planning correctly created
+[02/04/2022 - 19:46:45]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:47:34]: Code started
+
+[02/04/2022 - 19:47:34]: Obstacles in touch merged
+
+[02/04/2022 - 19:47:34]: Arena subsetted
+[02/04/2022 - 19:47:34]: Arena converted to boost
+[02/04/2022 - 19:47:34]: Obstacles converted to boost
+[02/04/2022 - 19:47:34]: Arena gates added to obstacles list
+[02/04/2022 - 19:47:34]: Free space generated
+[02/04/2022 - 19:47:34]: Created Roadmap
+[02/04/2022 - 19:47:34]: Created world representation
+[02/04/2022 - 19:47:34]: Added free space cells to world representation
+[02/04/2022 - 19:47:34]: Added gates cells to world representation
+[02/04/2022 - 19:47:34]: Added robot agents to world representation
+[02/04/2022 - 19:47:34]: End world representation creation
+[02/04/2022 - 19:47:34]: Started Creation of pddl problem file.
+[02/04/2022 - 19:47:34]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:47:34]: Started Creation of pddl problem file.
+[02/04/2022 - 19:47:35]: Temporary folder for planning correctly created
+[02/04/2022 - 19:47:36]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:48:30]: Code started
+
+[02/04/2022 - 19:48:30]: Obstacles in touch merged
+
+[02/04/2022 - 19:48:30]: Arena subsetted
+[02/04/2022 - 19:48:30]: Arena converted to boost
+[02/04/2022 - 19:48:30]: Obstacles converted to boost
+[02/04/2022 - 19:48:30]: Arena gates added to obstacles list
+[02/04/2022 - 19:48:30]: Free space generated
+[02/04/2022 - 19:48:30]: Created Roadmap
+[02/04/2022 - 19:48:30]: Created world representation
+[02/04/2022 - 19:48:30]: Added free space cells to world representation
+[02/04/2022 - 19:48:30]: Added gates cells to world representation
+[02/04/2022 - 19:48:30]: Added robot agents to world representation
+[02/04/2022 - 19:48:30]: End world representation creation
+[02/04/2022 - 19:48:30]: Started Creation of pddl problem file.
+[02/04/2022 - 19:48:30]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:48:30]: Started Creation of pddl problem file.
+[02/04/2022 - 19:48:30]: Temporary folder for planning correctly created
+[02/04/2022 - 19:48:32]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:49:19]: Code started
+
+[02/04/2022 - 19:49:19]: Obstacles in touch merged
+
+[02/04/2022 - 19:49:19]: Arena subsetted
+[02/04/2022 - 19:49:19]: Arena converted to boost
+[02/04/2022 - 19:49:19]: Obstacles converted to boost
+[02/04/2022 - 19:49:19]: Arena gates added to obstacles list
+[02/04/2022 - 19:49:19]: Free space generated
+[02/04/2022 - 19:49:19]: Created Roadmap
+[02/04/2022 - 19:49:19]: Created world representation
+[02/04/2022 - 19:49:19]: Added free space cells to world representation
+[02/04/2022 - 19:49:19]: Added gates cells to world representation
+[02/04/2022 - 19:49:19]: Added robot agents to world representation
+[02/04/2022 - 19:49:19]: End world representation creation
+[02/04/2022 - 19:49:19]: Started Creation of pddl problem file.
+[02/04/2022 - 19:49:20]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:49:20]: Started Creation of pddl problem file.
+[02/04/2022 - 19:49:20]: Temporary folder for planning correctly created
+[02/04/2022 - 19:49:21]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:50:41]: Code started
+
+[02/04/2022 - 19:50:41]: Obstacles in touch merged
+
+[02/04/2022 - 19:50:41]: Arena subsetted
+[02/04/2022 - 19:50:41]: Arena converted to boost
+[02/04/2022 - 19:50:41]: Obstacles converted to boost
+[02/04/2022 - 19:50:41]: Arena gates added to obstacles list
+[02/04/2022 - 19:50:41]: Free space generated
+[02/04/2022 - 19:50:41]: Created Roadmap
+[02/04/2022 - 19:50:41]: Created world representation
+[02/04/2022 - 19:50:41]: Added free space cells to world representation
+[02/04/2022 - 19:50:41]: Added gates cells to world representation
+[02/04/2022 - 19:50:41]: Added robot agents to world representation
+[02/04/2022 - 19:50:41]: End world representation creation
+[02/04/2022 - 19:50:41]: Started Creation of pddl problem file.
+[02/04/2022 - 19:50:42]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:50:42]: Started Creation of pddl problem file.
+[02/04/2022 - 19:50:42]: Temporary folder for planning correctly created
+[02/04/2022 - 19:50:43]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:52:05]: Code started
+
+[02/04/2022 - 19:52:05]: Obstacles in touch merged
+
+[02/04/2022 - 19:52:05]: Arena subsetted
+[02/04/2022 - 19:52:05]: Arena converted to boost
+[02/04/2022 - 19:52:05]: Obstacles converted to boost
+[02/04/2022 - 19:52:05]: Arena gates added to obstacles list
+[02/04/2022 - 19:52:05]: Free space generated
+[02/04/2022 - 19:52:05]: Created Roadmap
+[02/04/2022 - 19:52:05]: Created world representation
+[02/04/2022 - 19:52:05]: Added free space cells to world representation
+[02/04/2022 - 19:52:05]: Added gates cells to world representation
+[02/04/2022 - 19:52:05]: Added robot agents to world representation
+[02/04/2022 - 19:52:05]: End world representation creation
+[02/04/2022 - 19:52:05]: Started Creation of pddl problem file.
+[02/04/2022 - 19:52:06]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:52:06]: Started Creation of pddl problem file.
+[02/04/2022 - 19:52:06]: Temporary folder for planning correctly created
+[02/04/2022 - 19:52:07]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:53:34]: Code started
+
+[02/04/2022 - 19:53:34]: Obstacles in touch merged
+
+[02/04/2022 - 19:53:34]: Arena subsetted
+[02/04/2022 - 19:53:34]: Arena converted to boost
+[02/04/2022 - 19:53:34]: Obstacles converted to boost
+[02/04/2022 - 19:53:34]: Arena gates added to obstacles list
+[02/04/2022 - 19:53:34]: Free space generated
+[02/04/2022 - 19:53:34]: Created Roadmap
+[02/04/2022 - 19:53:34]: Created world representation
+[02/04/2022 - 19:53:34]: Added free space cells to world representation
+[02/04/2022 - 19:53:34]: Added gates cells to world representation
+[02/04/2022 - 19:53:34]: Added robot agents to world representation
+[02/04/2022 - 19:53:34]: End world representation creation
+[02/04/2022 - 19:53:34]: Started Creation of pddl problem file.
+[02/04/2022 - 19:53:34]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:53:34]: Started Creation of pddl problem file.
+[02/04/2022 - 19:53:35]: Temporary folder for planning correctly created
+[02/04/2022 - 19:53:36]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:54:19]: Code started
+
+[02/04/2022 - 19:54:19]: Obstacles in touch merged
+
+[02/04/2022 - 19:54:19]: Arena subsetted
+[02/04/2022 - 19:54:19]: Arena converted to boost
+[02/04/2022 - 19:54:19]: Obstacles converted to boost
+[02/04/2022 - 19:54:19]: Arena gates added to obstacles list
+[02/04/2022 - 19:54:20]: Free space generated
+[02/04/2022 - 19:54:20]: Created Roadmap
+[02/04/2022 - 19:54:20]: Created world representation
+[02/04/2022 - 19:54:20]: Added free space cells to world representation
+[02/04/2022 - 19:54:20]: Added gates cells to world representation
+[02/04/2022 - 19:54:20]: Added robot agents to world representation
+[02/04/2022 - 19:54:20]: End world representation creation
+[02/04/2022 - 19:54:20]: Started Creation of pddl problem file.
+[02/04/2022 - 19:54:20]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:54:20]: Started Creation of pddl problem file.
+[02/04/2022 - 19:54:20]: Temporary folder for planning correctly created
+[02/04/2022 - 19:54:22]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:55:01]: Code started
+
+[02/04/2022 - 19:55:01]: Obstacles in touch merged
+
+[02/04/2022 - 19:55:01]: Arena subsetted
+[02/04/2022 - 19:55:01]: Arena converted to boost
+[02/04/2022 - 19:55:01]: Obstacles converted to boost
+[02/04/2022 - 19:55:01]: Arena gates added to obstacles list
+[02/04/2022 - 19:55:01]: Free space generated
+[02/04/2022 - 19:55:01]: Created Roadmap
+[02/04/2022 - 19:55:01]: Created world representation
+[02/04/2022 - 19:55:01]: Added free space cells to world representation
+[02/04/2022 - 19:55:01]: Added gates cells to world representation
+[02/04/2022 - 19:55:01]: Added robot agents to world representation
+[02/04/2022 - 19:55:01]: End world representation creation
+[02/04/2022 - 19:55:01]: Started Creation of pddl problem file.
+[02/04/2022 - 19:55:02]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:55:02]: Started Creation of pddl problem file.
+[02/04/2022 - 19:55:02]: Temporary folder for planning correctly created
+[02/04/2022 - 19:55:03]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:56:15]: Code started
+
+[02/04/2022 - 19:56:15]: Obstacles in touch merged
+
+[02/04/2022 - 19:56:15]: Arena subsetted
+[02/04/2022 - 19:56:15]: Arena converted to boost
+[02/04/2022 - 19:56:15]: Obstacles converted to boost
+[02/04/2022 - 19:56:15]: Arena gates added to obstacles list
+[02/04/2022 - 19:56:15]: Free space generated
+[02/04/2022 - 19:56:15]: Created Roadmap
+[02/04/2022 - 19:56:15]: Created world representation
+[02/04/2022 - 19:56:15]: Added free space cells to world representation
+[02/04/2022 - 19:56:15]: Added gates cells to world representation
+[02/04/2022 - 19:56:15]: Added robot agents to world representation
+[02/04/2022 - 19:56:15]: End world representation creation
+[02/04/2022 - 19:56:15]: Started Creation of pddl problem file.
+[02/04/2022 - 19:56:16]: Ended Creation of pddl problem file.
+[02/04/2022 - 19:56:16]: Started Creation of pddl problem file.
+[02/04/2022 - 19:56:16]: Temporary folder for planning correctly created
+[02/04/2022 - 19:56:17]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:01:29]: Code started
+
+[02/04/2022 - 20:01:29]: Obstacles in touch merged
+
+[02/04/2022 - 20:01:29]: Arena subsetted
+[02/04/2022 - 20:01:29]: Arena converted to boost
+[02/04/2022 - 20:01:29]: Obstacles converted to boost
+[02/04/2022 - 20:01:29]: Arena gates added to obstacles list
+[02/04/2022 - 20:01:29]: Free space generated
+[02/04/2022 - 20:01:29]: Created Roadmap
+[02/04/2022 - 20:01:29]: Created world representation
+[02/04/2022 - 20:01:29]: Added free space cells to world representation
+[02/04/2022 - 20:01:29]: Added gates cells to world representation
+[02/04/2022 - 20:01:29]: Added robot agents to world representation
+[02/04/2022 - 20:01:29]: End world representation creation
+[02/04/2022 - 20:01:29]: Started Creation of pddl problem file.
+[02/04/2022 - 20:01:30]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:01:30]: Started Creation of pddl problem file.
+[02/04/2022 - 20:01:30]: Temporary folder for planning correctly created
+[02/04/2022 - 20:01:31]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:03:00]: Code started
+
+[02/04/2022 - 20:03:00]: Obstacles in touch merged
+
+[02/04/2022 - 20:03:00]: Arena subsetted
+[02/04/2022 - 20:03:00]: Arena converted to boost
+[02/04/2022 - 20:03:00]: Obstacles converted to boost
+[02/04/2022 - 20:03:00]: Arena gates added to obstacles list
+[02/04/2022 - 20:03:00]: Free space generated
+[02/04/2022 - 20:03:00]: Created Roadmap
+[02/04/2022 - 20:03:00]: Created world representation
+[02/04/2022 - 20:03:00]: Added free space cells to world representation
+[02/04/2022 - 20:03:00]: Added gates cells to world representation
+[02/04/2022 - 20:03:00]: Added robot agents to world representation
+[02/04/2022 - 20:03:00]: End world representation creation
+[02/04/2022 - 20:03:00]: Started Creation of pddl problem file.
+[02/04/2022 - 20:03:00]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:03:00]: Started Creation of pddl problem file.
+[02/04/2022 - 20:03:00]: Temporary folder for planning correctly created
+[02/04/2022 - 20:03:02]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:06:02]: Code started
+
+[02/04/2022 - 20:06:02]: Obstacles in touch merged
+
+[02/04/2022 - 20:06:02]: Arena subsetted
+[02/04/2022 - 20:06:02]: Arena converted to boost
+[02/04/2022 - 20:06:02]: Obstacles converted to boost
+[02/04/2022 - 20:06:02]: Arena gates added to obstacles list
+[02/04/2022 - 20:06:02]: Free space generated
+[02/04/2022 - 20:06:02]: Created Roadmap
+[02/04/2022 - 20:06:02]: Created world representation
+[02/04/2022 - 20:06:02]: Added free space cells to world representation
+[02/04/2022 - 20:06:02]: Added gates cells to world representation
+[02/04/2022 - 20:06:02]: Added robot agents to world representation
+[02/04/2022 - 20:06:02]: End world representation creation
+[02/04/2022 - 20:06:02]: Started Creation of pddl problem file.
+[02/04/2022 - 20:06:02]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:06:02]: Started Creation of pddl problem file.
+[02/04/2022 - 20:06:02]: Temporary folder for planning correctly created
+[02/04/2022 - 20:06:04]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:06:53]: Code started
+
+[02/04/2022 - 20:06:53]: Obstacles in touch merged
+
+[02/04/2022 - 20:06:53]: Arena subsetted
+[02/04/2022 - 20:06:53]: Arena converted to boost
+[02/04/2022 - 20:06:53]: Obstacles converted to boost
+[02/04/2022 - 20:06:53]: Arena gates added to obstacles list
+[02/04/2022 - 20:06:53]: Free space generated
+[02/04/2022 - 20:06:53]: Created Roadmap
+[02/04/2022 - 20:06:53]: Created world representation
+[02/04/2022 - 20:06:53]: Added free space cells to world representation
+[02/04/2022 - 20:06:53]: Added gates cells to world representation
+[02/04/2022 - 20:06:53]: Added robot agents to world representation
+[02/04/2022 - 20:06:53]: End world representation creation
+[02/04/2022 - 20:06:53]: Started Creation of pddl problem file.
+[02/04/2022 - 20:06:53]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:06:53]: Started Creation of pddl problem file.
+[02/04/2022 - 20:06:53]: Temporary folder for planning correctly created
+[02/04/2022 - 20:06:55]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:08:37]: Code started
+
+[02/04/2022 - 20:08:37]: Obstacles in touch merged
+
+[02/04/2022 - 20:08:37]: Arena subsetted
+[02/04/2022 - 20:08:37]: Arena converted to boost
+[02/04/2022 - 20:08:37]: Obstacles converted to boost
+[02/04/2022 - 20:08:37]: Arena gates added to obstacles list
+[02/04/2022 - 20:08:37]: Free space generated
+[02/04/2022 - 20:08:37]: Created Roadmap
+[02/04/2022 - 20:08:37]: Created world representation
+[02/04/2022 - 20:08:37]: Added free space cells to world representation
+[02/04/2022 - 20:08:37]: Added gates cells to world representation
+[02/04/2022 - 20:08:37]: Added robot agents to world representation
+[02/04/2022 - 20:08:37]: End world representation creation
+[02/04/2022 - 20:08:37]: Started Creation of pddl problem file.
+[02/04/2022 - 20:08:37]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:08:37]: Started Creation of pddl problem file.
+[02/04/2022 - 20:08:38]: Temporary folder for planning correctly created
+[02/04/2022 - 20:08:39]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:10:30]: Code started
+
+[02/04/2022 - 20:10:30]: Obstacles in touch merged
+
+[02/04/2022 - 20:10:30]: Arena subsetted
+[02/04/2022 - 20:10:30]: Arena converted to boost
+[02/04/2022 - 20:10:30]: Obstacles converted to boost
+[02/04/2022 - 20:10:30]: Arena gates added to obstacles list
+[02/04/2022 - 20:10:30]: Free space generated
+[02/04/2022 - 20:10:30]: Created Roadmap
+[02/04/2022 - 20:10:30]: Created world representation
+[02/04/2022 - 20:10:30]: Added free space cells to world representation
+[02/04/2022 - 20:10:30]: Added gates cells to world representation
+[02/04/2022 - 20:10:30]: Added robot agents to world representation
+[02/04/2022 - 20:10:30]: End world representation creation
+[02/04/2022 - 20:10:30]: Started Creation of pddl problem file.
+[02/04/2022 - 20:10:30]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:10:30]: Started Creation of pddl problem file.
+[02/04/2022 - 20:10:30]: Temporary folder for planning correctly created
+[02/04/2022 - 20:10:32]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:11:20]: Code started
+
+[02/04/2022 - 20:11:20]: Obstacles in touch merged
+
+[02/04/2022 - 20:11:20]: Arena subsetted
+[02/04/2022 - 20:11:20]: Arena converted to boost
+[02/04/2022 - 20:11:20]: Obstacles converted to boost
+[02/04/2022 - 20:11:20]: Arena gates added to obstacles list
+[02/04/2022 - 20:11:20]: Free space generated
+[02/04/2022 - 20:11:20]: Created Roadmap
+[02/04/2022 - 20:11:20]: Created world representation
+[02/04/2022 - 20:11:20]: Added free space cells to world representation
+[02/04/2022 - 20:11:20]: Added gates cells to world representation
+[02/04/2022 - 20:11:20]: Added robot agents to world representation
+[02/04/2022 - 20:11:20]: End world representation creation
+[02/04/2022 - 20:11:20]: Started Creation of pddl problem file.
+[02/04/2022 - 20:11:20]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:11:20]: Started Creation of pddl problem file.
+[02/04/2022 - 20:11:20]: Temporary folder for planning correctly created
+[02/04/2022 - 20:11:22]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:12:52]: Code started
+
+[02/04/2022 - 20:12:52]: Obstacles in touch merged
+
+[02/04/2022 - 20:12:52]: Arena subsetted
+[02/04/2022 - 20:12:52]: Arena converted to boost
+[02/04/2022 - 20:12:52]: Obstacles converted to boost
+[02/04/2022 - 20:12:52]: Arena gates added to obstacles list
+[02/04/2022 - 20:12:52]: Free space generated
+[02/04/2022 - 20:12:52]: Created Roadmap
+[02/04/2022 - 20:12:52]: Created world representation
+[02/04/2022 - 20:12:52]: Added free space cells to world representation
+[02/04/2022 - 20:12:52]: Added gates cells to world representation
+[02/04/2022 - 20:12:52]: Added robot agents to world representation
+[02/04/2022 - 20:12:52]: End world representation creation
+[02/04/2022 - 20:12:52]: Started Creation of pddl problem file.
+[02/04/2022 - 20:12:53]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:12:53]: Started Creation of pddl problem file.
+[02/04/2022 - 20:12:53]: Temporary folder for planning correctly created
+[02/04/2022 - 20:12:55]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:33:46]: Code started
+
+[02/04/2022 - 20:33:46]: Obstacles in touch merged
+
+[02/04/2022 - 20:33:46]: Arena subsetted
+[02/04/2022 - 20:33:46]: Arena converted to boost
+[02/04/2022 - 20:33:46]: Obstacles converted to boost
+[02/04/2022 - 20:33:46]: Arena gates added to obstacles list
+[02/04/2022 - 20:33:46]: Free space generated
+[02/04/2022 - 20:33:46]: Created Roadmap
+[02/04/2022 - 20:33:46]: Created world representation
+[02/04/2022 - 20:33:46]: Added free space cells to world representation
+[02/04/2022 - 20:33:46]: Added gates cells to world representation
+[02/04/2022 - 20:33:46]: Added robot agents to world representation
+[02/04/2022 - 20:33:46]: End world representation creation
+[02/04/2022 - 20:33:46]: Started Creation of pddl problem file.
+[02/04/2022 - 20:33:46]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:33:46]: Started Creation of pddl problem file.
+[02/04/2022 - 20:33:46]: Temporary folder for planning correctly created
+[02/04/2022 - 20:33:48]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:34:32]: Code started
+
+[02/04/2022 - 20:34:32]: Obstacles in touch merged
+
+[02/04/2022 - 20:34:32]: Arena subsetted
+[02/04/2022 - 20:34:32]: Arena converted to boost
+[02/04/2022 - 20:34:32]: Obstacles converted to boost
+[02/04/2022 - 20:34:32]: Arena gates added to obstacles list
+[02/04/2022 - 20:34:32]: Free space generated
+[02/04/2022 - 20:34:32]: Created Roadmap
+[02/04/2022 - 20:34:32]: Created world representation
+[02/04/2022 - 20:34:32]: Added free space cells to world representation
+[02/04/2022 - 20:34:32]: Added gates cells to world representation
+[02/04/2022 - 20:34:32]: Added robot agents to world representation
+[02/04/2022 - 20:34:32]: End world representation creation
+[02/04/2022 - 20:34:32]: Started Creation of pddl problem file.
+[02/04/2022 - 20:34:32]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:34:32]: Started Creation of pddl problem file.
+[02/04/2022 - 20:34:32]: Temporary folder for planning correctly created
+[02/04/2022 - 20:34:34]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:35:21]: Code started
+
+[02/04/2022 - 20:35:21]: Obstacles in touch merged
+
+[02/04/2022 - 20:35:21]: Arena subsetted
+[02/04/2022 - 20:35:21]: Arena converted to boost
+[02/04/2022 - 20:35:21]: Obstacles converted to boost
+[02/04/2022 - 20:35:21]: Arena gates added to obstacles list
+[02/04/2022 - 20:35:21]: Free space generated
+[02/04/2022 - 20:35:21]: Created Roadmap
+[02/04/2022 - 20:35:21]: Created world representation
+[02/04/2022 - 20:35:21]: Added free space cells to world representation
+[02/04/2022 - 20:35:21]: Added gates cells to world representation
+[02/04/2022 - 20:35:21]: Added robot agents to world representation
+[02/04/2022 - 20:35:21]: End world representation creation
+[02/04/2022 - 20:35:21]: Started Creation of pddl problem file.
+[02/04/2022 - 20:35:21]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:35:21]: Started Creation of pddl problem file.
+[02/04/2022 - 20:35:21]: Temporary folder for planning correctly created
+[02/04/2022 - 20:35:23]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:36:47]: Code started
+
+[02/04/2022 - 20:36:47]: Obstacles in touch merged
+
+[02/04/2022 - 20:36:47]: Arena subsetted
+[02/04/2022 - 20:36:47]: Arena converted to boost
+[02/04/2022 - 20:36:47]: Obstacles converted to boost
+[02/04/2022 - 20:36:47]: Arena gates added to obstacles list
+[02/04/2022 - 20:36:47]: Free space generated
+[02/04/2022 - 20:36:47]: Created Roadmap
+[02/04/2022 - 20:36:47]: Created world representation
+[02/04/2022 - 20:36:47]: Added free space cells to world representation
+[02/04/2022 - 20:36:47]: Added gates cells to world representation
+[02/04/2022 - 20:36:47]: Added robot agents to world representation
+[02/04/2022 - 20:36:47]: End world representation creation
+[02/04/2022 - 20:36:47]: Started Creation of pddl problem file.
+[02/04/2022 - 20:36:47]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:36:47]: Started Creation of pddl problem file.
+[02/04/2022 - 20:36:48]: Temporary folder for planning correctly created
+[02/04/2022 - 20:36:49]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:37:31]: Code started
+
+[02/04/2022 - 20:37:31]: Obstacles in touch merged
+
+[02/04/2022 - 20:37:31]: Arena subsetted
+[02/04/2022 - 20:37:31]: Arena converted to boost
+[02/04/2022 - 20:37:31]: Obstacles converted to boost
+[02/04/2022 - 20:37:31]: Arena gates added to obstacles list
+[02/04/2022 - 20:37:31]: Free space generated
+[02/04/2022 - 20:37:31]: Created Roadmap
+[02/04/2022 - 20:37:31]: Created world representation
+[02/04/2022 - 20:37:31]: Added free space cells to world representation
+[02/04/2022 - 20:37:31]: Added gates cells to world representation
+[02/04/2022 - 20:37:31]: Added robot agents to world representation
+[02/04/2022 - 20:37:31]: End world representation creation
+[02/04/2022 - 20:37:31]: Started Creation of pddl problem file.
+[02/04/2022 - 20:37:32]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:37:32]: Started Creation of pddl problem file.
+[02/04/2022 - 20:37:32]: Temporary folder for planning correctly created
+[02/04/2022 - 20:37:33]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:38:38]: Code started
+
+[02/04/2022 - 20:38:38]: Obstacles in touch merged
+
+[02/04/2022 - 20:38:38]: Arena subsetted
+[02/04/2022 - 20:38:38]: Arena converted to boost
+[02/04/2022 - 20:38:38]: Obstacles converted to boost
+[02/04/2022 - 20:38:38]: Arena gates added to obstacles list
+[02/04/2022 - 20:38:38]: Free space generated
+[02/04/2022 - 20:38:38]: Created Roadmap
+[02/04/2022 - 20:38:38]: Created world representation
+[02/04/2022 - 20:38:38]: Added free space cells to world representation
+[02/04/2022 - 20:38:38]: Added gates cells to world representation
+[02/04/2022 - 20:38:38]: Added robot agents to world representation
+[02/04/2022 - 20:38:38]: End world representation creation
+[02/04/2022 - 20:38:38]: Started Creation of pddl problem file.
+[02/04/2022 - 20:38:38]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:38:38]: Started Creation of pddl problem file.
+[02/04/2022 - 20:38:38]: Temporary folder for planning correctly created
+[02/04/2022 - 20:38:40]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:43:20]: Code started
+
+[02/04/2022 - 20:43:20]: Obstacles in touch merged
+
+[02/04/2022 - 20:43:20]: Arena subsetted
+[02/04/2022 - 20:43:20]: Arena converted to boost
+[02/04/2022 - 20:43:20]: Obstacles converted to boost
+[02/04/2022 - 20:43:20]: Arena gates added to obstacles list
+[02/04/2022 - 20:43:20]: Free space generated
+[02/04/2022 - 20:43:20]: Created Roadmap
+[02/04/2022 - 20:43:20]: Created world representation
+[02/04/2022 - 20:43:20]: Added free space cells to world representation
+[02/04/2022 - 20:43:20]: Added gates cells to world representation
+[02/04/2022 - 20:43:20]: Added robot agents to world representation
+[02/04/2022 - 20:43:20]: End world representation creation
+[02/04/2022 - 20:43:20]: Started Creation of pddl problem file.
+[02/04/2022 - 20:43:20]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:43:20]: Started Creation of pddl problem file.
+[02/04/2022 - 20:43:20]: Temporary folder for planning correctly created
+[02/04/2022 - 20:43:22]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:45:23]: Code started
+
+[02/04/2022 - 20:45:23]: Obstacles in touch merged
+
+[02/04/2022 - 20:45:23]: Arena subsetted
+[02/04/2022 - 20:45:23]: Arena converted to boost
+[02/04/2022 - 20:45:23]: Obstacles converted to boost
+[02/04/2022 - 20:45:23]: Arena gates added to obstacles list
+[02/04/2022 - 20:45:23]: Free space generated
+[02/04/2022 - 20:45:23]: Created Roadmap
+[02/04/2022 - 20:45:23]: Created world representation
+[02/04/2022 - 20:45:23]: Added free space cells to world representation
+[02/04/2022 - 20:45:23]: Added gates cells to world representation
+[02/04/2022 - 20:45:23]: Added robot agents to world representation
+[02/04/2022 - 20:45:23]: End world representation creation
+[02/04/2022 - 20:45:23]: Started Creation of pddl problem file.
+[02/04/2022 - 20:45:24]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:45:24]: Started Creation of pddl problem file.
+[02/04/2022 - 20:45:24]: Temporary folder for planning correctly created
+[02/04/2022 - 20:45:25]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:46:48]: Code started
+
+[02/04/2022 - 20:46:48]: Obstacles in touch merged
+
+[02/04/2022 - 20:46:48]: Arena subsetted
+[02/04/2022 - 20:46:48]: Arena converted to boost
+[02/04/2022 - 20:46:48]: Obstacles converted to boost
+[02/04/2022 - 20:46:48]: Arena gates added to obstacles list
+[02/04/2022 - 20:46:48]: Free space generated
+[02/04/2022 - 20:46:48]: Created Roadmap
+[02/04/2022 - 20:46:48]: Created world representation
+[02/04/2022 - 20:46:48]: Added free space cells to world representation
+[02/04/2022 - 20:46:48]: Added gates cells to world representation
+[02/04/2022 - 20:46:48]: Added robot agents to world representation
+[02/04/2022 - 20:46:48]: End world representation creation
+[02/04/2022 - 20:46:48]: Started Creation of pddl problem file.
+[02/04/2022 - 20:46:48]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:46:48]: Started Creation of pddl problem file.
+[02/04/2022 - 20:46:48]: Temporary folder for planning correctly created
+[02/04/2022 - 20:46:50]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:56:10]: Code started
+
+[02/04/2022 - 20:56:10]: Obstacles in touch merged
+
+[02/04/2022 - 20:56:10]: Arena subsetted
+[02/04/2022 - 20:56:10]: Arena converted to boost
+[02/04/2022 - 20:56:10]: Obstacles converted to boost
+[02/04/2022 - 20:56:10]: Arena gates added to obstacles list
+[02/04/2022 - 20:56:10]: Free space generated
+[02/04/2022 - 20:56:10]: Created Roadmap
+[02/04/2022 - 20:56:10]: Created world representation
+[02/04/2022 - 20:56:10]: Added free space cells to world representation
+[02/04/2022 - 20:56:10]: Added gates cells to world representation
+[02/04/2022 - 20:56:10]: Added robot agents to world representation
+[02/04/2022 - 20:56:10]: End world representation creation
+[02/04/2022 - 20:56:10]: Started Creation of pddl problem file.
+[02/04/2022 - 20:56:10]: Ended Creation of pddl problem file.
+[02/04/2022 - 20:56:10]: Started Creation of pddl problem file.
+[02/04/2022 - 20:56:11]: Temporary folder for planning correctly created
+[02/04/2022 - 20:56:12]: Ended Creation of pddl problem file.
+[02/04/2022 - 21:01:04]: Code started
+
+[02/04/2022 - 21:01:04]: Obstacles in touch merged
+
+[02/04/2022 - 21:01:04]: Arena subsetted
+[02/04/2022 - 21:01:04]: Arena converted to boost
+[02/04/2022 - 21:01:04]: Obstacles converted to boost
+[02/04/2022 - 21:01:04]: Arena gates added to obstacles list
+[02/04/2022 - 21:01:04]: Free space generated
+[02/04/2022 - 21:01:04]: Created Roadmap
+[02/04/2022 - 21:01:04]: Created world representation
+[02/04/2022 - 21:01:04]: Added free space cells to world representation
+[02/04/2022 - 21:01:04]: Added gates cells to world representation
+[02/04/2022 - 21:01:04]: Added robot agents to world representation
+[02/04/2022 - 21:01:04]: End world representation creation
+[02/04/2022 - 21:01:04]: Started Creation of pddl problem file.
+[02/04/2022 - 21:01:05]: Ended Creation of pddl problem file.
+[02/04/2022 - 21:01:05]: Started Creation of pddl problem file.
+[02/04/2022 - 21:01:05]: Temporary folder for planning correctly created
+[02/04/2022 - 21:01:06]: Ended Creation of pddl problem file.
+[02/04/2022 - 21:04:01]: Code started
+
+[02/04/2022 - 21:04:01]: Obstacles in touch merged
+
+[02/04/2022 - 21:04:01]: Arena subsetted
+[02/04/2022 - 21:04:01]: Arena converted to boost
+[02/04/2022 - 21:04:01]: Obstacles converted to boost
+[02/04/2022 - 21:04:01]: Arena gates added to obstacles list
+[02/04/2022 - 21:04:01]: Free space generated
+[02/04/2022 - 21:04:01]: Created Roadmap
+[02/04/2022 - 21:04:01]: Created world representation
+[02/04/2022 - 21:04:01]: Added free space cells to world representation
+[02/04/2022 - 21:04:01]: Added gates cells to world representation
+[02/04/2022 - 21:04:01]: Added robot agents to world representation
+[02/04/2022 - 21:04:01]: End world representation creation
+[02/04/2022 - 21:04:01]: Started Creation of pddl problem file.
+[02/04/2022 - 21:04:01]: Ended Creation of pddl problem file.
+[02/04/2022 - 21:04:01]: Started Creation of pddl problem file.
+[02/04/2022 - 21:04:01]: Temporary folder for planning correctly created
+[02/04/2022 - 21:04:03]: Ended Creation of pddl problem file.
+[03/04/2022 - 00:22:07]: Code started
+
+[03/04/2022 - 00:22:07]: Obstacles in touch merged
+
+[03/04/2022 - 00:22:07]: Arena subsetted
+[03/04/2022 - 00:22:07]: Arena converted to boost
+[03/04/2022 - 00:22:07]: Obstacles converted to boost
+[03/04/2022 - 00:22:07]: Arena gates added to obstacles list
+[03/04/2022 - 00:22:07]: Free space generated
+[03/04/2022 - 00:22:07]: Created Roadmap
+[03/04/2022 - 00:22:07]: Created world representation
+[03/04/2022 - 00:22:07]: Added free space cells to world representation
+[03/04/2022 - 00:22:07]: Added gates cells to world representation
+[03/04/2022 - 00:22:07]: Added robot agents to world representation
+[03/04/2022 - 00:22:07]: End world representation creation
+[03/04/2022 - 00:22:07]: Started Creation of pddl problem file.
+[03/04/2022 - 00:22:07]: Ended Creation of pddl problem file.
+[03/04/2022 - 00:22:07]: Started Creation of pddl problem file.
+[03/04/2022 - 00:22:07]: Temporary folder for planning correctly created
+[03/04/2022 - 00:22:09]: Ended Creation of pddl problem file.
