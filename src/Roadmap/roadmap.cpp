@@ -39,6 +39,7 @@ list_of_obstacles::~list_of_obstacles()
 	}
 };
 
+
 void list_of_obstacles::delete_offsetted_list()
 {
 	polygon *tmp;
