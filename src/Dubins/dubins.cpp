@@ -504,7 +504,7 @@ tuple<double, double, double> get_circle_center(double x1, double y1, double x2,
 curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, double thf, double Kmax, points_map arena)
 {
 	int pidx;
-	int k = 0;
+	double k = 1;
 	bool intersection[3] = {true, true, true};
 
 	double_list *p;
@@ -517,44 +517,89 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 	// tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf + k, Kmax);
 	while (intersection[0] || intersection[1] || intersection[2])
 	{
+		
+		intersection[0] = true;
+		intersection[1] = true;
+		intersection[2] = true;
 
-		tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf + k, Kmax);
+		bool in_arc;
+
+		tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf / k, Kmax);
 
 		// Curve exist
 		if (pidx > 0)
 		{
 			// Check intersection curve with arena
+			// Arena points
 			pnt = arena.arena->head;
 
-			while (pnt != NULL)
+			while (pnt != NULL && (!intersection[0] && !intersection[1] && !intersection[2]))
 			{
 				point_node *pnt_next;
 
 				if (pnt->pnext != NULL)
+				{
 					pnt_next = pnt->pnext;
+				}
 				else
+				{
 					pnt_next = arena.arena->head;
+				}
 
 				tie(pts, p) = intersCircleLine(c.a1.xc, c.a1.yc, c.a1.r, pnt->x, pnt->y, pnt_next->x, pnt_next->y);
 				if (pts == NULL)
+				{
 					intersection[0] = false;
+				}
+
 				// Check if the intersection point are included in the dubin arc
-				else if (!pt_in_arc(pts->head, c.a1))
-					intersection[0] = false;
+				else
+				{
+					in_arc = pt_in_arc(pts->head, c.a1);
+					if (in_arc == false)
+					{
+						// cout << "pt in arc1: " << pt_in_arc(pts->head, c.a1)<<endl;
+						// cout << "Arc pt 0\n\n";
+						intersection[0] = false;
+					}
+				}
 
 				tie(pts, p) = intersCircleLine(c.a2.xc, c.a2.yc, c.a2.r, pnt->x, pnt->y, pnt_next->x, pnt_next->y);
 				if (pts == NULL)
+				{
 					intersection[1] = false;
-				else if (!pt_in_arc(pts->head, c.a2))
-					intersection[1] = false;
+				}
+
+				else
+				{
+					in_arc = pt_in_arc(pts->head, c.a2);
+					if (in_arc == false)
+					{
+						// cout << "pt in arc2: " << pt_in_arc(pts->head, c.a2)<<endl;
+						// cout << "Arc pt 1\n\n";
+						intersection[1] = false;
+					}
+				}
 
 				tie(pts, p) = intersCircleLine(c.a3.xc, c.a3.yc, c.a3.r, pnt->x, pnt->y, pnt_next->x, pnt_next->y);
 				if (pts == NULL)
+				{
 					intersection[2] = false;
-				else if (!pt_in_arc(pts->head, c.a3))
-					intersection[2] = false;
-
+				}
+				else
+				{
+					in_arc = pt_in_arc(pts->head, c.a3);
+					if (in_arc == false)
+					{
+						// cout << "pt in arc3: "<< pt_in_arc(pts->head, c.a3)<< endl;
+						// cout << "Arc pt 2\n\n";
+						intersection[2] = false;
+					}
+				}
 				pnt = pnt->pnext;
+				// cout << "\nBool 0: " << intersection[0] << endl;
+				// cout << "Bool 1: " << intersection[1] << endl;
+				// cout << "Bool 2: " << intersection[2] << endl;
 			}
 
 			// Check intersection curve with polygons
@@ -591,24 +636,38 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 			// 	it = it->pnext;
 			// }
 		}
-
-		k++;
+		cout << k << endl;
+		k += 1;
 	}
 
 	return c;
 }
 
-bool pt_in_arc(point_node *pts, arc a)
+bool pt_in_arc(point_node *ptso, arc a)
 {
+	point_node *pts = ptso;
 	double angle, start, end;
 	// Get the circonference angle of given point in it
 	start = get_angle(a.xc, a.yc, a.x0, a.y0);
 	end = get_angle(a.xc, a.yc, a.xf, a.yf);
+	if (start < 0)
+		start += 6.28;
+	if (end < 0)
+		end += 6.28;
+
+	if (end < start)
+	{
+		double tmp;
+		tmp = end;
+		end = start;
+		start = tmp;
+	}
 
 	while (pts != NULL)
 	{
 		angle = get_angle(a.xc, a.yc, pts->x, pts->y);
-		
+		if (angle < 0)
+			angle += 6.28;
 		/*
 		cout << "start_angle: " << start << endl;
 		cout << "end_angle: " << end << endl;
@@ -618,9 +677,12 @@ bool pt_in_arc(point_node *pts, arc a)
 		// check if the angle point is included between the starting and ending angles.
 		if (is_in_arc(start, end, angle))
 		{
+			// cout << "start_angle: " << start << endl;
+			// cout << "end_angle: " << end << endl;
+			// cout << "angle_angle: " << angle << endl;
+			// cout << "Yes is inside\n";
 			return true;
 		}
-
 		pts = pts->pnext;
 	}
 	return false;

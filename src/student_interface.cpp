@@ -115,8 +115,8 @@ namespace student
     Robot *f_1 = new Robot("Fugitive_1", fugitive);
     arena.add_robot(f_1);
 
-    arena.set_robot_position(f_1->ID, x[0] * scale, y[0] * scale);
-    arena.set_robot_position(c_1->ID, x[1] * scale, y[1] * scale);
+    arena.set_robot_position(c_1->ID, x[0] * scale, y[0] * scale);
+    arena.set_robot_position(f_1->ID, x[1] * scale, y[1] * scale);
     // Create world representaion
     World_representation abstract_arena = World_representation(
         arena.free_space,
@@ -171,7 +171,7 @@ namespace student
       {
         fx_path[i + 1] = abstract_arena.world_gates[path[3]].cell->centroid->x;
         fy_path[i + 1] = abstract_arena.world_gates[path[3]].cell->centroid->y;
-        fth_path[i + 1] = fth_path[i];
+        fth_path[i + 1] = fth_path[i]*3;
       }
     }
 
