@@ -518,13 +518,9 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 	while (intersection[0] || intersection[1] || intersection[2])
 	{
 		
-		intersection[0] = true;
-		intersection[1] = true;
-		intersection[2] = true;
-
 		bool in_arc;
 
-		tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf, Kmax - 2 + k);
+		tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf, Kmax + k);
 
 		// Curve exist
 		if (pidx > 0)
@@ -532,9 +528,12 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 			// Check intersection curve with arena
 			// Arena points
 			pnt = arena.arena->head;
-
 			do
 			{
+				intersection[0] = true;
+				intersection[1] = true;
+				intersection[2] = true;
+
 				point_node *pnt_next;
 
 				if (pnt->pnext != NULL)
@@ -545,8 +544,11 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 				{
 					pnt_next = arena.arena->head;
 				}
-
-				tie(pts, p) = intersCircleLine(c.a1.xc, c.a1.yc, c.a1.r, pnt->x, pnt->y, pnt_next->x, pnt_next->y);
+				
+				
+				tie(pts, p) = intersCircleLine(c.a1.xc, c.a1.yc, c.a1.r,
+											   pnt->x, pnt->y, pnt_next->x,
+											   pnt_next->y);
 				if (pts == NULL)
 				{
 					intersection[0] = false;
@@ -558,30 +560,29 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 					in_arc = pt_in_arc(pts->head, c.a1);
 					if (in_arc == false)
 					{
-						// cout << "pt in arc1: " << pt_in_arc(pts->head, c.a1)<<endl;
-						// cout << "Arc pt 0\n\n";
 						intersection[0] = false;
 					}
 				}
+				
 
-				tie(pts, p) = intersCircleLine(c.a2.xc, c.a2.yc, c.a2.r, pnt->x, pnt->y, pnt_next->x, pnt_next->y);
+				tie(pts, p) = intersCircleLine(c.a2.xc, c.a2.yc, c.a2.r,
+											   pnt->x, pnt->y, pnt_next->x,
+											   pnt_next->y);
+
 				if (pts == NULL)
-				{
+				{	
 					intersection[1] = false;
-				}
-
-				else
-				{
+				} else{
 					in_arc = pt_in_arc(pts->head, c.a2);
 					if (in_arc == false)
 					{
-						// cout << "pt in arc2: " << pt_in_arc(pts->head, c.a2)<<endl;
-						// cout << "Arc pt 1\n\n";
 						intersection[1] = false;
 					}
 				}
-
-				tie(pts, p) = intersCircleLine(c.a3.xc, c.a3.yc, c.a3.r, pnt->x, pnt->y, pnt_next->x, pnt_next->y);
+				
+				tie(pts, p) = intersCircleLine(c.a3.xc, c.a3.yc, c.a3.r,
+											   pnt->x, pnt->y, pnt_next->x,
+											   pnt_next->y);
 				if (pts == NULL)
 				{
 					intersection[2] = false;
@@ -591,16 +592,14 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 					in_arc = pt_in_arc(pts->head, c.a3);
 					if (in_arc == false)
 					{
-						// cout << "pt in arc3: "<< pt_in_arc(pts->head, c.a3)<< endl;
-						// cout << "Arc pt 2\n\n";
 						intersection[2] = false;
 					}
 				}
+
 				pnt = pnt->pnext;
-				cout << "\nBool 0: " << intersection[0] << endl;
-				cout << "Bool 1: " << intersection[1] << endl;
-				cout << "Bool 2: " << intersection[2] << endl;
-			}while (pnt != NULL && (!intersection[0] && !intersection[1] && !intersection[2]));
+			}while (pnt != NULL && (!intersection[0] &&
+									!intersection[1] &&
+									!intersection[2]));
 
 			// Check intersection curve with polygons
 			// it = arena.obstacles->offset_head;
@@ -636,7 +635,6 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 			// 	it = it->pnext;
 			// }
 		}
-
 		k += 1;
 	}
 
