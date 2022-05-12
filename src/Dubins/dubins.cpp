@@ -504,7 +504,7 @@ tuple<double, double, double> get_circle_center(double x1, double y1, double x2,
 curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, double thf, double Kmax, points_map arena)
 {
 	int pidx;
-	double k = 1;
+	double k = 0;
 	bool intersection[3] = {true, true, true};
 
 	double_list *p;
@@ -524,7 +524,7 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 
 		bool in_arc;
 
-		tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf / k, Kmax);
+		tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf, Kmax - 2 + k);
 
 		// Curve exist
 		if (pidx > 0)
@@ -533,7 +533,7 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 			// Arena points
 			pnt = arena.arena->head;
 
-			while (pnt != NULL && (!intersection[0] && !intersection[1] && !intersection[2]))
+			do
 			{
 				point_node *pnt_next;
 
@@ -597,10 +597,10 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 					}
 				}
 				pnt = pnt->pnext;
-				// cout << "\nBool 0: " << intersection[0] << endl;
-				// cout << "Bool 1: " << intersection[1] << endl;
-				// cout << "Bool 2: " << intersection[2] << endl;
-			}
+				cout << "\nBool 0: " << intersection[0] << endl;
+				cout << "Bool 1: " << intersection[1] << endl;
+				cout << "Bool 2: " << intersection[2] << endl;
+			}while (pnt != NULL && (!intersection[0] && !intersection[1] && !intersection[2]));
 
 			// Check intersection curve with polygons
 			// it = arena.obstacles->offset_head;
@@ -636,7 +636,7 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 			// 	it = it->pnext;
 			// }
 		}
-		cout << k << endl;
+
 		k += 1;
 	}
 
