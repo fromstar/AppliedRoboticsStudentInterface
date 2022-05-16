@@ -115,8 +115,8 @@ namespace student
     Robot *f_1 = new Robot("Fugitive_1", fugitive);
     arena.add_robot(f_1);
 
-    arena.set_robot_position(f_1->ID, x[0] * scale, y[0] * scale);
-    arena.set_robot_position(c_1->ID, x[1] * scale, y[1] * scale);
+    arena.set_robot_position(c_1->ID, x[0] * scale, y[0] * scale);
+    arena.set_robot_position(f_1->ID, x[1] * scale, y[1] * scale);
     // Create world representaion
     World_representation abstract_arena = World_representation(
         arena.free_space,
@@ -165,25 +165,27 @@ namespace student
 
       fx_path[i] = abstract_arena.world_free_cells[path[2]].cell->centroid->x;
       fy_path[i] = abstract_arena.world_free_cells[path[2]].cell->centroid->y;
-      fth_path[i] = 3.14 / 2;
 
       if (i == f_path.size() - 1)
       {
         fx_path[i + 1] = abstract_arena.world_gates[path[3]].cell->centroid->x;
         fy_path[i + 1] = abstract_arena.world_gates[path[3]].cell->centroid->y;
-        fth_path[i + 1] = fth_path[i] * 3;
       }
     }
+
+    opti_theta(fx_path, fy_path, fth_path, f_path.size() + 1);
 
     curve c;
 
     // Calculate dubin's curves without intersection
-
-    c = dubins_no_inter(it->second->self->location->x, it->second->self->location->y, 0, fx_path[0], fy_path[0], fth_path[0], 10, arena);
+  
+    cout << "Curve: " << 0 << endl;
+    c = dubins_no_inter(it->second->self->location->x, it->second->self->location->y, 0, fx_path[0], fy_path[0], fth_path[0], 0, arena);
     img_arena = plotdubins(c, "r", "g", "b", img_arena);
 
     for (int i = 0; i < f_path.size(); i++)
     {
+      cout << "Curve: " << i+1 << endl;
       c = dubins_no_inter(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1], fy_path[i + 1], fth_path[i + 1], 10, arena);
       img_arena = plotdubins(c, "r", "g", "b", img_arena);
     }

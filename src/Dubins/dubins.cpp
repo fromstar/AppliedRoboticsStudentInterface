@@ -456,6 +456,17 @@ tuple<point_list *, double_list *> intersCircleLine(double a, double b, double r
 	return make_tuple(pts, t);
 }
 
+void opti_theta(double xpath[], double ypath[], double thpath[], int size)
+{
+	for (int i = 0; i < size - 1; i++)
+	{
+		thpath[i] = get_angle(xpath[i], ypath[i], xpath[i + 1], ypath[i + 1]);
+		cout << "i: " << i << endl;
+		cout << "Theta: " << thpath[i] << endl;
+	}
+	thpath[size - 1] = thpath[size - 2];
+}
+
 /*Source of this function:
 	https://www.geeksforgeeks.org/equation-of-circle-when-three-points-on-the-circle-are-given/
 */
@@ -503,19 +514,22 @@ tuple<double, double, double> get_circle_center(double x1, double y1, double x2,
 
 curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, double thf, double Kmax, points_map arena)
 {
-	int pidx;
+
+	int pidx = 0;
+	double th = 0;
 	double k = 0;
-	bool intersection[3] = {true, true, true};
+	bool intersection_arena[3] = {true, true, true};
+	bool intersection_polygons[3] = {true, true, true};
+
 
 	polygon *it;
 	Edge *edges = NULL;
 	point_node *pnt;
 	curve c;
 
-	// tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf , Kmax - 2);
-	while (intersection[0] || intersection[1] || intersection[2])
+	while (intersection_arena[0] || intersection_arena[1] || intersection_arena[2] || intersection_polygons[0] || intersection_polygons[1] || intersection_polygons[2])
 	{
-		tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf, Kmax + k);
+		tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf + th, Kmax + k);
 
 		// Curve exist
 		if (pidx > 0)
@@ -525,9 +539,10 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 			pnt = arena.arena->head;
 			do
 			{
-				intersection[0] = true;
-				intersection[1] = true;
-				intersection[2] = true;
+
+				intersection_arena[0] = true;
+				intersection_arena[1] = true;
+				intersection_arena[2] = true;
 
 				point_node *pnt_next;
 
@@ -540,15 +555,15 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 					pnt_next = arena.arena->head;
 				}
 
-				intersection[0] = find_intersection(c.a1, pnt, pnt_next);
-				intersection[1] = find_intersection(c.a2, pnt, pnt_next);
-				intersection[2] = find_intersection(c.a3, pnt, pnt_next);
+				intersection_arena[0] = find_intersection(c.a1, pnt, pnt_next);
+				intersection_arena[1] = find_intersection(c.a2, pnt, pnt_next);
+				intersection_arena[2] = find_intersection(c.a3, pnt, pnt_next);
 
 				pnt = pnt->pnext;
-			} while (pnt != NULL && (!intersection[0] &&
-									 !intersection[1] &&
-									 !intersection[2]));
-
+			} while (pnt != NULL && (!intersection_arena[0] &&
+									 !intersection_arena[1] &&
+									 !intersection_arena[2]));
+									 
 			// Check intersection curve with polygons
 			it = arena.obstacles->offset_head;
 			do
@@ -556,26 +571,27 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 				edges = it->edgify()->head;
 				do
 				{
-					intersection[0] = true;
-					intersection[1] = true;
-					intersection[2] = true;
+					intersection_polygons[0] = true;
+					intersection_polygons[1] = true;
+					intersection_polygons[2] = true;
 
 					point_node *p0 = edges->points->head;
 					point_node *p1 = edges->points->tail;
 
-					intersection[0] = find_intersection(c.a1, p0, p1);
-					intersection[1] = find_intersection(c.a2, p0, p1);
-					intersection[2] = find_intersection(c.a3, p0, p1);
+					intersection_polygons[0] = find_intersection(c.a1, p0, p1);
+					intersection_polygons[1] = find_intersection(c.a2, p0, p1);
+					intersection_polygons[2] = find_intersection(c.a3, p0, p1);
 
 					edges = edges->next;
-				} while (edges != NULL && (!intersection[0] &&
-										   !intersection[1] &&
-										   !intersection[2]));
+				} while (edges != NULL && (!intersection_polygons[0] &&
+										   !intersection_polygons[1] &&
+										   !intersection_polygons[2]));
 				it = it->pnext;
-			} while (it != NULL && (!intersection[0] &&
-									!intersection[1] &&
-									!intersection[2]));
+			} while (it != NULL && (!intersection_polygons[0] &&
+									!intersection_polygons[1] &&
+									!intersection_polygons[2]));
 		}
+		th += 0.001;
 		k += 1;
 	}
 
@@ -597,7 +613,6 @@ bool find_intersection(arc a, point_node *pnt, point_node *pnt_next)
 	// Check if the intersection point are included in the dubin arc
 	else
 	{
-		;
 		if (pt_in_arc(pts->head, a) == false)
 		{
 			return false;
@@ -614,10 +629,11 @@ bool pt_in_arc(point_node *ptso, arc a)
 	// Get the circonference angle of given point in it
 	start = get_angle(a.xc, a.yc, a.x0, a.y0);
 	end = get_angle(a.xc, a.yc, a.xf, a.yf);
+
 	if (start < 0)
-		start += 6.28;
+		start += (M_PI * 2);
 	if (end < 0)
-		end += 6.28;
+		end += (M_PI * 2);
 
 	if (end < start)
 	{
@@ -627,11 +643,15 @@ bool pt_in_arc(point_node *ptso, arc a)
 		start = tmp;
 	}
 
+	// cout << "Start: " << start << endl;
+	// cout << "End: " << end << endl;
+
 	while (pts != NULL)
 	{
 		angle = get_angle(a.xc, a.yc, pts->x, pts->y);
 		if (angle < 0)
-			angle += 6.28;
+			angle += (M_PI * 2);
+		// cout << "angle: " << angle << endl;
 		if (is_in_arc(start, end, angle))
 		{
 			return true;

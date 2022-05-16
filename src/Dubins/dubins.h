@@ -51,4 +51,5 @@ tuple <double, double, double> get_circle_center(double, double, double, double,
 curve dubins_no_inter(double, double, double, double, double, double, double, points_map);
 bool pt_in_arc(point_node *, arc);
 bool find_intersection(arc, point_node*, point_node*);
+void opti_theta(double [],double [],double [], int);
 #endif
