@@ -99,7 +99,7 @@ namespace student
       for (int j = 0; j < gate_list[i].size(); j++)
       {
         pol->add_node(new point_node(gate_list[i][j].x * scale, gate_list[i][j].y * scale));
-        cout << "p" << j+1 << " " << gate_list[i][j].x<<":"<<gate_list[i][j].y << endl; 
+        cout << "p" << j + 1 << " " << gate_list[i][j].x << ":" << gate_list[i][j].y << endl;
       }
       arena.add_gate(new polygon(pol));
     }
@@ -115,8 +115,8 @@ namespace student
     Robot *f_1 = new Robot("Fugitive_1", fugitive);
     arena.add_robot(f_1);
 
-    arena.set_robot_position(c_1->ID, x[0] * scale, y[0] * scale);
-    arena.set_robot_position(f_1->ID, x[1] * scale, y[1] * scale);
+    arena.set_robot_position(f_1->ID, x[0] * scale, y[0] * scale);
+    arena.set_robot_position(c_1->ID, x[1] * scale, y[1] * scale);
     // Create world representaion
     World_representation abstract_arena = World_representation(
         arena.free_space,
@@ -139,8 +139,8 @@ namespace student
     it->second->set_behaviour(aware);
     it->second->make_pddl_domain_file(abstract_arena);
     it->second->make_pddl_problem_file(abstract_arena);
-	
-	// it->second->info();
+
+    // it->second->info();
 
     Mat img_arena = arena.plot_arena(800, 800, true);
 
@@ -165,25 +165,21 @@ namespace student
 
       fx_path[i] = abstract_arena.world_free_cells[path[2]].cell->centroid->x;
       fy_path[i] = abstract_arena.world_free_cells[path[2]].cell->centroid->y;
-      fth_path[i] = 3.14/2;
+      fth_path[i] = 3.14 / 2;
 
       if (i == f_path.size() - 1)
       {
         fx_path[i + 1] = abstract_arena.world_gates[path[3]].cell->centroid->x;
         fy_path[i + 1] = abstract_arena.world_gates[path[3]].cell->centroid->y;
-        fth_path[i + 1] = fth_path[i]*3;
+        fth_path[i + 1] = fth_path[i] * 3;
       }
     }
 
     curve c;
 
+    // Calculate dubin's curves without intersection
+
     c = dubins_no_inter(it->second->self->location->x, it->second->self->location->y, 0, fx_path[0], fy_path[0], fth_path[0], 10, arena);
-
-    /*CHECK IF THE DUBINS CURVE INTERSECT WITH ARENA OR OBSTACLES*/
-    // point_list * pts;
-    // double_list *t;
-    // tie(pts,t) = intersCircleLine();
-
     img_arena = plotdubins(c, "r", "g", "b", img_arena);
 
     for (int i = 0; i < f_path.size(); i++)

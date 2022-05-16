@@ -180,7 +180,7 @@ Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons)
 		free_space_centroid->add_node(tmp->centroid->copy());
 		free_space_centroid->add_node(tmp->centroid->copy());
 		img_arena = plot_points(free_space_centroid, img_arena, Scalar(0, 255, 255),
-								false, 5);
+								false, 2);
 		tmp = tmp->pnext;
 	};
 
