@@ -78,7 +78,7 @@ void points_map::add_robot(Robot *r)
 	};
 };
 
-void points_map::set_robot_position(string robot_id, double x, double y)
+void points_map::set_robot_position(string robot_id, double x, double y, double th = 0)
 {
 	int existing = robot.count(robot_id);
 	if (existing == 0)
@@ -89,6 +89,7 @@ void points_map::set_robot_position(string robot_id, double x, double y)
 	Robot *_robot = robot[robot_id]; // If no element in container it adds it.
 	delete (_robot->location);		 // free memory of previous location.
 	_robot->location = new point_node(x, y);
+	_robot->theta=th;
 };
 
 void points_map::add_gate(polygon *gt)

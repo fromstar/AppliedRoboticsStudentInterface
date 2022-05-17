@@ -38,6 +38,7 @@ typedef enum { least_steps, undeterministic, aware } behaviour_fugitive;
  * @param type: Robot_type. It is the role of the robot in the environment.
  * @param x: double. It is the robot location over the abscissa axis.
  * @param y: double. It is the robot location over the ordinates axis.
+ * @param theta: double. Initial orientation angle.
  * @param max_curvature_angle: double. It is the maximum angle that the robot
  * is able to reach during a turning action.
  * @param offset: double. It is the value of which the robot physical
@@ -64,6 +65,7 @@ typedef struct Robot {
   string ID;
   Robot_type type = undefined;
   point_node *location = NULL;
+  double theta = 0;
   double max_curvature_angle = 0;
   double offset = 1;
   string desire = "NaN";

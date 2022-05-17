@@ -46,12 +46,12 @@ typedef struct points_map
 
 	void add_arena_points(point_list *ArenaPoints);
 	void add_robot(Robot *r);
-	void set_robot_position(string robot_id, double x, double y);
+	void set_robot_position(string robot_id, double x, double y, double th);
 	void add_obstacle(polygon *ob);
 	void add_gate(polygon *gt);
 	void merge_obstacles();
 	void make_free_space_cells_triangular(int res = 3);
-	void make_free_space_cells_squares(int res=2);
+	void make_free_space_cells_squares(int res=4);
 	void print_info();
 	Mat plot_arena(int x_dim, int y_dim, bool show_original_polygons = true);
 	void del_map();
