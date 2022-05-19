@@ -8,10 +8,11 @@
 #include <stdexcept>
 #include <sstream>
 
-// Scaler factor for plotting arena with opencv
-int scale = 2;
-
 Pose get_pose(arc, bool last_elem = false);
+Path push_path(curve, Path);
+
+// Scaler factor for plotting arena with opencv
+int scale = 1;
 
 namespace student
 {
@@ -84,13 +85,10 @@ namespace student
     for (int i = 0; i < obstacle_list.size(); i++)
     {
       pol = new point_list;
-      // cout << "Poligono " << i + 1 << "\n";
       for (int j = 0; j < obstacle_list[i].size(); j++)
       {
         pol->add_node(new point_node(obstacle_list[i][j].x * scale, obstacle_list[i][j].y * scale));
-        // cout << obstacle_list[i][j].x << ":" << obstacle_list[i][j].y << " ";
       }
-      // cout << "\n";
       arena.add_obstacle(new polygon(pol));
     }
 
@@ -101,7 +99,6 @@ namespace student
       for (int j = 0; j < gate_list[i].size(); j++)
       {
         pol->add_node(new point_node(gate_list[i][j].x * scale, gate_list[i][j].y * scale));
-        // cout << "p" << j + 1 << " " << gate_list[i][j].x << ":" << gate_list[i][j].y << endl;
       }
       arena.add_gate(new polygon(pol));
     }
@@ -166,19 +163,19 @@ namespace student
     // Calculate dubin's curves without intersection
 
     c = dubins_no_inter(f_it->second->self->location->x, f_it->second->self->location->y, f_1->theta, fx_path[0], fy_path[0], &fth_path[0], 0, arena);
-    path[0].points.push_back(get_pose(c.a1));
-    path[0].points.push_back(get_pose(c.a2));
-    path[0].points.push_back(get_pose(c.a2));
+    path[0] = push_path(c, path[0]);
+
+    // for(int i=0;i < path[0].points.size();i++)
+    // {
+    //   cout << path[0].points[0].x << endl;
+    // }
 
     img_arena = plotdubins(c, "r", "g", "b", img_arena);
 
     for (int i = 0; i < fx_path.size() - 1; i++)
     {
       c = dubins_no_inter(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1], fy_path[i + 1], &fth_path[i + 1], 10, arena);
-
-      path[0].points.push_back(get_pose(c.a1));
-      path[0].points.push_back(get_pose(c.a2));
-      path[0].points.push_back(get_pose(c.a2));
+      path[0] = push_path(c, path[0]);
 
       img_arena = plotdubins(c, "r", "g", "b", img_arena);
     }
@@ -201,13 +198,13 @@ namespace student
     // }
     // /**********************************************/
 
-    cout << "Path size: " << path.size() << endl << endl << endl << endl;
     // imshow("Arena", img_arena);
     // waitKey(0);
 
     return true;
   }
 }
+
 
 Pose get_pose(arc a, bool last_elem)
 {
@@ -226,6 +223,37 @@ Pose get_pose(arc a, bool last_elem)
   p.x = a.x0;
   p.y = a.y0;
   p.theta = a.th0;
+
+  return p;
+}
+
+Path push_path(curve c, Path p)
+{
+  arc a;
+
+  a = dubinsarc(c.a1.x0, c.a1.y0, c.a1.th0, c.a1.k, c.a1.L / 100);
+  for (int i = 0; i < 100; i++)
+  {
+    p.points.push_back(get_pose(a));
+    a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
+  }
+  p.points.push_back(get_pose(a, true));
+
+  a = dubinsarc(c.a2.x0, c.a2.y0, c.a2.th0, c.a2.k, c.a2.L / 100);
+  for (int i = 0; i < 100; i++)
+  {
+    p.points.push_back(get_pose(a));
+    a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
+  }
+  p.points.push_back(get_pose(a, true));
+
+  a = dubinsarc(c.a3.x0, c.a3.y0, c.a3.th0, c.a3.k, c.a3.L / 100);
+  for (int i = 0; i < 100; i++)
+  {
+    p.points.push_back(get_pose(a));
+    a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
+  }
+  p.points.push_back(get_pose(a, true));
 
   return p;
 }

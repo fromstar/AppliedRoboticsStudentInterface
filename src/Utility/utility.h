@@ -179,4 +179,5 @@ tuple <double, double> get_new_point(double,double,double,double);
 string exec(const char *cmd);
 double get_angle(double,double,double,double);
 bool is_in_arc(double,double,double);
+
 #endif
