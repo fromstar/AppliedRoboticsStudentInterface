@@ -39,7 +39,6 @@ list_of_obstacles::~list_of_obstacles()
 	}
 };
 
-
 void list_of_obstacles::delete_offsetted_list()
 {
 	polygon *tmp;
@@ -55,7 +54,48 @@ void list_of_obstacles::delete_offsetted_list()
 void points_map::add_arena_points(point_list *ArenaPoints)
 {
 	arena = ArenaPoints;
+	shrink_arena(0.085); 
 };
+
+void points_map::shrink_arena(double offset)
+{
+	if (shrinked_arena != NULL)
+		return;
+
+	
+
+	polygon *p = new polygon(arena);
+	
+	shrinked_arena = new point_list();
+	point_node *p1 = arena->head;
+
+	double new_x, new_y;
+
+	while(p1 != NULL)
+	{
+		if(p1->x < p->centroid->x)
+		{
+			new_x = p1->x + offset;
+		}
+		else
+		{
+			new_x = p1->x - offset;
+		}
+
+		if(p1->y < p->centroid->y)
+		{
+			new_y = p1->y + offset;
+		}
+		else
+		{
+			new_y = p1->y - offset;
+		}
+
+		shrinked_arena->add_node(new point_node(new_x, new_y));
+
+		p1 = p1->pnext;
+	}
+}
 
 /**
  * \fun void points_map::add_robot(Robot\* r)
@@ -89,7 +129,7 @@ void points_map::set_robot_position(string robot_id, double x, double y, double 
 	Robot *_robot = robot[robot_id]; // If no element in container it adds it.
 	delete (_robot->location);		 // free memory of previous location.
 	_robot->location = new point_node(x, y);
-	_robot->theta=th;
+	_robot->theta = th;
 };
 
 void points_map::add_gate(polygon *gt)
@@ -127,18 +167,12 @@ void points_map::print_info()
 	};
 };
 
-void points_map::reduce_arena()
-{ // Buggy function, must be re_seen
-	polygon *copy_arena = new polygon(arena);
-	copy_arena = copy_arena->add_offset(-0.1);
-	arena = copy_arena->pl;
-};
-
 Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons)
 {
 	Mat img_arena(x_dim, y_dim, CV_8UC3, Scalar(255, 255, 255));
 
 	img_arena = plot_points(arena, img_arena, Scalar(0, 0, 0), true);
+	img_arena = plot_points(shrinked_arena, img_arena, Scalar(121,18,65), true);
 
 	polygon *tmp = NULL;
 
@@ -170,13 +204,14 @@ Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons)
 	}
 
 	// plot free_space
-	cout << endl << "Plotting free space" << endl;
+	cout << endl
+		 << "Plotting free space" << endl;
 	tmp = free_space->head;
 	while (tmp != NULL)
 	{
 		img_arena = plot_points(tmp->pl, img_arena, Scalar(0, 255, 255),
 								true, 1);
-		
+
 		point_list *free_space_centroid = new point_list;
 		free_space_centroid->add_node(tmp->centroid->copy());
 		free_space_centroid->add_node(tmp->centroid->copy());
@@ -218,13 +253,12 @@ point_list *boost_polygon_to_point_list(Polygon_boost p)
 	{
 		double x = bg::get<0>(*it);
 		double y = bg::get<1>(*it);
-		
+
 		pl->add_node(new point_node(x, y));
 	}
-	point_list* new_pol_list = pl->pop();
+	point_list *new_pol_list = pl->pop();
 	return new_pol_list;
 };
-
 
 polygon *boost_polygon_to_polygon(Polygon_boost p)
 {
@@ -236,15 +270,14 @@ polygon *boost_polygon_to_polygon(Polygon_boost p)
 	{
 		double x = bg::get<0>(*it);
 		double y = bg::get<1>(*it);
-		
+
 		pl->add_node(new point_node(x, y));
 	}
-	point_list* new_pol_list = pl->pop();
+	point_list *new_pol_list = pl->pop();
 	polygon *new_pol = new polygon(new_pol_list);
 	new_pol->centroid = new point_node(new_centroid.x(), new_centroid.y());
 	return new_pol;
 };
-
 
 /**
  * This function is used to merge the obstacles that touch each others in the
@@ -435,10 +468,12 @@ vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
 											vector<Polygon_boost> obstacles)
 {
 
-	if(arena.size() == 0){
+	if (arena.size() == 0)
+	{
 		cout << "Arena vector is empty." << endl;
 	};
-	if(obstacles.size() == 0){
+	if (obstacles.size() == 0)
+	{
 		cout << "Obstacle vector is empty." << endl;
 	};
 
@@ -481,53 +516,58 @@ vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
 	return arena;
 };
 
-
-
-void points_map::make_free_space_cells_squares(int res){
+void points_map::make_free_space_cells_squares(int res)
+{
 	// generate arena subsetting
 	list_of_polygons *tmp_list = new list_of_polygons();
-	tmp_list->add_polygon(new polygon(arena));
-	
-	for(int i=0; i<res; i++){
+	tmp_list->add_polygon(new polygon(shrinked_arena));
+
+	for (int i = 0; i < res; i++)
+	{
 		polygon *tmp_pol = tmp_list->head;
 		list_of_polygons *tmp_output = new list_of_polygons();
-		while(tmp_pol != NULL){
+		while (tmp_pol != NULL)
+		{
 			Edge_list *e_list = tmp_pol->edgify();
 			Edge *tmp = e_list->head;
 
 			Edge *start = e_list->head;
-			while(start != NULL){
+			while (start != NULL)
+			{
 				Edge *end;
-				if(start->next == NULL){
+				if (start->next == NULL)
+				{
 					end = e_list->head;
-				}else{
+				}
+				else
+				{
 					end = start->next;
 				};
-			
-				point_list * pl_temp = new point_list();
+
+				point_list *pl_temp = new point_list();
 				pl_temp->add_node(new point_node(tmp_pol->centroid->x,
 												 tmp_pol->centroid->y));
 				pl_temp->add_node(start->middle_point());
 				pl_temp->add_node(start->points->tail);
 				pl_temp->add_node(end->middle_point());
-				
+
 				polygon *cell = new polygon(pl_temp);
-				tmp_output -> add_polygon(cell);
+				tmp_output->add_polygon(cell);
 
 				start = start->next;
 			};
-		tmp_pol = tmp_pol->pnext;
+			tmp_pol = tmp_pol->pnext;
 		};
 		tmp_list = tmp_output;
 	};
-	
 
 	polygon *tmp_pol;
 
 	// convert cells to boost polygons
 	vector<Polygon_boost> cells;
 	tmp_pol = tmp_list->head;
-	while(tmp_pol != NULL){
+	while (tmp_pol != NULL)
+	{
 		cout << "Before becaming boost: " << tmp_pol->pl->size << endl;
 		cells.push_back(tmp_pol->to_boost_polygon());
 		tmp_pol = tmp_pol->pnext;
@@ -537,12 +577,13 @@ void points_map::make_free_space_cells_squares(int res){
 	// convert obstacles to boost ones
 	vector<Polygon_boost> ob_boost;
 	tmp_pol = obstacles->offset_head;
-	while(tmp_pol != NULL){
+	while (tmp_pol != NULL)
+	{
 		ob_boost.push_back(tmp_pol->to_boost_polygon());
 		tmp_pol = tmp_pol->pnext;
 	};
 
-	// add gates to list of obstacles	
+	// add gates to list of obstacles
 	/*
 	tmp_pol = gates->head;
 	while(tmp_pol != NULL){
@@ -552,34 +593,38 @@ void points_map::make_free_space_cells_squares(int res){
 	*/
 
 	// Remove obstacles from the cells
-	
+
 	vector<Polygon_boost> output;
-	for(int i_o=0; i_o != ob_boost.size(); i_o++){
-		for(int i_c=0; i_c != cells.size(); i_c++){
-			if (bg::intersects(cells[i_c], ob_boost[i_o])){
+	for (int i_o = 0; i_o != ob_boost.size(); i_o++)
+	{
+		for (int i_c = 0; i_c != cells.size(); i_c++)
+		{
+			if (bg::intersects(cells[i_c], ob_boost[i_o]))
+			{
 				bg::difference(cells[i_c], ob_boost[i_o], output);
-				cells[i_c] = output[output.size()-1];
+				cells[i_c] = output[output.size() - 1];
 			};
 		};
 	};
 
 	cells = difference_of_vectors(cells, ob_boost);
-	
+
 	list_of_polygons *new_cells = new list_of_polygons();
-	for(int i=0; i<cells.size(); i++){
+	for (int i = 0; i < cells.size(); i++)
+	{
 		polygon *p = boost_polygon_to_polygon(cells[i]);
 		// p->recompute_centroid();
-		new_cells -> add_polygon(p);
+		new_cells->add_polygon(p);
 	};
 	tmp_list = new_cells;
 
 	polygon *pol_pointer = tmp_list->head;
-	while(pol_pointer != NULL){
-		free_space -> add_polygon(pol_pointer);
+	while (pol_pointer != NULL)
+	{
+		free_space->add_polygon(pol_pointer);
 		pol_pointer = pol_pointer->pnext;
 	};
 };
-
 
 /**
  * This function is used to detect the free space in the arena provided.
@@ -591,7 +636,7 @@ void points_map::make_free_space_cells_squares(int res){
  * @param[in] res: int. Is the resolution to apply at the arena subsetting.
  */
 void points_map::make_free_space_cells_triangular(int res)
-{	
+{
 	// Subset arena -> free space idealization
 	polygon *_arena = new polygon(arena);
 	list_of_polygons *_arena_subset = subset_polygon(_arena, res);

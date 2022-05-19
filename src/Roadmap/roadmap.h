@@ -35,6 +35,7 @@ typedef struct points_map
 {
 	// Lists of points belonging respectively to the arena and the obstacles
 	point_list* arena = NULL; // If the robots touches the wall Game Over -> Inflate the arena
+	point_list* shrinked_arena = NULL;
 	list_of_obstacles* obstacles = new list_of_obstacles;
 	list_of_polygons* gates = new list_of_polygons;
 	list_of_polygons* free_space = new list_of_polygons;
@@ -54,8 +55,8 @@ typedef struct points_map
 	void make_free_space_cells_squares(int res=4);
 	void print_info();
 	Mat plot_arena(int x_dim, int y_dim, bool show_original_polygons = true);
+	void shrink_arena(double offset=0);
 	void del_map();
-	void reduce_arena();
 	// void ~points_map();
 } points_map;
 
