@@ -256,7 +256,7 @@ Mat plotarc(arc a, string c, Mat img)
 {
 	int npts = 100;
 	double th;
-	Point pts[npts];
+	cv::Point pts[npts];
 	point_list *pl = new point_list;
 	for (int i = 0; i < npts; i++)
 	{
@@ -445,7 +445,7 @@ tuple<point_list *, double_list *> intersCircleLine(double a, double b, double r
 	{
 		x = x1 * t2 + x2 * (1 - t2);
 		y = y1 * t2 + y2 * (1 - t2);
-		Point pt(x, y);
+		cv::Point pt(x, y);
 		// cout << typeid(pt.x).name() << endl;
 		pts->add_node(new point_node(x, y));
 
@@ -676,4 +676,56 @@ bool pt_in_arc(point_node *ptso, arc a)
 		pts = pts->pnext;
 	}
 	return false;
+}
+
+Pose get_pose(arc a, bool last_elem)
+{
+  Pose p;
+  p.s = a.L;
+  p.kappa = a.k;
+
+  if (last_elem == true)
+  {
+    p.x = a.xf;
+    p.y = a.yf;
+    p.theta = a.thf;
+    return p;
+  }
+
+  p.x = a.x0;
+  p.y = a.y0;
+  p.theta = a.th0;
+
+  return p;
+}
+
+Path push_path(curve c, Path p)
+{
+  arc a;
+
+  a = dubinsarc(c.a1.x0, c.a1.y0, c.a1.th0, c.a1.k, c.a1.L / 100);
+  for (int i = 0; i < 100; i++)
+  {
+    p.points.push_back(get_pose(a));
+    a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
+  }
+  p.points.push_back(get_pose(a, true));
+
+  a = dubinsarc(c.a2.x0, c.a2.y0, c.a2.th0, c.a2.k, c.a2.L / 100);
+  for (int i = 0; i < 100; i++)
+  {
+    p.points.push_back(get_pose(a));
+    a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
+  }
+  p.points.push_back(get_pose(a, true));
+
+  a = dubinsarc(c.a3.x0, c.a3.y0, c.a3.th0, c.a3.k, c.a3.L / 100);
+  for (int i = 0; i < 100; i++)
+  {
+    p.points.push_back(get_pose(a));
+    a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
+  }
+  p.points.push_back(get_pose(a, true));
+
+  return p;
 }

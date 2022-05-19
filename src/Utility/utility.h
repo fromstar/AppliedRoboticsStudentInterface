@@ -10,9 +10,11 @@
 #include <boost/geometry/geometries/point_xy.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
 #include <string.h>
+#include "../../../simulator/src/9_project_interface/include/utils.hpp"
 
 using pt = boost::geometry::model::d2::point_xy<double>;
 using Polygon_boost = boost::geometry::model::polygon<pt>;
+
 
 using namespace cv;
 using namespace std;
@@ -179,5 +181,6 @@ tuple <double, double> get_new_point(double,double,double,double);
 string exec(const char *cmd);
 double get_angle(double,double,double,double);
 bool is_in_arc(double,double,double);
+
 
 #endif

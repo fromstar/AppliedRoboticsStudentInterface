@@ -230,8 +230,8 @@ Mat plot_points(point_list *pl, Mat arena, Scalar colorline, bool isPolygon,
 		while (n1 != NULL && n1->pnext != NULL)
 		{
 			n2 = n1->pnext;
-			Point pt1((n1->x * SCALE_1) + SCALE_2, (n1->y * -SCALE_1) + SCALE_2);
-			Point pt2((n2->x * SCALE_1) + SCALE_2, (n2->y * -SCALE_1) + SCALE_2);
+			cv::Point pt1((n1->x * SCALE_1) + SCALE_2, (n1->y * -SCALE_1) + SCALE_2);
+			cv::Point pt2((n2->x * SCALE_1) + SCALE_2, (n2->y * -SCALE_1) + SCALE_2);
 			line(arena, pt1, pt2, colorline, thickness);
 			if (show){
 				cout << "Plotting Line: "
@@ -247,9 +247,9 @@ Mat plot_points(point_list *pl, Mat arena, Scalar colorline, bool isPolygon,
 		}
 
 		if (isPolygon){ // close the polygon connecting the last point with the firts one
-			line(arena, Point((pl->tail->x * SCALE_1) + SCALE_2,
+			line(arena, cv::Point((pl->tail->x * SCALE_1) + SCALE_2,
 							  (pl->tail->y * -SCALE_1) + SCALE_2),
-				 Point((pl->head->x * SCALE_1) + SCALE_2,
+				 cv::Point((pl->head->x * SCALE_1) + SCALE_2,
 					   (pl->head->y * -SCALE_1) + SCALE_2),
 				 colorline, thickness);
 			if (show){

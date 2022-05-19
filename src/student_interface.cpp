@@ -3,13 +3,9 @@
 #include "Roadmap/roadmap.h"
 #include "Dubins/dubins.h"
 #include "World_representation/world_representation.h"
-#include <thread>
 
 #include <stdexcept>
 #include <sstream>
-
-Pose get_pose(arc, bool last_elem = false);
-Path push_path(curve, Path);
 
 // Scaler factor for plotting arena with opencv
 int scale = 1;
@@ -165,11 +161,6 @@ namespace student
     c = dubins_no_inter(f_it->second->self->location->x, f_it->second->self->location->y, f_1->theta, fx_path[0], fy_path[0], &fth_path[0], 0, arena);
     path[0] = push_path(c, path[0]);
 
-    // for(int i=0;i < path[0].points.size();i++)
-    // {
-    //   cout << path[0].points[0].x << endl;
-    // }
-
     img_arena = plotdubins(c, "r", "g", "b", img_arena);
 
     for (int i = 0; i < fx_path.size() - 1; i++)
@@ -203,57 +194,4 @@ namespace student
 
     return true;
   }
-}
-
-
-Pose get_pose(arc a, bool last_elem)
-{
-  Pose p;
-  p.s = a.L;
-  p.kappa = a.k;
-
-  if (last_elem == true)
-  {
-    p.x = a.xf;
-    p.y = a.yf;
-    p.theta = a.thf;
-    return p;
-  }
-
-  p.x = a.x0;
-  p.y = a.y0;
-  p.theta = a.th0;
-
-  return p;
-}
-
-Path push_path(curve c, Path p)
-{
-  arc a;
-
-  a = dubinsarc(c.a1.x0, c.a1.y0, c.a1.th0, c.a1.k, c.a1.L / 100);
-  for (int i = 0; i < 100; i++)
-  {
-    p.points.push_back(get_pose(a));
-    a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
-  }
-  p.points.push_back(get_pose(a, true));
-
-  a = dubinsarc(c.a2.x0, c.a2.y0, c.a2.th0, c.a2.k, c.a2.L / 100);
-  for (int i = 0; i < 100; i++)
-  {
-    p.points.push_back(get_pose(a));
-    a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
-  }
-  p.points.push_back(get_pose(a, true));
-
-  a = dubinsarc(c.a3.x0, c.a3.y0, c.a3.th0, c.a3.k, c.a3.L / 100);
-  for (int i = 0; i < 100; i++)
-  {
-    p.points.push_back(get_pose(a));
-    a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
-  }
-  p.points.push_back(get_pose(a, true));
-
-  return p;
 }
