@@ -463,7 +463,7 @@ vector<double> opti_theta(vector<double> xpath, vector<double> ypath)
 	{
 		thpath.push_back(get_angle(xpath[i], ypath[i], xpath[i + 1], ypath[i + 1]));
 	}
-	thpath.push_back(thpath[thpath.size()-1]);
+	thpath.push_back(thpath[thpath.size() - 1]);
 
 	return thpath;
 }
@@ -537,7 +537,7 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 		{
 			// Check intersection curve with arena
 			// Arena points
-			pnt = arena.arena->head;
+			pnt = arena.shrinked_arena->head;
 			do
 			{
 
@@ -553,7 +553,7 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 				}
 				else
 				{
-					pnt_next = arena.arena->head;
+					pnt_next = arena.shrinked_arena->head;
 				}
 
 				intersection_arena[0] = find_intersection(c.a1, pnt, pnt_next);
@@ -611,7 +611,7 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 		if (intersection_arena[0] || intersection_arena[1] || intersection_arena[2] || intersection_polygons[0] ||
 			intersection_polygons[1] || intersection_polygons[2])
 		{
-			*thf += 0.001;
+			*thf += 0.0001;
 			Kmax += 1;
 		}
 	}
@@ -680,52 +680,53 @@ bool pt_in_arc(point_node *ptso, arc a)
 
 Pose get_pose(arc a, bool last_elem)
 {
-  Pose p;
-  p.s = a.L;
-  p.kappa = a.k;
+	Pose p;
+	p.s = a.L;
+	p.kappa = a.k;
 
-  if (last_elem == true)
-  {
-    p.x = a.xf;
-    p.y = a.yf;
-    p.theta = a.thf;
-    return p;
-  }
+	if (last_elem == true)
+	{
+		p.x = a.xf;
+		p.y = a.yf;
+		p.theta = a.thf;
+		return p;
+	}
 
-  p.x = a.x0;
-  p.y = a.y0;
-  p.theta = a.th0;
+	p.x = a.x0;
+	p.y = a.y0;
+	p.theta = a.th0;
 
-  return p;
+	return p;
 }
 
 Path push_path(curve c, Path p)
 {
-  arc a;
+	arc a;
+	int n_samples = 10000;
 
-  a = dubinsarc(c.a1.x0, c.a1.y0, c.a1.th0, c.a1.k, c.a1.L / 100);
-  for (int i = 0; i < 100; i++)
-  {
-    p.points.push_back(get_pose(a));
-    a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
-  }
-  p.points.push_back(get_pose(a, true));
+	a = dubinsarc(c.a1.x0, c.a1.y0, c.a1.th0, c.a1.k, c.a1.L / n_samples);
+	for (int i = 0; i < n_samples; i++)
+	{
+		p.points.push_back(get_pose(a));
+		a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
+	}
+	p.points.push_back(get_pose(a));
 
-  a = dubinsarc(c.a2.x0, c.a2.y0, c.a2.th0, c.a2.k, c.a2.L / 100);
-  for (int i = 0; i < 100; i++)
-  {
-    p.points.push_back(get_pose(a));
-    a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
-  }
-  p.points.push_back(get_pose(a, true));
+	a = dubinsarc(c.a2.x0, c.a2.y0, c.a2.th0, c.a2.k, c.a2.L / n_samples);
+	for (int i = 0; i < n_samples; i++)
+	{
+		p.points.push_back(get_pose(a));
+		a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
+	}
+	p.points.push_back(get_pose(a));
 
-  a = dubinsarc(c.a3.x0, c.a3.y0, c.a3.th0, c.a3.k, c.a3.L / 100);
-  for (int i = 0; i < 100; i++)
-  {
-    p.points.push_back(get_pose(a));
-    a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
-  }
-  p.points.push_back(get_pose(a, true));
+	a = dubinsarc(c.a3.x0, c.a3.y0, c.a3.th0, c.a3.k, c.a3.L / n_samples);
+	for (int i = 0; i < n_samples; i++)
+	{
+		p.points.push_back(get_pose(a));
+		a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
+	}
+	p.points.push_back(get_pose(a));
 
-  return p;
+	return p;
 }

@@ -51,18 +51,16 @@ void list_of_obstacles::delete_offsetted_list()
 	offset_size = 0;
 };
 
-void points_map::add_arena_points(point_list *ArenaPoints)
+void points_map::add_arena_points(point_list *ArenaPoints, double offset)
 {
 	arena = ArenaPoints;
-	shrink_arena(0.085); 
+	shrink_arena(offset); 
 };
 
 void points_map::shrink_arena(double offset)
 {
 	if (shrinked_arena != NULL)
 		return;
-
-	
 
 	polygon *p = new polygon(arena);
 	
