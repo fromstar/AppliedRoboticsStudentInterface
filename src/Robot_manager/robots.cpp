@@ -777,7 +777,6 @@ void robot_catcher::make_pddl_files(World_representation wr,
 			{
 				cells.insert(temp[j]);
 			}
-            cout << endl;
 		}
 	}
 

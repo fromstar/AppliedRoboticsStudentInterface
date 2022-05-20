@@ -205,6 +205,7 @@ Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons)
 	cout << endl
 		 << "Plotting free space" << endl;
 	tmp = free_space->head;
+    int count_free = 0;
 	while (tmp != NULL)
 	{
 		img_arena = plot_points(tmp->pl, img_arena, Scalar(0, 255, 255),
@@ -213,9 +214,17 @@ Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons)
 		point_list *free_space_centroid = new point_list;
 		free_space_centroid->add_node(tmp->centroid->copy());
 		free_space_centroid->add_node(tmp->centroid->copy());
-		img_arena = plot_points(free_space_centroid, img_arena, Scalar(0, 255, 255),
-								false, 2);
+		img_arena = plot_points(free_space_centroid, img_arena,
+                                Scalar(0, 255, 255), false, 2);
+        stringstream ss;
+        ss << count_free;
+        string cell_id = ss.str();
+        cv::putText(img_arena, "hello", 
+                    cv::Point(tmp->centroid->x, tmp->centroid->y-0.05),
+                    cv::FONT_HERSHEY_SIMPLEX, 0.8, Scalar(255, 255, 255));
+
 		tmp = tmp->pnext;
+        count_free += 1;
 	};
 
 	// plot robots
@@ -566,11 +575,9 @@ void points_map::make_free_space_cells_squares(int res)
 	tmp_pol = tmp_list->head;
 	while (tmp_pol != NULL)
 	{
-		cout << "Before becaming boost: " << tmp_pol->pl->size << endl;
 		cells.push_back(tmp_pol->to_boost_polygon());
 		tmp_pol = tmp_pol->pnext;
 	};
-	cout << "Cells in vector: " << cells.size() << endl;
 
 	// convert obstacles to boost ones
 	vector<Polygon_boost> ob_boost;
