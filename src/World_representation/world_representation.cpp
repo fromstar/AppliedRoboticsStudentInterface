@@ -111,6 +111,36 @@ World_representation::World_representation(list_of_polygons *cells,
 	l->add_event("End world representation creation");
 };
 
+tuple<vector<double>, vector<double>>World_representation::get_path(vector<string> plan){
+
+	// double x_path[plan.size() + 1]; // Path size + 1 for the starting position
+    // double y_path[plan.size() + 1];
+
+	vector<double> x_path;
+	vector<double> y_path;
+
+    for (int i = 0; i < plan.size(); i++)
+    {
+      string word;
+      stringstream iss(plan[i]);
+      vector<string> path;
+      while (iss >> word)
+        path.push_back(word);
+      path[3].resize(path[3].size() - 1);
+
+      x_path.push_back(world_free_cells[path[2]].cell->centroid->x);
+      y_path.push_back(world_free_cells[path[2]].cell->centroid->y);
+
+      if (i == plan.size() - 1)
+      {
+        x_path.push_back(world_gates[path[3]].cell->centroid->x);
+        y_path.push_back(world_gates[path[3]].cell->centroid->y);
+      }
+    }
+
+	return make_tuple(x_path,y_path);
+}
+
 /**
  * \func
  * This function is used to generate a pddl problem file from the abstract

@@ -47,6 +47,7 @@ typedef struct World_representation
 				 string domain_name = "fugitive_catcher",
 				 bool fugitive_agent = false);
 	*/
+	tuple< vector<double>, vector<double>> get_path(vector<string> plan);
 	void info();
 
 } World_representation;

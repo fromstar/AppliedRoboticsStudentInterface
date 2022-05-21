@@ -256,7 +256,7 @@ Mat plotarc(arc a, string c, Mat img)
 {
 	int npts = 100;
 	double th;
-	Point pts[npts];
+	cv::Point pts[npts];
 	point_list *pl = new point_list;
 	for (int i = 0; i < npts; i++)
 	{
@@ -445,7 +445,7 @@ tuple<point_list *, double_list *> intersCircleLine(double a, double b, double r
 	{
 		x = x1 * t2 + x2 * (1 - t2);
 		y = y1 * t2 + y2 * (1 - t2);
-		Point pt(x, y);
+		cv::Point pt(x, y);
 		// cout << typeid(pt.x).name() << endl;
 		pts->add_node(new point_node(x, y));
 
@@ -454,6 +454,18 @@ tuple<point_list *, double_list *> intersCircleLine(double a, double b, double r
 	}
 	sort(t, pts);
 	return make_tuple(pts, t);
+}
+
+vector<double> opti_theta(vector<double> xpath, vector<double> ypath)
+{
+	vector<double> thpath;
+	for (int i = 0; i < xpath.size() - 1; i++)
+	{
+		thpath.push_back(get_angle(xpath[i], ypath[i], xpath[i + 1], ypath[i + 1]));
+	}
+	thpath.push_back(thpath[thpath.size() - 1]);
+
+	return thpath;
 }
 
 /*Source of this function:
@@ -501,38 +513,37 @@ tuple<double, double, double> get_circle_center(double x1, double y1, double x2,
 	return make_tuple(h, k, r);
 }
 
-curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, double thf, double Kmax, points_map arena)
+curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, double *thf, double Kmax, points_map arena)
 {
-	int pidx;
-	double k = 0;
-	bool intersection[3] = {true, true, true};
 
-	double_list *p;
-	point_list *pts = NULL;
+	int pidx = 0;
+	double th = 0;
+	double k = 0;
+	bool intersection_arena[3] = {true, true, true};
+	bool intersection_polygons[3] = {true, true, true};
+	int i = 1;
 	polygon *it;
 	Edge *edges = NULL;
 	point_node *pnt;
 	curve c;
-
-	// tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf + k, Kmax);
-	while (intersection[0] || intersection[1] || intersection[2])
+	// tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf + th, Kmax + k);
+	while (intersection_arena[0] || intersection_arena[1] || intersection_arena[2] || intersection_polygons[0] ||
+		   intersection_polygons[1] || intersection_polygons[2])
 	{
-		
-		bool in_arc;
-
-		tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf, Kmax + k);
+		tie(pidx, c) = dubins(x0, y0, th0, xf, yf, *thf, Kmax);
 
 		// Curve exist
 		if (pidx > 0)
 		{
 			// Check intersection curve with arena
 			// Arena points
-			pnt = arena.arena->head;
+			pnt = arena.shrinked_arena->head;
 			do
 			{
-				intersection[0] = true;
-				intersection[1] = true;
-				intersection[2] = true;
+
+				intersection_arena[0] = true;
+				intersection_arena[1] = true;
+				intersection_arena[2] = true;
 
 				point_node *pnt_next;
 
@@ -542,103 +553,94 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 				}
 				else
 				{
-					pnt_next = arena.arena->head;
-				}
-				
-				
-				tie(pts, p) = intersCircleLine(c.a1.xc, c.a1.yc, c.a1.r,
-											   pnt->x, pnt->y, pnt_next->x,
-											   pnt_next->y);
-				if (pts == NULL)
-				{
-					intersection[0] = false;
+					pnt_next = arena.shrinked_arena->head;
 				}
 
-				// Check if the intersection point are included in the dubin arc
-				else
-				{
-					in_arc = pt_in_arc(pts->head, c.a1);
-					if (in_arc == false)
-					{
-						intersection[0] = false;
-					}
-				}
-				
-
-				tie(pts, p) = intersCircleLine(c.a2.xc, c.a2.yc, c.a2.r,
-											   pnt->x, pnt->y, pnt_next->x,
-											   pnt_next->y);
-
-				if (pts == NULL)
-				{	
-					intersection[1] = false;
-				} else{
-					in_arc = pt_in_arc(pts->head, c.a2);
-					if (in_arc == false)
-					{
-						intersection[1] = false;
-					}
-				}
-				
-				tie(pts, p) = intersCircleLine(c.a3.xc, c.a3.yc, c.a3.r,
-											   pnt->x, pnt->y, pnt_next->x,
-											   pnt_next->y);
-				if (pts == NULL)
-				{
-					intersection[2] = false;
-				}
-				else
-				{
-					in_arc = pt_in_arc(pts->head, c.a3);
-					if (in_arc == false)
-					{
-						intersection[2] = false;
-					}
-				}
+				intersection_arena[0] = find_intersection(c.a1, pnt, pnt_next);
+				intersection_arena[1] = find_intersection(c.a2, pnt, pnt_next);
+				intersection_arena[2] = find_intersection(c.a3, pnt, pnt_next);
 
 				pnt = pnt->pnext;
-			}while (pnt != NULL && (!intersection[0] &&
-									!intersection[1] &&
-									!intersection[2]));
+			} while (pnt != NULL && (!intersection_arena[0] &&
+									 !intersection_arena[1] &&
+									 !intersection_arena[2]));
 
 			// Check intersection curve with polygons
-			// it = arena.obstacles->offset_head;
-			// while (it != NULL)
-			// {
-			// 	edges = it->edgify()->head;
+			it = arena.obstacles->offset_head;
+			int pol_num = 1;
+			do
+			{
+				edges = it->edgify()->head;
+				int edg_num = 1;
+				do
+				{
+					intersection_polygons[0] = true;
+					intersection_polygons[1] = true;
+					intersection_polygons[2] = true;
 
-			// 	while (edges != NULL)
-			// 	{
-			// 		point_node *p0 = edges->points->head;
-			// 		point_node *p1 = edges->points->tail;
+					point_node *p0 = edges->points->head->copy();
+					point_node *p1 = edges->points->tail->copy();
 
-			// 		tie(pts, p) = intersCircleLine(c.a1.xc, c.a1.yc, c.a1.r, p0->x, p0->y, p1->x, p1->y);
-			// 		if (pts == NULL)
-			// 			intersection[0] = false;
-			// 		else if (!pt_in_arc(pts->head, c.a1))
-			// 			intersection[0] = false;
+					intersection_polygons[0] = find_intersection(c.a1, p0, p1);
+					intersection_polygons[1] = find_intersection(c.a2, p0, p1);
+					intersection_polygons[2] = find_intersection(c.a3, p0, p1);
 
-			// 		tie(pts, p) = intersCircleLine(c.a2.xc, c.a2.yc, c.a2.r, p0->x, p0->y, p1->x, p1->y);
-			// 		if (pts == NULL)
-			// 			intersection[1] = false;
-			// 		else if (!pt_in_arc(pts->head, c.a2))
-			// 			intersection[1] = false;
+					// cout << "pol_num: " << pol_num << " - ";
+					// cout << "edg_num: " << edg_num << " - ";
 
-			// 		tie(pts, p) = intersCircleLine(c.a3.xc, c.a3.yc, c.a3.r, p0->x, p0->y, p1->x, p1->y);
-			// 		if (pts == NULL)
-			// 			intersection[2] = false;
-			// 		else if (!pt_in_arc(pts->head, c.a3))
-			// 			intersection[2] = false;
+					// cout << intersection_polygons[0] << " - ";
+					// cout << intersection_polygons[1] << " - ";
+					// cout << intersection_polygons[2] << endl
+					// 	 << endl;
 
-			// 		edges = edges->next;
-			// 	}
-			// 	it = it->pnext;
-			// }
+					edg_num++;
+					edges = edges->next;
+				} while (edges != NULL && (!intersection_polygons[0] &&
+										   !intersection_polygons[1] &&
+										   !intersection_polygons[2]));
+				it = it->pnext;
+				pol_num += 1;
+			} while (it != NULL && (!intersection_polygons[0] &&
+									!intersection_polygons[1] &&
+									!intersection_polygons[2]));
 		}
-		k += 1;
+
+		// If an intersection is found I need to try to modify the arriving theta and the max curvature of the arc.
+		// Is important modify the theta value contained in the vector in the student interface in order to avoid
+		// having a different arrival angle from the departure angle for the next curve.
+		if (intersection_arena[0] || intersection_arena[1] || intersection_arena[2] || intersection_polygons[0] ||
+			intersection_polygons[1] || intersection_polygons[2])
+		{
+			*thf += 0.0001;
+			Kmax += 1;
+		}
 	}
 
 	return c;
+}
+
+bool find_intersection(arc a, point_node *pnt, point_node *pnt_next)
+{
+	point_list *pts = NULL;
+	double_list *p;
+	tie(pts, p) = intersCircleLine(a.xc, a.yc, a.r,
+								   pnt->x, pnt->y, pnt_next->x,
+								   pnt_next->y);
+	if (pts == NULL)
+	{
+		return false;
+	}
+
+	// Check if the intersection point are included in the dubin arc
+	else
+	{
+		if (pt_in_arc(pts->head, a) == false)
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 bool pt_in_arc(point_node *ptso, arc a)
@@ -648,10 +650,11 @@ bool pt_in_arc(point_node *ptso, arc a)
 	// Get the circonference angle of given point in it
 	start = get_angle(a.xc, a.yc, a.x0, a.y0);
 	end = get_angle(a.xc, a.yc, a.xf, a.yf);
+
 	if (start < 0)
-		start += 6.28;
+		start += (M_PI * 2);
 	if (end < 0)
-		end += 6.28;
+		end += (M_PI * 2);
 
 	if (end < start)
 	{
@@ -665,23 +668,65 @@ bool pt_in_arc(point_node *ptso, arc a)
 	{
 		angle = get_angle(a.xc, a.yc, pts->x, pts->y);
 		if (angle < 0)
-			angle += 6.28;
-		/*
-		cout << "start_angle: " << start << endl;
-		cout << "end_angle: " << end << endl;
-		cout << "angle_angle: " << angle << endl;
-		*/
-
-		// check if the angle point is included between the starting and ending angles.
+			angle += (M_PI * 2);
 		if (is_in_arc(start, end, angle))
 		{
-			// cout << "start_angle: " << start << endl;
-			// cout << "end_angle: " << end << endl;
-			// cout << "angle_angle: " << angle << endl;
-			// cout << "Yes is inside\n";
 			return true;
 		}
 		pts = pts->pnext;
 	}
 	return false;
+}
+
+Pose get_pose(arc a, bool last_elem)
+{
+	Pose p;
+	p.s = a.L;
+	p.kappa = a.k;
+
+	if (last_elem == true)
+	{
+		p.x = a.xf;
+		p.y = a.yf;
+		p.theta = a.thf;
+		return p;
+	}
+
+	p.x = a.x0;
+	p.y = a.y0;
+	p.theta = a.th0;
+
+	return p;
+}
+
+Path push_path(curve c, Path p)
+{
+	arc a;
+	int n_samples = 10000;
+
+	a = dubinsarc(c.a1.x0, c.a1.y0, c.a1.th0, c.a1.k, c.a1.L / n_samples);
+	for (int i = 0; i < n_samples; i++)
+	{
+		p.points.push_back(get_pose(a));
+		a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
+	}
+	p.points.push_back(get_pose(a));
+
+	a = dubinsarc(c.a2.x0, c.a2.y0, c.a2.th0, c.a2.k, c.a2.L / n_samples);
+	for (int i = 0; i < n_samples; i++)
+	{
+		p.points.push_back(get_pose(a));
+		a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
+	}
+	p.points.push_back(get_pose(a));
+
+	a = dubinsarc(c.a3.x0, c.a3.y0, c.a3.th0, c.a3.k, c.a3.L / n_samples);
+	for (int i = 0; i < n_samples; i++)
+	{
+		p.points.push_back(get_pose(a));
+		a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
+	}
+	p.points.push_back(get_pose(a));
+
+	return p;
 }
