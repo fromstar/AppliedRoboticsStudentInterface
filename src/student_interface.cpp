@@ -99,6 +99,7 @@ namespace student
     arena.merge_obstacles();
 
     arena.make_free_space_cells_squares();
+    // arena.make_free_space_cells_triangular();
     log_test->add_event("Created Roadmap");
 
     Robot *c_1 = new Robot("Catcher_1", catcher);
@@ -132,13 +133,13 @@ namespace student
     f_it->second->make_pddl_domain_file(abstract_arena);
     f_it->second->make_pddl_problem_file(abstract_arena);
 
-    // map<string, robot_catcher *>::iterator c_it;
-    // c_it = rm.catchers.begin();
-    // c_it->second->make_pddl_files(abstract_arena, f_it->second->behaviour, true);
+    map<string, robot_catcher *>::iterator c_it;
+    c_it = rm.catchers.begin();
+    c_it->second->make_pddl_files(abstract_arena, f_it->second->behaviour, true);
 
     // it->second->info();
 
-    Mat img_arena = arena.plot_arena(800, 800, true);
+    Mat img_arena = arena.plot_arena(400, 500, true);
 
     /**********************************************
      * TO MOVE
@@ -155,36 +156,41 @@ namespace student
     curve c;
     // Calculate dubin's curves without intersection
 
-    c = dubins_no_inter(f_it->second->self->location->x, f_it->second->self->location->y, f_1->theta, fx_path[0], fy_path[0], &fth_path[0], 1, arena);
-    path[0] = push_path(c, path[0]);
-
-    img_arena = plotdubins(c, "r", "g", "b", img_arena);
+    if(f_it->second->self->location->x != fx_path[0] || f_it->second->self->location->y != fy_path[0])
+    {
+      c = dubins_no_inter(f_it->second->self->location->x, f_it->second->self->location->y, f_1->theta, fx_path[0], fy_path[0], &fth_path[0], 1, arena);
+      path[0] = push_path(c, path[0]);
+      img_arena = plotdubins(c, "r", "g", "b", img_arena);
+    }
 
     for (int i = 0; i < fx_path.size() - 1; i++)
     {
       c = dubins_no_inter(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1], fy_path[i + 1], &fth_path[i + 1], 1, arena);
-      path[0] = push_path(c, path[0]);
+      // if(i == 0)
+        path[0] = push_path(c, path[0]);
 
       img_arena = plotdubins(c, "r", "g", "b", img_arena);
     }
 
-    // vector<double> cx_path;
-    // vector<double> cy_path;
-    // vector<double> cth_path; // The angles are in radiants!
+    // PLOT CATCHER PLAN
 
-    // tie(cx_path, cy_path) = abstract_arena.get_path(c_it->second->self->plan);
+    vector<double> cx_path;
+    vector<double> cy_path;
+    vector<double> cth_path; // The angles are in radiants!
 
-    // cth_path = opti_theta(cx_path, cy_path);
+    tie(cx_path, cy_path) = abstract_arena.get_path(c_it->second->self->plan);
+    
+    cth_path = opti_theta(cx_path, cy_path);
 
-    // c = dubins_no_inter(c_it->second->self->location->x, c_it->second->self->location->y, c_1->theta, cx_path[0], cy_path[0], &cth_path[0], 0, arena);
-    // img_arena = plotdubins(c, "r", "g", "b", img_arena);
+    c = dubins_no_inter(c_it->second->self->location->x, c_it->second->self->location->y, c_1->theta, cx_path[0], cy_path[0], &cth_path[0], 0, arena);
+    img_arena = plotdubins(c, "r", "g", "b", img_arena);
 
-    // for (int i = 0; i < cx_path.size() - 1; i++)
-    // {
-    //   c = dubins_no_inter(cx_path[i], cy_path[i], cth_path[i], cx_path[i + 1], cy_path[i + 1], &cth_path[i + 1], 10, arena);
-    //   img_arena = plotdubins(c, "r", "g", "b", img_arena);
-    // }
-    // /**********************************************/
+    for (int i = 0; i < cx_path.size() - 1; i++)
+    {
+      c = dubins_no_inter(cx_path[i], cy_path[i], cth_path[i], cx_path[i + 1], cy_path[i + 1], &cth_path[i + 1], 10, arena);
+      img_arena = plotdubins(c, "r", "g", "b", img_arena);
+    }
+    /**********************************************/
 
     imshow("Arena", img_arena);
     waitKey(0);
