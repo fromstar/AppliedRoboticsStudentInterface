@@ -111,34 +111,48 @@ World_representation::World_representation(list_of_polygons *cells,
 	l->add_event("End world representation creation");
 };
 
-tuple<vector<double>, vector<double>>World_representation::get_path(vector<string> plan){
+tuple<vector<double>, vector<double>> World_representation::get_path(vector<string> plan)
+{
 
 	// double x_path[plan.size() + 1]; // Path size + 1 for the starting position
-    // double y_path[plan.size() + 1];
+	// double y_path[plan.size() + 1];
 
 	vector<double> x_path;
 	vector<double> y_path;
 
-    for (int i = 0; i < plan.size(); i++)
-    {
-      string word;
-      stringstream iss(plan[i]);
-      vector<string> path;
-      while (iss >> word)
-        path.push_back(word);
-      path[3].resize(path[3].size() - 1);
+	for (int i = 0; i < plan.size(); i++)
+	{
+		string word;
+		stringstream iss(plan[i]);
+		vector<string> path;
+		while (iss >> word)
+			path.push_back(word);
 
-      x_path.push_back(world_free_cells[path[2]].cell->centroid->x);
-      y_path.push_back(world_free_cells[path[2]].cell->centroid->y);
+		if(path[3].back() == ')' )
+			path[3].resize(path[3].size() - 1);
 
-      if (i == plan.size() - 1)
-      {
-        x_path.push_back(world_gates[path[3]].cell->centroid->x);
-        y_path.push_back(world_gates[path[3]].cell->centroid->y);
-      }
-    }
+		// There is only one case that path[2] is not contained in world free cell.
+		// This case is the last row of the catcher plan where in that position there is
+		// the fugitive id.
+		if (world_free_cells.count(path[2]) != 0)
+		{
+			x_path.push_back(world_free_cells[path[2]].cell->centroid->x);
+			y_path.push_back(world_free_cells[path[2]].cell->centroid->y);
 
-	return make_tuple(x_path,y_path);
+			if (i == plan.size() - 1)
+			{
+				x_path.push_back(world_gates[path[3]].cell->centroid->x);
+				y_path.push_back(world_gates[path[3]].cell->centroid->y);
+			}
+		}
+		else
+		{
+			x_path.push_back(world_free_cells[path[3]].cell->centroid->x);
+			y_path.push_back(world_free_cells[path[3]].cell->centroid->y);
+		}
+	}
+
+	return make_tuple(x_path, y_path);
 }
 
 /**
@@ -154,7 +168,6 @@ tuple<vector<double>, vector<double>>World_representation::get_path(vector<strin
  * @param fugitive: bool. Tells whether or not the problem file has been
  * created for a fugitive-type agent. This flag changes the goal to achieve.
  */
-
 
 /*
 void World_representation::to_pddl(string path_pddl_problem_file,

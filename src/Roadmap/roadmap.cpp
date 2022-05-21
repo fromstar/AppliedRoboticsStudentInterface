@@ -643,7 +643,7 @@ void points_map::make_free_space_cells_squares(int res)
 void points_map::make_free_space_cells_triangular(int res)
 {
 	// Subset arena -> free space idealization
-	polygon *_arena = new polygon(arena);
+	polygon *_arena = new polygon(shrinked_arena);
 	list_of_polygons *_arena_subset = subset_polygon(_arena, res);
 	log->add_event("Arena subsetted");
 

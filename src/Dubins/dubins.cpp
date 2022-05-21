@@ -521,7 +521,7 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 	double k = 0;
 	bool intersection_arena[3] = {true, true, true};
 	bool intersection_polygons[3] = {true, true, true};
-	int i = 1;
+
 	polygon *it;
 	Edge *edges = NULL;
 	point_node *pnt;
@@ -584,14 +584,6 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 					intersection_polygons[0] = find_intersection(c.a1, p0, p1);
 					intersection_polygons[1] = find_intersection(c.a2, p0, p1);
 					intersection_polygons[2] = find_intersection(c.a3, p0, p1);
-
-					// cout << "pol_num: " << pol_num << " - ";
-					// cout << "edg_num: " << edg_num << " - ";
-
-					// cout << intersection_polygons[0] << " - ";
-					// cout << intersection_polygons[1] << " - ";
-					// cout << intersection_polygons[2] << endl
-					// 	 << endl;
 
 					edg_num++;
 					edges = edges->next;
@@ -702,7 +694,7 @@ Pose get_pose(arc a, bool last_elem)
 Path push_path(curve c, Path p)
 {
 	arc a;
-	int n_samples = 10000;
+	int n_samples = 20;
 
 	a = dubinsarc(c.a1.x0, c.a1.y0, c.a1.th0, c.a1.k, c.a1.L / n_samples);
 	for (int i = 0; i < n_samples; i++)
