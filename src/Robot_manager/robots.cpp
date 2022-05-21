@@ -938,7 +938,9 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	for (int i = 0; i < antagonists.size(); i++)
 	{
 		pddl_problem += "\t\t" + upperify(antagonists[i]->ID) + " - " +
-						antagonists[i]->get_type() + "\n";
+						// antagonists[i]->get_type()
+						antagonists[i]->ID
+						+ "\n";
 	};
 
 	pddl_problem += "\t)\n";
