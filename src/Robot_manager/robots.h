@@ -169,6 +169,33 @@ typedef struct robot_catcher {
 } robot_catcher;
 
 /**
+ * \fun
+ * Use this function to remove the first and last characters of a sentence
+ * or a token.
+ * @param input_string: string. It is the input string to modify
+ * @returns string. It is the transformed string.
+ */
+string remove_first_and_last_char(string input_string);
+
+/**
+ * \fun
+ * Use this function to return a word with the first letter capital.
+ * It is useful on the problem file.
+ * @param word: string. Is the input word.
+ * @return capitalized word: string.
+ */
+string upperify(string word);
+
+/**
+ * \fun
+ * Use this function to return a word with the first letter capital.
+ * It is useful on the problem file.
+ * @param word: string. Is the input word.
+ * @return capitalized word: string.
+ */
+string lowerify(string word);
+
+/**
  * \fun run_planner
  * Use this function to run the downward planner
  */

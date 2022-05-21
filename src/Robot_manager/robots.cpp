@@ -4,6 +4,7 @@
 #include <fstream>
 #include <bits/stdc++.h>
 #include <filesystem>
+#include <algorithm>
 
 using pt = boost::geometry::model::d2::point_xy<double>;
 using Polygon_boost = boost::geometry::model::polygon<pt>;
@@ -36,6 +37,21 @@ string upperify(string word)
 	return word;
 };
 
+
+/**
+ * \fun
+ * Use this function to return a word with the first letter in lowercase.
+ * It is useful on the problem file.
+ * @param word: string. Is the input word.
+ * @return lowercase word: string.
+ */
+string lowerify(string word)
+{
+	word[0] = tolower(word[0]);
+	return word;
+};
+
+
 /**
  * \fun
  * This function allows to split a string with respect to a precise token
@@ -66,7 +82,7 @@ vector<string> string_to_vector(string sentence, string token)
 Robot::Robot(string _id, Robot_type _type, point_node *_loc,
 			 double _max_curvature, double _offset, logger* _l)
 {
-	ID = _id;
+	set_id(_id);
 	type = _type;
 	location = _loc;
 	max_curvature_angle = _max_curvature;
@@ -86,6 +102,13 @@ void Robot::set_logger(logger* _l){
  */
 void Robot::set_id(string _id)
 {
+	// Make everything lowercase
+	_id = lowerify(_id);
+	
+	// Remove spaces from the ID
+	replace(_id.begin(), _id.end(), ' ', '_');
+	
+	// Write new ID
 	ID = _id;
 };
 
