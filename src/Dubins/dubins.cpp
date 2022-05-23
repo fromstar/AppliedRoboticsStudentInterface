@@ -694,7 +694,7 @@ Pose get_pose(arc a, bool last_elem)
 Path push_path(curve c, Path p)
 {
 	arc a;
-	int n_samples = 20;
+	int n_samples = 1000;
 
 	a = dubinsarc(c.a1.x0, c.a1.y0, c.a1.th0, c.a1.k, c.a1.L / n_samples);
 	for (int i = 0; i < n_samples; i++)
@@ -702,7 +702,6 @@ Path push_path(curve c, Path p)
 		p.points.push_back(get_pose(a));
 		a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
 	}
-	p.points.push_back(get_pose(a));
 
 	a = dubinsarc(c.a2.x0, c.a2.y0, c.a2.th0, c.a2.k, c.a2.L / n_samples);
 	for (int i = 0; i < n_samples; i++)
@@ -710,8 +709,7 @@ Path push_path(curve c, Path p)
 		p.points.push_back(get_pose(a));
 		a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
 	}
-	p.points.push_back(get_pose(a));
-
+	
 	a = dubinsarc(c.a3.x0, c.a3.y0, c.a3.th0, c.a3.k, c.a3.L / n_samples);
 	for (int i = 0; i < n_samples; i++)
 	{

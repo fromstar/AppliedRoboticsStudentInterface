@@ -60,12 +60,14 @@ namespace student
   {
     // throw std::logic_error( "STUDENT FUNCTION - PLAN PATH - NOT IMPLEMENTED" );
 
+    bool push_first = true;
+
     logger *log_test = new logger;
     log_test->set_log_path("test_log.txt");
     log_test->add_event("Code started\n");
     points_map arena(log_test);
 
-    // Add arena limits
+    /* Add arena limits */
     point_list *arena_limits = new point_list;
     for (int i = 0; i < borders.size(); i++)
     {
@@ -73,7 +75,7 @@ namespace student
     }
     arena.add_arena_points(arena_limits);
 
-    // Add obstacles
+    /* Add obstacles */
     point_list *pol;
     for (int i = 0; i < obstacle_list.size(); i++)
     {
@@ -85,7 +87,7 @@ namespace student
       arena.add_obstacle(new polygon(pol));
     }
 
-    // Add gates
+    /* Add gates */
     for (int i = 0; i < gate_list.size(); i++)
     {
       pol = new point_list;
@@ -110,6 +112,7 @@ namespace student
 
     arena.set_robot_position(f_1->ID, x[0], y[0], theta[0]);
     arena.set_robot_position(c_1->ID, x[1], y[1], theta[1]);
+
     // Create world representaion
     World_representation abstract_arena = World_representation(
         arena.free_space,
@@ -126,6 +129,13 @@ namespace student
     // rm.info(true);
 
     abstract_arena.info();
+    Mat img_arena = arena.plot_arena(400, 500, true);
+
+    /**********************************************
+     * GENERATE PLANS AND MOVE ROBOTS
+     ***********************************************/
+
+    // FUGITIVE PLAN
 
     map<string, robot_fugitive *>::iterator f_it;
     f_it = rm.fugitives.begin();
@@ -133,67 +143,82 @@ namespace student
     f_it->second->make_pddl_domain_file(abstract_arena);
     f_it->second->make_pddl_problem_file(abstract_arena);
 
-    map<string, robot_catcher *>::iterator c_it;
-    c_it = rm.catchers.begin();
-    c_it->second->make_pddl_files(abstract_arena, f_it->second->behaviour, true);
-
-    // it->second->info();
-
-    Mat img_arena = arena.plot_arena(400, 500, true);
-
-    /**********************************************
-     * TO MOVE
-     ***********************************************/
-
+    /* Fugitive  path vectors */
     vector<double> fx_path;
     vector<double> fy_path;
     vector<double> fth_path; // The angles are in radiants!
 
+    /* Get the cells centroids of the fugitive path */
     tie(fx_path, fy_path) = abstract_arena.get_path(f_it->second->self->plan);
 
+    /*Get the starting angle for moving from a cell to another one */
     fth_path = opti_theta(fx_path, fy_path);
 
     curve c;
-    // Calculate dubin's curves without intersection
 
-    if(f_it->second->self->location->x != fx_path[0] || f_it->second->self->location->y != fy_path[0])
-    {
-      c = dubins_no_inter(f_it->second->self->location->x, f_it->second->self->location->y, f_1->theta, fx_path[0], fy_path[0], &fth_path[0], 1, arena);
-      path[0] = push_path(c, path[0]);
-      img_arena = plotdubins(c, "r", "g", "b", img_arena);
-    }
+    /* Calculate dubin's curves without intersection for the first action(from robot location to the firs cell) */
+    c = dubins_no_inter(f_it->second->self->location->x, f_it->second->self->location->y, f_1->theta, fx_path[0], fy_path[0], &fth_path[0], 0, arena);
 
+    /* Push to the simulator path the first action */
+    path[0] = push_path(c, path[0]);
+
+    /* Plot the dubins curve to the arena's img */
+    img_arena = plotdubins(c, "r", "g", "b", img_arena);
+
+    /* Calculate fugitive's dubin curves without intersection */
     for (int i = 0; i < fx_path.size() - 1; i++)
     {
-      c = dubins_no_inter(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1], fy_path[i + 1], &fth_path[i + 1], 1, arena);
-      // if(i == 0)
+      c = dubins_no_inter(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1], fy_path[i + 1], &fth_path[i + 1], 0, arena);
+
+      /* Push only the first action move to the simulator. In this way I have to run the simulation multiple times
+         and make a plan every time.
+       */
+      if (push_first)
+      {
+        if (i == 0)
+          path[0] = push_path(c, path[0]);
+      }
+      else
         path[0] = push_path(c, path[0]);
 
       img_arena = plotdubins(c, "r", "g", "b", img_arena);
     }
 
-    // PLOT CATCHER PLAN
+    // CATCHER PLAN
+
+    map<string, robot_catcher *>::iterator c_it;
+    c_it = rm.catchers.begin();
+    c_it->second->make_pddl_files(abstract_arena, f_it->second->behaviour, true);
 
     vector<double> cx_path;
     vector<double> cy_path;
-    vector<double> cth_path; // The angles are in radiants!
+    vector<double> cth_path;
 
     tie(cx_path, cy_path) = abstract_arena.get_path(c_it->second->self->plan);
-    
+
     cth_path = opti_theta(cx_path, cy_path);
 
     c = dubins_no_inter(c_it->second->self->location->x, c_it->second->self->location->y, c_1->theta, cx_path[0], cy_path[0], &cth_path[0], 0, arena);
+    path[1] = push_path(c, path[1]);
     img_arena = plotdubins(c, "r", "g", "b", img_arena);
 
     for (int i = 0; i < cx_path.size() - 1; i++)
     {
       c = dubins_no_inter(cx_path[i], cy_path[i], cth_path[i], cx_path[i + 1], cy_path[i + 1], &cth_path[i + 1], 10, arena);
+      
+      if (push_first)
+      {
+        if (i == 0)
+          path[1] = push_path(c, path[1]);
+      }
+      else
+        path[1] = push_path(c, path[1]);
+
       img_arena = plotdubins(c, "r", "g", "b", img_arena);
     }
-    /**********************************************/
 
-    imshow("Arena", img_arena);
-    waitKey(0);
+    // imshow("Arena", img_arena);
+    // waitKey(0);
 
     return true;
   }
