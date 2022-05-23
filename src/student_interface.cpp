@@ -6,6 +6,10 @@
 
 #include <stdexcept>
 #include <sstream>
+#include <thread>
+
+void thread_fugitive_plan(map<string, robot_fugitive *>::iterator, World_representation);
+void thread_catcher_plan(map<string, robot_catcher *>::iterator, World_representation, behaviour_fugitive, bool);
 
 namespace student
 {
@@ -60,7 +64,7 @@ namespace student
   {
     // throw std::logic_error( "STUDENT FUNCTION - PLAN PATH - NOT IMPLEMENTED" );
 
-    bool push_first = true;
+    bool push_first = false;
 
     logger *log_test = new logger;
     log_test->set_log_path("test_log.txt");
@@ -139,9 +143,17 @@ namespace student
 
     map<string, robot_fugitive *>::iterator f_it;
     f_it = rm.fugitives.begin();
-    f_it->second->set_behaviour(aware);
-    f_it->second->make_pddl_domain_file(abstract_arena);
-    f_it->second->make_pddl_problem_file(abstract_arena);
+
+    map<string, robot_catcher *>::iterator c_it;
+    c_it = rm.catchers.begin();
+    // c_it->second->make_pddl_files(abstract_arena, f_it->second->behaviour, true);
+
+    thread f_thr(thread_fugitive_plan, f_it, abstract_arena);
+    sleep(1);
+    thread c_thr(thread_catcher_plan, c_it, abstract_arena, f_it->second->behaviour, true);
+
+    f_thr.join();
+    c_thr.join();
 
     /* Fugitive  path vectors */
     vector<double> fx_path;
@@ -186,10 +198,6 @@ namespace student
 
     // CATCHER PLAN
 
-    map<string, robot_catcher *>::iterator c_it;
-    c_it = rm.catchers.begin();
-    c_it->second->make_pddl_files(abstract_arena, f_it->second->behaviour, true);
-
     vector<double> cx_path;
     vector<double> cy_path;
     vector<double> cth_path;
@@ -205,7 +213,7 @@ namespace student
     for (int i = 0; i < cx_path.size() - 1; i++)
     {
       c = dubins_no_inter(cx_path[i], cy_path[i], cth_path[i], cx_path[i + 1], cy_path[i + 1], &cth_path[i + 1], 10, arena);
-      
+
       if (push_first)
       {
         if (i == 0)
@@ -222,4 +230,17 @@ namespace student
 
     return true;
   }
+}
+
+void thread_fugitive_plan(map<string, robot_fugitive *>::iterator f_it, World_representation abstract_arena)
+{
+
+  f_it->second->set_behaviour(aware);
+  f_it->second->make_pddl_domain_file(abstract_arena);
+  f_it->second->make_pddl_problem_file(abstract_arena);
+}
+
+void thread_catcher_plan(map<string, robot_catcher *>::iterator c_it, World_representation abstract_arena, behaviour_fugitive type, bool a)
+{
+  c_it->second->make_pddl_files(abstract_arena, type, a);
 }
