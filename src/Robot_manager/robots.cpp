@@ -9,7 +9,6 @@
 using pt = boost::geometry::model::d2::point_xy<double>;
 using Polygon_boost = boost::geometry::model::polygon<pt>;
 
-
 /**
  * \fun
  * Use this function to remove the first and last characters of a sentence
@@ -17,11 +16,12 @@ using Polygon_boost = boost::geometry::model::polygon<pt>;
  * @param input_string: string. It is the input string to modify
  * @returns string. It is the transformed string.
  */
-string remove_first_and_last_char(string input_string){
-    string pre_processed_string = input_string;
-    pre_processed_string.erase(0, 1);  // Remove starting (
-    pre_processed_string.pop_back();  // Remove ending )
-    return pre_processed_string;
+string remove_first_and_last_char(string input_string)
+{
+	string pre_processed_string = input_string;
+	pre_processed_string.erase(0, 1); // Remove starting (
+	pre_processed_string.pop_back();  // Remove ending )
+	return pre_processed_string;
 };
 
 /**
@@ -37,7 +37,6 @@ string upperify(string word)
 	return word;
 };
 
-
 /**
  * \fun
  * Use this function to return a word with the first letter in lowercase.
@@ -50,7 +49,6 @@ string lowerify(string word)
 	word[0] = tolower(word[0]);
 	return word;
 };
-
 
 /**
  * \fun
@@ -80,20 +78,20 @@ vector<string> string_to_vector(string sentence, string token)
  * This is the default constructor for the robot struct.
  */
 Robot::Robot(string _id, Robot_type _type, point_node *_loc,
-			 double _max_curvature, double _offset, logger* _l)
+			 double _max_curvature, double _offset, logger *_l)
 {
 	set_id(_id);
 	type = _type;
 	location = _loc;
 	max_curvature_angle = _max_curvature;
 	offset = _offset;
-    l = _l;
+	l = _l;
 };
 
-void Robot::set_logger(logger* _l){
-    l = _l;
+void Robot::set_logger(logger *_l)
+{
+	l = _l;
 };
-
 
 /**
  * \fn void Robot::set_id(string _id)
@@ -104,10 +102,10 @@ void Robot::set_id(string _id)
 {
 	// Make everything lowercase
 	_id = lowerify(_id);
-	
+
 	// Remove spaces from the ID
 	replace(_id.begin(), _id.end(), ' ', '_');
-	
+
 	// Write new ID
 	ID = _id;
 };
@@ -621,15 +619,15 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 		};
 
 		// set_plan
-        // cout << "Setting plan" << endl;
+		// cout << "Setting plan" << endl;
 		self->set_plan(gates_distance[idx_gate]);
-        //cout << "Print plan chosen:" << endl;
-        //for(int i=0; i<gates_distance[idx_gate].size(); i++){
-        //    cout << gates_distance[idx_gate][i] << endl;
-        //};
-		//cout << endl;
+		// cout << "Print plan chosen:" << endl;
+		// for(int i=0; i<gates_distance[idx_gate].size(); i++){
+		//     cout << gates_distance[idx_gate][i] << endl;
+		// };
+		// cout << endl;
 
-        // set desire
+		// set desire
 		it_g = wr.world_gates.begin();
 		for (int i = 0; i < idx_gate; i++)
 		{
@@ -652,30 +650,49 @@ vector<string> robot_fugitive::make_plan(bool apply, string domain_name,
 										 string plan_name)
 {
 	run_planner("/home/" + string(getenv("USER")) +
-					"/.planutils/packages/downward/run",
-				filesPath + "/" + domain_name + ".pddl",
-				filesPath + "/" + problem_name + ".pddl",
-				filesPath + "/" + plan_name + ".plan");
+					"/FF-v2.3/",
+				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + domain_name + ".pddl",
+				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + problem_name + ".pddl",
+				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + plan_name + ".plan");
+
 	string tmp_line;
 	ifstream pddl_in(filesPath + "/" + plan_name + ".plan");
 	vector<string> tmp_plan;
+	bool pushing = false;
 	if (pddl_in.is_open())
 	{
 		while (pddl_in)
 		{
 			getline(pddl_in, tmp_line);
-			tmp_plan.push_back(tmp_line);
+			if (tmp_line.substr(0, tmp_line.find(" ")) == "step")
+			{
+				pushing = true;
+			}
+
+			if (pushing)
+			{
+				if (tmp_line.empty())
+				{
+					pushing = false;
+				}
+				else
+				{
+					tmp_line.erase(0, 11);
+					// cout << tmp_line << endl;
+					tmp_plan.push_back(tmp_line);
+				}
+			}
 		};
+		// Delete last element that is an empty line
+		//tmp_plan.pop_back();
 	}
 	else
 	{
 		cout << "Unable to open input plan file, probably no plan found"
 			 << endl;
 	};
-
 	// using ifstream returns an empty line after the last one in file
 	tmp_plan.pop_back(); // remove empty line
-	tmp_plan.pop_back(); // remove cost line
 
 	if (apply)
 	{
@@ -752,7 +769,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 		*/
 		return;
 	};
-    cout << "First line catcher " << endl;
+	cout << "First line catcher " << endl;
 	string domain_name = "domain_" + self->ID;
 
 	// Write pddl header
@@ -792,10 +809,11 @@ void robot_catcher::make_pddl_files(World_representation wr,
 		// iterate until last step of plan to avoid to misclassify the gate
 		for (int i = 0; i < it->second.size() - 1; i++)
 		{
-            string plan_step = remove_first_and_last_char(it->second[i]);
+			// string plan_step = remove_first_and_last_char(it->second[i]);
 
-			vector<string> temp = string_to_vector(plan_step, " ");
+			// vector<string> temp = string_to_vector(plan_step, " ");
 
+			vector<string> temp = string_to_vector(it->second[i], " ");			
 			for (int j = temp.size() - 1; j > temp.size() - 3; j--)
 			{
 				cells.insert(temp[j]);
@@ -811,10 +829,10 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	{
 		pddl_domain += "\t\t" + antagonists[i]->ID + " - fugitive\n";
 	};
-	pddl_domain += "\t\tcell gate - location\n";
+	pddl_domain += "\t\tCELL gate - location\n";
 	for (set<string>::iterator it_s = cells.begin(); it_s != cells.end(); ++it_s)
 	{
-		pddl_domain += "\t\t" + *it_s + " - cell\n";
+		pddl_domain += "\t\t" + *it_s + " - CELL\n";
 	};
 	pddl_domain += "\t)\n";
 
@@ -868,11 +886,12 @@ void robot_catcher::make_pddl_files(World_representation wr,
 		pddl_domain += "\t\t\t\t; Plan for fugitive: " + it->first;
 		// make a condition for each step of the plan
 		vector<string> tmp_s = string_to_vector(it->first, "_");
-        // Must catch it before it goes to the gate, i.e -> n-1 plan steps
-        for (int i=it->second.size() - 2; i >= 0; i--)
+		// Must catch it before it goes to the gate, i.e -> n-1 plan steps
+		for (int i = it->second.size() - 2; i >= 0; i--)
 		{
-            string processed_tp1 = remove_first_and_last_char(it->second[i]);
-			vector<string> tmp_plan_p1 = string_to_vector(processed_tp1, " ");
+			// string processed_tp1 = remove_first_and_last_char(it->second[i]);
+			// vector<string> tmp_plan_p1 = string_to_vector(processed_tp1, " ");
+			vector<string> tmp_plan_p1 = string_to_vector(it->second[i], " ");
 			vector<string> tmp_plan_p2 = string_to_vector(
 				tmp_plan_p1[tmp_plan_p1.size() - 1],
 				")");
@@ -883,15 +902,15 @@ void robot_catcher::make_pddl_files(World_representation wr,
 						   "\t\t\t\t\t(is_in ?r_f_" +
 						   tmp_s[tmp_s.size() - 1] +
 						   " ?c_" + cell_s[cell_s.size() - 1] + " )\n"
-						   "\t\t\t\t\t(and\n"
-						   "\t\t\t\t\t\t( is_in ?r_f_" +
+																"\t\t\t\t\t(and\n"
+																"\t\t\t\t\t\t( is_in ?r_f_" +
 						   tmp_s[tmp_s.size() - 1] +
 						   " ?c_" + cell_e[cell_e.size() - 1] + " )\n"
-						   "\t\t\t\t\t\t( not ( is_in ?r_f_" +
+																"\t\t\t\t\t\t( not ( is_in ?r_f_" +
 						   tmp_s[tmp_s.size() - 1] + " ?c_" +
 						   cell_s[cell_s.size() - 1] + " ) )"
-						   "\n\t\t\t\t\t)\n"
-						   "\t\t\t\t)\n";
+													   "\n\t\t\t\t\t)\n"
+													   "\t\t\t\t)\n";
 			// pddl_domain += "\t\t\t\t)";
 		};
 	};
@@ -913,12 +932,12 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	pddl_domain += "\n)";
 
 	// Write domain file to disk
-    //cout << "Catcher domain: -------------" << endl
-    //     << pddl_domain << endl << endl;
+	// cout << "Catcher domain: -------------" << endl
+	//     << pddl_domain << endl << endl;
 	int tmp_folder = mkdir(filesPath.c_str(), 0777);
-    //cout << "Made temporary folder: " << tmp_folder << endl;
+	// cout << "Made temporary folder: " << tmp_folder << endl;
 	write_file(domain_name, pddl_domain, ".pddl");
-    //cout << "Domain PDDL written" << endl;
+	// cout << "Domain PDDL written" << endl;
 
 	// Write problem file ----------------------------------------------------
 
@@ -962,8 +981,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	{
 		pddl_problem += "\t\t" + upperify(antagonists[i]->ID) + " - " +
 						// antagonists[i]->get_type()
-						antagonists[i]->ID
-						+ "\n";
+						antagonists[i]->ID + "\n";
 	};
 
 	pddl_problem += "\t)\n";
@@ -1016,9 +1034,9 @@ void robot_catcher::make_pddl_files(World_representation wr,
 			if (boost::geometry::covered_by(ant_location, cell_p))
 			{
 				pddl_problem += "\t\t( is_in " +
-                                upperify(antagonists[i]->ID) +
-                                " " + upperify(it_node->first) +
-                                ")\n";
+								upperify(antagonists[i]->ID) +
+								" " + upperify(it_node->first) +
+								")\n";
 				break;
 			};
 		};
@@ -1075,22 +1093,39 @@ vector<string> robot_catcher::make_plan(bool apply, string domain_name,
 										string problem_name,
 										string plan_name)
 {
-	run_planner("/home/" + string(getenv("USER")) +
-					"/.planutils/packages/downward/run",
-				filesPath + "/" + domain_name + ".pddl",
-				filesPath + "/" + problem_name + ".pddl",
-				filesPath + "/" + plan_name + ".plan");
+	run_planner("/home/" + string(getenv("USER")) + "/FF-v2.3/",
+				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + domain_name + ".pddl",
+				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + problem_name + ".pddl",
+				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + plan_name + ".plan");
 
 	string tmp_line;
 	ifstream pddl_in(filesPath + "/" + plan_name + ".plan");
 	vector<string> tmp_plan;
-
+	bool pushing = false;
 	if (pddl_in.is_open())
 	{
 		while (pddl_in)
 		{
 			getline(pddl_in, tmp_line);
-			tmp_plan.push_back(tmp_line);
+			if (tmp_line.substr(0, tmp_line.find(" ")) == "step")
+			{
+				pushing = true;
+			}
+
+			if (pushing)
+			{
+				if (tmp_line.empty())
+				{
+					pushing = false;
+				}
+				else
+				{
+					tmp_line.erase(0, 11);
+					// cout << tmp_line << endl;
+					tmp_plan.push_back(tmp_line);
+				}
+			};
+			// tmp_plan.pop_back();
 		};
 	}
 	else
@@ -1104,8 +1139,7 @@ vector<string> robot_catcher::make_plan(bool apply, string domain_name,
 	};
 	// using ifstream returns an empty line after the last one in file
 	tmp_plan.pop_back(); // remove empty line
-	tmp_plan.pop_back(); // remove cost line
-
+	
 	if (apply)
 	{
 		self->set_plan(tmp_plan);
@@ -1147,14 +1181,12 @@ void run_planner(string planner_path, string domain_file_path,
 				 string problem_file_path, string plan_path = "MyPlan.plan")
 {
 
-	cout << "called planner for: " << planner_path << endl
+	cout << "called planner for: " << planner_path << "ff" << endl
 		 << domain_file_path
 		 << endl
 		 << problem_file_path << endl
 		 << plan_path << endl;
 
-	string command = "exec " + planner_path + " --alias lama-first " +
-					 "--plan-file " + plan_path + " " +
-					 domain_file_path + " " + problem_file_path;
-	system(command.c_str());
+	string command = "cd " + planner_path + " \n ./ff -o " + domain_file_path + " -f " + problem_file_path + " > " + plan_path;
+	std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
 };

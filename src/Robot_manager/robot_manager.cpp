@@ -28,9 +28,6 @@ void robot_manager::trade_fugitives(){
 	if (fugitives.size() == catchers.size()){
 		map<string, robot_fugitive*>::iterator it_f = fugitives.begin();
 		map<string, robot_catcher*>::iterator it_c = catchers.begin();
-		
-		// it_f = ++it_f;
-		// it_c = ++it_c;
 
 		it_f -> second -> add_antagonist(it_c->second->self);
 		it_c -> second -> add_antagonist(it_f->second->self);

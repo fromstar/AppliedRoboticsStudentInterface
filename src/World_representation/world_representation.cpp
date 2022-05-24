@@ -3,6 +3,7 @@
 #include <sys/stat.h> // used to create folders
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 namespace bg = boost::geometry;
 namespace bgm = bg::model;
@@ -12,7 +13,7 @@ namespace bgm = bg::model;
  */
 World_node::World_node(string id, polygon *p, double prob)
 {
-	cell_id = id;
+	set_id(id);
 	cell = p;
 	probability = prob;
 };
@@ -23,6 +24,9 @@ World_node::World_node(string id, polygon *p, double prob)
  */
 void World_node::set_id(string id)
 {
+	// cout << "Pre id: " << id << endl;
+	transform(id.begin(), id.end(), id.begin(), ::toupper);
+	// cout << "Post id: " << id << endl << endl;
 	cell_id = id;
 };
 

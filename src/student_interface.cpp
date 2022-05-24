@@ -7,9 +7,17 @@
 #include <stdexcept>
 #include <sstream>
 #include <thread>
+#include <time.h>
 
 void thread_fugitive_plan(map<string, robot_fugitive *>::iterator, World_representation);
 void thread_catcher_plan(map<string, robot_catcher *>::iterator, World_representation, behaviour_fugitive, bool);
+
+/*
+PLANNER https://fai.cs.uni-saarland.de/hoffmann/ff/FF-v2.3.tgz
+HOME_PAGE: https://fai.cs.uni-saarland.de/hoffmann/ff.html  
+
+pre-requisite: flex e bison
+*/
 
 namespace student
 {
@@ -146,12 +154,14 @@ namespace student
 
     map<string, robot_catcher *>::iterator c_it;
     c_it = rm.catchers.begin();
-    // c_it->second->make_pddl_files(abstract_arena, f_it->second->behaviour, true);
+    c_it->second->make_pddl_files(abstract_arena, f_it->second->behaviour, true);
 
     thread f_thr(thread_fugitive_plan, f_it, abstract_arena);
     sleep(1);
     thread c_thr(thread_catcher_plan, c_it, abstract_arena, f_it->second->behaviour, true);
 
+    // thread_fugitive_plan(f_it, abstract_arena);
+    // thread_catcher_plan(c_it, abstract_arena, f_it->second->behaviour, true);
     f_thr.join();
     c_thr.join();
 
@@ -160,6 +170,7 @@ namespace student
     vector<double> fy_path;
     vector<double> fth_path; // The angles are in radiants!
 
+     clock_t tStart = clock();
     /* Get the cells centroids of the fugitive path */
     tie(fx_path, fy_path) = abstract_arena.get_path(f_it->second->self->plan);
 
@@ -195,6 +206,7 @@ namespace student
 
       img_arena = plotdubins(c, "r", "g", "b", img_arena);
     }
+    printf("Time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
 
     // CATCHER PLAN
 
@@ -212,7 +224,7 @@ namespace student
 
     for (int i = 0; i < cx_path.size() - 1; i++)
     {
-      c = dubins_no_inter(cx_path[i], cy_path[i], cth_path[i], cx_path[i + 1], cy_path[i + 1], &cth_path[i + 1], 10, arena);
+      c = dubins_no_inter(cx_path[i], cy_path[i], cth_path[i], cx_path[i + 1], cy_path[i + 1], &cth_path[i + 1], 0, arena);
 
       if (push_first)
       {
