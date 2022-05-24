@@ -72,7 +72,7 @@ namespace student
   {
     // throw std::logic_error( "STUDENT FUNCTION - PLAN PATH - NOT IMPLEMENTED" );
 
-    bool push_first = false;
+    bool push_first = true;
 
     logger *log_test = new logger;
     log_test->set_log_path("test_log.txt");

@@ -21,7 +21,7 @@ typedef struct list_of_obstacles
 	polygon *tail = NULL;
 	polygon *offset_head = NULL;
 	polygon *offset_tail = NULL;
-	double offset = 0.135;
+	double offset = 0.105;
 	int size = 0;
 	int offset_size = 0;
 
@@ -50,7 +50,7 @@ typedef struct points_map
 	void add_gate(polygon *gt);
 	void merge_obstacles();
 	void make_free_space_cells_triangular(int res = 3);
-	void make_free_space_cells_squares(int res = 4);
+	void make_free_space_cells_squares(int res = 3);
 	void print_info();
 	Mat plot_arena(int x_dim, int y_dim, bool show_original_polygons = true);
 	void shrink_arena(double offset = 0);
