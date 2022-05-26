@@ -1,6 +1,10 @@
 # Laboratory of Applied Robotics Student Interface
 Package used by student to complete the assignment of the course. 
 
+### Students:
+* Davide Bertelli
+* Davide Dalla Stella
+
 ## Project objectives
 
 * development and implementation of sensing algorithms to recognise objects and obstacles in the competition field
@@ -14,4 +18,16 @@ Just execute the "install_lab.sh" script. It will install ROS, Gazebo, the plann
 
 ## Run the project
 Open terminator and split it in 3 terminals. Move in workspace/project/build folder and use the command "make" to compile the project.
-In a terminal use the command "AR_simulator_gui" (or "AR_simulator" if you don't want the gui) to start the simulator. In the second terminal use "AR_pipeline" to start the pipeline. If it is necessary to specify the number of robots present, it must be done both at the start of the simulator and the pipeline with the option "n:=NumberOfRobots" (Ex. AR_simulator_gui n:=2, AR_pipeline n:=2). In the last terminal type AR_run to execute the program.
+In the terminals use the commands:\
+```
+AR_simulator_gui or AR_simulator
+AR_pipeline
+AR_run
+```
+If it is necessary to specify the number of robots present, it must be done both at the start of the simulator and the pipeline with the option "n:=NumberOfRobots".
+
+Ex:
+```
+AR_simulator_gui n:=2
+AR_pipeline n:=2
+```
