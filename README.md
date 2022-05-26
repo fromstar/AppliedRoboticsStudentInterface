@@ -3,10 +3,10 @@ Package used by student to complete the assignment of the course.
 
 ## Project objectives
 
-    development and implementation of sensing algorithms to recognise objects and obstacles in the competition field
-    development and implementation of motion planning algorithms to move the robot from an initial to a final position in minimum time avoiding obstacles
-    development and implementation of intelligent planning algorithms to decide the optimal game strategy
-    testing of the solution in simulation and on the field
+* development and implementation of sensing algorithms to recognise objects and obstacles in the competition field
+* development and implementation of motion planning algorithms to move the robot from an initial to a final position in minimum time avoiding obstacles
+* development and implementation of intelligent planning algorithms to decide the optimal game strategy
+* testing of the solution in simulation and on the field
 
 ## Installation
 
