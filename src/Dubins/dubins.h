@@ -53,7 +53,7 @@ curve dubins_no_inter(double, double, double, double, double, double*, double, p
 bool pt_in_arc(point_node *, arc);
 bool find_intersection(arc, point_node*, point_node*);
 vector<double> opti_theta(vector<double> xpath, vector<double> ypath);
-Pose get_pose(arc, bool last_elem = false);
+Pose get_pose(arc);
 Path push_path(curve, Path);
 
 #endif

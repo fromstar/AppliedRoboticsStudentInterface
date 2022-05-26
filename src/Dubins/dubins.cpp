@@ -468,7 +468,8 @@ vector<double> opti_theta(vector<double> xpath, vector<double> ypath)
 	return thpath;
 }
 
-/*Source of this function:
+/*
+	Source of this function:
 	https://www.geeksforgeeks.org/equation-of-circle-when-three-points-on-the-circle-are-given/
 */
 tuple<double, double, double> get_circle_center(double x1, double y1, double x2, double y2, double x3, double y3)
@@ -517,6 +518,7 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 {
 
 	int pidx = 0;
+	int i=0;
 	double th = 0;
 	double k = 0;
 	bool intersection_arena[3] = {true, true, true};
@@ -526,7 +528,10 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 	Edge *edges = NULL;
 	point_node *pnt;
 	curve c;
-	// tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf + th, Kmax + k);
+
+	/*
+		I continue to calculate the dubins curve until I find one without intersections.
+	*/
 	while (intersection_arena[0] || intersection_arena[1] || intersection_arena[2] || intersection_polygons[0] ||
 		   intersection_polygons[1] || intersection_polygons[2])
 	{
@@ -598,13 +603,17 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 		}
 
 		// If an intersection is found I need to try to modify the arriving theta and the max curvature of the arc.
-		// Is important modify the theta value contained in the vector in the student interface in order to avoid
-		// having a different arrival angle from the departure angle for the next curve.
+		// Is important modify the theta value contained in the vector in the student interface in order to not
+		// have a different arrival angle from the departure angle for the next curve.
 		if (intersection_arena[0] || intersection_arena[1] || intersection_arena[2] || intersection_polygons[0] ||
 			intersection_polygons[1] || intersection_polygons[2])
-		{
-			*thf += 0.0001;
-			Kmax += 1;
+		{	
+			// Alternating increase thf and Kmax 
+			if( i % 2 == 0)
+				*thf += 0.0001;
+			else
+				Kmax += 1;
+			i++;
 		}
 	}
 
@@ -613,8 +622,12 @@ curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, do
 
 bool find_intersection(arc a, point_node *pnt, point_node *pnt_next)
 {
+	/*
+		Given an arc and a line we search an intersection 
+		using the function intersCricleLine
+	*/
 	point_list *pts = NULL;
-	double_list *p;
+	double_list *p = NULL;
 	tie(pts, p) = intersCircleLine(a.xc, a.yc, a.r,
 								   pnt->x, pnt->y, pnt_next->x,
 								   pnt_next->y);
@@ -637,12 +650,17 @@ bool find_intersection(arc a, point_node *pnt, point_node *pnt_next)
 
 bool pt_in_arc(point_node *ptso, arc a)
 {
+	/*
+		If an intersection is found it's necessary to make
+		sure that the point is not part of the arc of the curve
+	*/
 	point_node *pts = ptso;
 	double angle, start, end;
 	// Get the circonference angle of given point in it
 	start = get_angle(a.xc, a.yc, a.x0, a.y0);
 	end = get_angle(a.xc, a.yc, a.xf, a.yf);
 
+	/* It's simpler work with only positive angles*/
 	if (start < 0)
 		start += (M_PI * 2);
 	if (end < 0)
@@ -670,19 +688,11 @@ bool pt_in_arc(point_node *ptso, arc a)
 	return false;
 }
 
-Pose get_pose(arc a, bool last_elem)
+Pose get_pose(arc a)
 {
 	Pose p;
 	p.s = a.L;
 	p.kappa = a.k;
-
-	if (last_elem == true)
-	{
-		p.x = a.xf;
-		p.y = a.yf;
-		p.theta = a.thf;
-		return p;
-	}
 
 	p.x = a.x0;
 	p.y = a.y0;
@@ -693,6 +703,10 @@ Pose get_pose(arc a, bool last_elem)
 
 Path push_path(curve c, Path p)
 {
+	/*
+	We sample each arc of the curve so as to have many smaller
+	arcs and have more points of the path to pass to the simulator.
+	*/
 	arc a;
 	int n_samples = 1000;
 
@@ -709,7 +723,7 @@ Path push_path(curve c, Path p)
 		p.points.push_back(get_pose(a));
 		a = dubinsarc(a.xf, a.yf, a.thf, a.k, a.L);
 	}
-	
+
 	a = dubinsarc(c.a3.x0, c.a3.y0, c.a3.th0, c.a3.k, c.a3.L / n_samples);
 	for (int i = 0; i < n_samples; i++)
 	{

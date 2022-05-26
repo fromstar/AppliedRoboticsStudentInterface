@@ -14,7 +14,7 @@ void thread_catcher_plan(map<string, robot_catcher *>::iterator, World_represent
 
 /*
 PLANNER https://fai.cs.uni-saarland.de/hoffmann/ff/FF-v2.3.tgz
-HOME_PAGE: https://fai.cs.uni-saarland.de/hoffmann/ff.html  
+HOME_PAGE: https://fai.cs.uni-saarland.de/hoffmann/ff.html
 
 pre-requisite: flex e bison
 */
@@ -170,7 +170,7 @@ namespace student
     vector<double> fy_path;
     vector<double> fth_path; // The angles are in radiants!
 
-     clock_t tStart = clock();
+    clock_t tStart = clock();
     /* Get the cells centroids of the fugitive path */
     tie(fx_path, fy_path) = abstract_arena.get_path(f_it->second->self->plan);
 
@@ -186,14 +186,15 @@ namespace student
     path[0] = push_path(c, path[0]);
 
     /* Plot the dubins curve to the arena's img */
-    img_arena = plotdubins(c, "r", "g", "b", img_arena);
+    img_arena = plotdubins(c, "r", "r", "r", img_arena);
 
     /* Calculate fugitive's dubin curves without intersection */
     for (int i = 0; i < fx_path.size() - 1; i++)
     {
       c = dubins_no_inter(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1], fy_path[i + 1], &fth_path[i + 1], 0, arena);
 
-      /* Push only the first action move to the simulator. In this way I have to run the simulation multiple times
+      /* 
+        Push only the first action move to the simulator. In this way I have to run the simulation multiple times
          and make a plan every time.
        */
       if (push_first)
@@ -204,7 +205,7 @@ namespace student
       else
         path[0] = push_path(c, path[0]);
 
-      img_arena = plotdubins(c, "r", "g", "b", img_arena);
+      img_arena = plotdubins(c, "r", "r", "r", img_arena);
     }
     printf("Time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
 
@@ -220,7 +221,7 @@ namespace student
 
     c = dubins_no_inter(c_it->second->self->location->x, c_it->second->self->location->y, c_1->theta, cx_path[0], cy_path[0], &cth_path[0], 0, arena);
     path[1] = push_path(c, path[1]);
-    img_arena = plotdubins(c, "r", "g", "b", img_arena);
+    img_arena = plotdubins(c, "b", "b", "b", img_arena);
 
     for (int i = 0; i < cx_path.size() - 1; i++)
     {
@@ -234,11 +235,14 @@ namespace student
       else
         path[1] = push_path(c, path[1]);
 
-      img_arena = plotdubins(c, "r", "g", "b", img_arena);
+      img_arena = plotdubins(c, "b", "b", "b", img_arena);
     }
 
-    // imshow("Arena", img_arena);
-    // waitKey(0);
+    if (!push_first)
+    {
+      imshow("Arena", img_arena);
+      waitKey(0);
+    }
 
     return true;
   }
