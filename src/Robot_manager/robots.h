@@ -127,6 +127,8 @@ typedef struct robot_fugitive {
 		  				   string problem_name="problem",
 						   string plan_name="MyPlan");
   string get_behaviour();
+  vector<string> plan();
+  void to_log(string message);
   void info();
 } robot_fugitive;
 
@@ -164,7 +166,9 @@ typedef struct robot_catcher {
 					   bool do_plan=true);
   vector<string> make_plan(bool apply=true, string domain_name="domain.pddl",
 		  				   string problem_name="problem.pddl",
-						   string plan_name="MyPlan.plan");
+ 						   string plan_name="MyPlan.plan");
+  vector<string> plan();
+  void to_log(string message);
   void info();
 } robot_catcher;
 

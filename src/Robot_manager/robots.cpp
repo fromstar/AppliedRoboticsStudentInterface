@@ -962,7 +962,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 		}
 		else
 		{
-			pddl_problem += "cell\n";
+			pddl_problem += "CELL\n";
 		};
 	};
 

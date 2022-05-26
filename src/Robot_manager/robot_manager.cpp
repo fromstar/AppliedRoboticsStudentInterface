@@ -1,5 +1,9 @@
 #include "robot_manager.h"
 
+robot_manager::robot_manager(logger* l){
+	rm_logger = l;
+};
+ 
 void robot_manager::add_robot(Robot* r, string f_path){
 	switch(r->type){
 		case catcher:
@@ -14,7 +18,7 @@ void robot_manager::add_robot(Robot* r, string f_path){
 			catchers[r->ID] = new robot_catcher(r, f_path);
 			break;
 	};
-
+	rm_logger -> add_event("Added robot " + r->ID + " to the robot manager");
 };
 
 void robot_manager::parse_map_robots(map<string, Robot*> map_r, string f_path){
@@ -22,6 +26,8 @@ void robot_manager::parse_map_robots(map<string, Robot*> map_r, string f_path){
 		 ++it){
 		add_robot(it->second, f_path);
 	};
+	
+	rm_logger -> add_event("After parsing added " + map_r.size() + string(" robots"));
 };
 
 void robot_manager::trade_fugitives(){
@@ -32,6 +38,10 @@ void robot_manager::trade_fugitives(){
 		it_f -> second -> add_antagonist(it_c->second->self);
 		it_c -> second -> add_antagonist(it_f->second->self);
 	};
+	
+	// Add other options
+
+	rm_logger -> add_event("Ended Robot trading");
 };
 
 void robot_manager::info(bool detailed){

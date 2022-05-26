@@ -27,7 +27,9 @@
 typedef struct robot_manager{
 	map<string, robot_fugitive*> fugitives;
 	map<string, robot_catcher*> catchers;
+	logger* rm_logger = NULL;
 
+	robot_manager(logger* l=new logger);
 	void parse_map_robots(map<string, Robot*> map_r, string f_path=".tmp");
 	void add_robot(Robot* r, string f_path=".tmp");
 	void trade_fugitives();

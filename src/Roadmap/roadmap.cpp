@@ -401,7 +401,7 @@ void points_map::merge_obstacles()
 		}
 		obstacles->offset_size++;
 	}
-	log->add_event("Obstacles in touch merged\n");
+	log->add_event("Obstacles in touch merged");
 }
 
 /**
