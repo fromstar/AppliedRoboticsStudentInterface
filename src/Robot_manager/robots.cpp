@@ -904,7 +904,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 				   "\t)\n";
 
 	// write actions
-	to_log("Started writing action \"Move\"");
+	to_log("Writing action \"Move\"");
 	pddl_domain += "\t(:action move\n"
 				   "\t\t:parameters\n"
 				   "\t\t\t(\n"
@@ -979,7 +979,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 		};
 	};
 
-	to_log("Writing acton \"Capture\"");
+	to_log("Writing action \"Capture\"");
 	pddl_domain += "\n\t\t\t)\n";
 	pddl_domain += "\t)\n";
 
@@ -1016,6 +1016,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	pddl_problem += "\t(:objects\n";
 
 	// Part 1: write cells
+	to_log("Writing cells");
 	string upper_id;
 	map<string, World_node>::iterator it_node;
 	for (it_node = wr.world_free_cells.begin();
@@ -1033,6 +1034,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	};
 
 	// Part 2: write gates
+	to_log("Writing gates");
 	for (it_node = wr.world_gates.begin(); it_node != wr.world_gates.end();
 		 ++it_node)
 	{
@@ -1040,6 +1042,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	};
 
 	// Part 3: write agents
+	to_log("Writing agents");
 	pddl_problem += "\t\t" + upperify(self->ID) + " - " +
 					self->get_type() + "\n";
 
@@ -1053,6 +1056,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	pddl_problem += "\t)\n";
 
 	// Write initial state
+	to_log("Writing initial state");
 	pddl_problem += "\t(:init\n";
 	for (it_node = wr.world_free_cells.begin();
 		 it_node != wr.world_free_cells.end(); ++it_node)
@@ -1077,6 +1081,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	};
 
 	// Write initial location of the agents
+	to_log("Writing initial location of the agents");
 	pt self_location = pt(self->location->x, self->location->y);
 	for (it_node = wr.world_free_cells.begin();
 		 it_node != wr.world_free_cells.end(); ++it_node)
@@ -1089,6 +1094,8 @@ void robot_catcher::make_pddl_files(World_representation wr,
 			break;
 		};
 	};
+	to_log("Written location of catcher");
+
 	for (int i = 0; i < antagonists.size(); i++)
 	{
 		pt ant_location = pt(antagonists[i]->location->x,
@@ -1107,9 +1114,11 @@ void robot_catcher::make_pddl_files(World_representation wr,
 			};
 		};
 	};
+	to_log("Written location of antagonists");
 	pddl_problem += "\t)\n";
 
-	// wrtie goal
+	// write goal
+	to_log("Writing goal");
 	pddl_problem += "\t(:goal\n";
 	int ant_size = antagonists.size();
 	if (ant_size > 1)
