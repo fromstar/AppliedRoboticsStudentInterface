@@ -72,11 +72,11 @@ namespace student
   {
     // throw std::logic_error( "STUDENT FUNCTION - PLAN PATH - NOT IMPLEMENTED" );
 
-    bool push_first = true;
+    bool push_first = false;
 
     logger *log_test = new logger;
     log_test->set_log_path("test_log.txt");
-    log_test->add_event("Code started\n");
+    log_test->add_event("Code started");
     points_map arena(log_test);
 
     /* Add arena limits */
@@ -112,14 +112,14 @@ namespace student
 
     arena.merge_obstacles();
 
-    arena.make_free_space_cells_squares();
+    arena.make_free_space_cells_squares(4);
     // arena.make_free_space_cells_triangular();
     log_test->add_event("Created Roadmap");
 
-    Robot *c_1 = new Robot("Catcher_1", catcher);
-    arena.add_robot(c_1);
+    Robot *c_1 = new Robot("Catcher_1", catcher, log_test);
+   	arena.add_robot(c_1);
 
-    Robot *f_1 = new Robot("Fugitive_1", fugitive);
+    Robot *f_1 = new Robot("Fugitive_1", fugitive, log_test);
     arena.add_robot(f_1);
 
     arena.set_robot_position(f_1->ID, x[0], y[0], theta[0]);
@@ -131,7 +131,7 @@ namespace student
         arena.gates,
         log_test);
 
-    robot_manager rm;
+    robot_manager rm(log_test);
 
     rm.add_robot(f_1);
     rm.add_robot(c_1);
@@ -154,7 +154,7 @@ namespace student
 
     map<string, robot_catcher *>::iterator c_it;
     c_it = rm.catchers.begin();
-    c_it->second->make_pddl_files(abstract_arena, f_it->second->behaviour, true);
+    // c_it->second->make_pddl_files(abstract_arena, f_it->second->behaviour, true);
 
     thread f_thr(thread_fugitive_plan, f_it, abstract_arena);
     sleep(1);
@@ -164,6 +164,9 @@ namespace student
     // thread_catcher_plan(c_it, abstract_arena, f_it->second->behaviour, true);
     f_thr.join();
     c_thr.join();
+	
+	// Show plans of the robots
+	rm.info(true);
 
     /* Fugitive  path vectors */
     vector<double> fx_path;
@@ -237,6 +240,8 @@ namespace student
 
       img_arena = plotdubins(c, "b", "b", "b", img_arena);
     }
+	
+	log_test->add_event("Code ended\n");
 
     if (!push_first)
     {

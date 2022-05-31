@@ -77,8 +77,8 @@ vector<string> string_to_vector(string sentence, string token)
  * \fun
  * This is the default constructor for the robot struct.
  */
-Robot::Robot(string _id, Robot_type _type, point_node *_loc,
-			 double _max_curvature, double _offset, logger *_l)
+Robot::Robot(string _id, Robot_type _type, logger* _l, point_node *_loc,
+			 double _max_curvature, double _offset)
 {
 	set_id(_id);
 	type = _type;
@@ -249,10 +249,39 @@ robot_fugitive::robot_fugitive(Robot *_self, string path,
 	behaviour = b;
 };
 
+/**
+ * \fun
+ * This function is used to write a log message exploiting the Robot
+ * logger attribute existing in the Robot instance inside the robot_fugitive
+ * struct
+ * @param message: string. It is the message to write on the logger
+ */
+void robot_fugitive::to_log(string message){
+	self->l->add_event(self->ID + ": " + message);
+};
+
+/**
+ * \fun
+ * This function is used to add a Robot instance to the list of antagonists
+ * of the fugitive.
+ * @param r_ant: Robot\*. It is the instance of the antagonist.
+ */
 void robot_fugitive::add_antagonist(Robot *r_ant)
 {
 	antagonists.push_back(r_ant);
 };
+
+/**
+ * \fun
+ * This function is used to set the behaviour of the fugitive robot.
+ * @param b: behaviour_fugitive. It is the enumerative value representing the
+ * behaviour in use by the fugitive. Available values are:
+ * - least_steps: the fugitive will reach the nearest gate -> nearest gate
+ *   is the one reachable in the least number of movements.
+ * - undeterministic: the fugitive will chose a gate randomly.
+ * - aware: the fugitive will chose the gate as the one being at maximum
+ *   distance from the nearest catcher.
+ */
 
 void robot_fugitive::set_behaviour(behaviour_fugitive b)
 {
@@ -278,6 +307,8 @@ void robot_fugitive::write_file(string file_name, string what_to_write,
 
 string robot_fugitive::make_pddl_domain_file(World_representation wr)
 {
+	to_log("Writing domain file");
+
 	// Define name of the domain
 	string domain_name = "domain_" + self->ID;
 
@@ -329,6 +360,8 @@ string robot_fugitive::make_pddl_domain_file(World_representation wr)
 
 string robot_fugitive::make_pddl_problem_file(World_representation wr)
 {
+	to_log("Writing problem file");
+
 	int tmp_folder = mkdir(filesPath.c_str(), 0777);
 
 	// Define name of the problem
@@ -342,6 +375,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	problem_file += "\n\t(:domain " + domain_name + " )\n";
 
 	// Write objects available
+	to_log("Writing available objects");
 	problem_file += "\t(:objects\n";
 	map<string, World_node>::iterator it;
 	for (it = wr.world_free_cells.begin(); it != wr.world_free_cells.end(); ++it)
@@ -354,6 +388,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	};
 
 	// write agents
+	to_log("Writing agents");
 	problem_file += "\t\t\t" + self->ID + " - fugitive";
 	if (antagonists.size() != 0)
 	{
@@ -371,6 +406,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	map<string, World_node>::iterator it_2;
 
 	// cells connected
+	to_log("Writing cells connections");
 	for (it_1 = wr.world_free_cells.begin(); it_1 != wr.world_free_cells.end();
 		 ++it_1)
 	{
@@ -391,6 +427,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	};
 
 	// gates in cells
+	to_log("Find and write in which cells the gates are");
 	for (it_1 = wr.world_free_cells.begin(); it_1 != wr.world_free_cells.end();
 		 ++it_1)
 	{
@@ -409,6 +446,8 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	};
 
 	// agents location
+	// Fugitive
+	to_log("Find and write agents location");
 	pt fugitive_location = pt(self->location->x, self->location->y);
 	for (it_1 = wr.world_free_cells.begin(); it_1 != wr.world_free_cells.end();
 		 ++it_1)
@@ -422,7 +461,9 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 			break; // can only be in one position
 		};
 	};
+	to_log("Ended fugitive search");
 
+	// Antagonists
 	for (it_1 = wr.world_free_cells.begin(); it_1 != wr.world_free_cells.end();
 		 ++it_1)
 	{
@@ -439,6 +480,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 		};
 	};
 	problem_file += "\t)\n";
+	to_log("Ended antagonists search");
 
 	// Write goal
 	problem_file += "\t(:goal\n";
@@ -478,6 +520,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 		};
 		self->set_plan(all_plans[idx_least]);
 		self->set_desire("( is_in " + self->ID + " " + it_1->first + " )");
+		to_log("End least_steps behaviour");
 		return problem_name + "_" + it_1->first;
 		break;
 	};
@@ -502,7 +545,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 
 		// Remove useless files.
 		remove((filesPath + "/" + tmp_problem_name + ".plan").c_str());
-
+		to_log("End undeterministic behaviour");
 		return tmp_problem_name;
 		break;
 	};
@@ -634,6 +677,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 			++it_g;
 		};
 		self->set_desire("( is_in " + self->ID + " " + it_g->first + " )");
+		to_log("End aware behaviour");
 		return problem_name + "_" + it_g->first;
 		break;
 	};
@@ -753,6 +797,17 @@ void robot_catcher::write_file(string file_name, string what_to_write,
 	};
 };
 
+/**
+ * \fun
+ * This function is used to write a log message exploiting the Robot
+ * logger attribute existing in the Robot instance inside the robot_catcher
+ * struct
+ * @param message: string. It is the message to write on the logger
+ */
+void robot_catcher::to_log(string message){
+	self->l->add_event(self->ID + ": " + message);
+};
+
 void robot_catcher::make_pddl_files(World_representation wr,
 									behaviour_fugitive b_ant, bool do_plan)
 {
@@ -761,6 +816,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 		string error_msg = "No antagonists assigned to " + self->ID +
 						   " try running the method \"trade_fugitives()\""
 						   " of the struct Robot_manager.\n";
+		to_log(error_msg);
 		throw std::logic_error(error_msg);
 		/*
 		cout << "No antagonists assigned to " << self->ID
@@ -783,6 +839,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 				   "\t)\n";
 
 	// create plans for each antagonists -> used to make an aware decision
+	to_log("Creating plans for the ghost antagonists");
 	for (int i = 0; i < antagonists.size(); i++)
 	{
 		robot_fugitive ghost_fugitive = robot_fugitive(antagonists[i],
@@ -804,6 +861,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	map<string, vector<string>>::iterator it;
 
 	// find subset of cells used in the plans of the antagonists
+	to_log("Searching subset of cells in plan");
 	for (it = antagonists_plans.begin(); it != antagonists_plans.end(); ++it)
 	{
 		// iterate until last step of plan to avoid to misclassify the gate
@@ -822,6 +880,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	}
 
 	// write types
+	to_log("Writing types");
 	pddl_domain += "\t(:types\n"
 				   "\t\tfugitive catcher - robot\n";
 
@@ -837,6 +896,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	pddl_domain += "\t)\n";
 
 	// write predicates
+	to_log("Writing predicates");
 	pddl_domain += "\t(:predicates\n"
 				   "\t\t(is_in ?r - robot ?loc - location)\n"
 				   "\t\t(connected ?loc_start - location ?loc_end - location)\n"
@@ -844,12 +904,15 @@ void robot_catcher::make_pddl_files(World_representation wr,
 				   "\t)\n";
 
 	// write actions
+	to_log("Started writing action \"Move\"");
 	pddl_domain += "\t(:action move\n"
 				   "\t\t:parameters\n"
 				   "\t\t\t(\n"
 				   "\t\t\t?r_c - catcher\n"
 				   "\t\t\t?loc_start - location\n"
 				   "\t\t\t?loc_end - location\n";
+	
+	to_log("Started searching subset of cells in plan");
 	for (int i = 0; i < antagonists.size(); i++)
 	{
 		vector<string> tmp_s = string_to_vector(antagonists[i]->ID, "_");
@@ -880,7 +943,8 @@ void robot_catcher::make_pddl_files(World_representation wr,
 				   "\t\t\t(and\n"
 				   "\t\t\t\t( not ( is_in ?r_c ?loc_start ) )\n"
 				   "\t\t\t\t( is_in ?r_c ?loc_end )\n";
-
+	
+	to_log("Parsing antagonists plans");
 	for (it = antagonists_plans.begin(); it != antagonists_plans.end(); ++it)
 	{
 		pddl_domain += "\t\t\t\t; Plan for fugitive: " + it->first;
@@ -914,6 +978,8 @@ void robot_catcher::make_pddl_files(World_representation wr,
 			// pddl_domain += "\t\t\t\t)";
 		};
 	};
+
+	to_log("Writing acton \"Capture\"");
 	pddl_domain += "\n\t\t\t)\n";
 	pddl_domain += "\t)\n";
 
@@ -940,7 +1006,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	// cout << "Domain PDDL written" << endl;
 
 	// Write problem file ----------------------------------------------------
-
+	to_log("Writing problem file");
 	string problem_name = "problem_" + self->ID;
 	string pddl_problem = "(define (problem " + problem_name + " )\n"
 															   "\t(:domain " +
@@ -1066,8 +1132,9 @@ void robot_catcher::make_pddl_files(World_representation wr,
 
 	// write file to disk
 	write_file(problem_name, pddl_problem, ".pddl");
-
-	// make and aply plan for the catcher
+	
+	to_log("Calling planner");
+	// make and apply plan for the catcher
 	string plan_name = "catcher_plan";
 	make_plan(true, domain_name, problem_name, plan_name);
 	// Remove plan
@@ -1093,10 +1160,12 @@ vector<string> robot_catcher::make_plan(bool apply, string domain_name,
 										string problem_name,
 										string plan_name)
 {
+	// to_log(self->ID + ": Started running planner");
 	run_planner("/home/" + string(getenv("USER")) + "/FF-v2.3/",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + domain_name + ".pddl",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + problem_name + ".pddl",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + plan_name + ".plan");
+	// to_log(self->ID + ": Ended planner run");
 
 	string tmp_line;
 	ifstream pddl_in(filesPath + "/" + plan_name + ".plan");
@@ -1132,6 +1201,7 @@ vector<string> robot_catcher::make_plan(bool apply, string domain_name,
 	{
 		string error_msg = "Unable to open input plan file. Either folder "
 						   "permission error or No plan Fout -> exit code 12";
+		// to_log(error_msg);
 		throw std::logic_error(error_msg);
 
 		// cout << "Unable to open input plan file, probably no plan found"
@@ -1143,6 +1213,7 @@ vector<string> robot_catcher::make_plan(bool apply, string domain_name,
 	if (apply)
 	{
 		self->set_plan(tmp_plan);
+		to_log("Plan found and loaded in structure");
 	};
 
 	return tmp_plan;

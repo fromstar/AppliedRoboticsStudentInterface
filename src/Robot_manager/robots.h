@@ -73,8 +73,8 @@ typedef struct Robot {
   vector<string> plan;
 
   Robot(string _id = "Default_id", Robot_type _type = undefined,
-        point_node *loc = new point_node(0, 0), double _max_curvature = 0,
-        double _offset = 1, logger* _l=new logger());
+	logger* _l=new logger(), point_node *loc = new point_node(0, 0),
+	double _max_curvature = 0, double _offset = 1);
 
   void set_id(string _id);
   void set_robot_type(Robot_type rt);
