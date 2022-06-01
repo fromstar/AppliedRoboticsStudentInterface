@@ -73,9 +73,9 @@ namespace student
     // throw std::logic_error( "STUDENT FUNCTION - PLAN PATH - NOT IMPLEMENTED" );
 
     bool push_first = false;
+	clock_t starting_clock = clock();
 
-    logger *log_test = new logger;
-    log_test->set_log_path("test_log.txt");
+    logger *log_test = new logger("test_log.txt");
     log_test->add_event("Code started");
     points_map arena(log_test);
 
@@ -241,7 +241,8 @@ namespace student
       img_arena = plotdubins(c, "b", "b", "b", img_arena);
     }
 	
-	log_test->add_event("Code ended\n");
+	float elapsed_time = (float(clock() - starting_clock))/CLOCKS_PER_SEC;
+	log_test->add_event("Code ended in " + to_string(elapsed_time) + "s\n");
 
     if (!push_first)
     {
