@@ -11,7 +11,17 @@ void test2();
 
 int main()
 {
-	test();
+	// test();
+	logger *log_test = new logger("test_log.txt");
+
+	for(int i=0; i<5; i++){
+		log_test->add_event("Hello");
+	};
+	log_test -> info();
+
+	log_test->clear();
+	log_test -> info();
+
 	return 0;
 };
 
@@ -37,7 +47,7 @@ void test()
 
 	pol->add_node(new point_node(0.9204, 0.6513));
 	pol->add_node(new point_node(0.89895, 0.702));
-	pol->add_node(new point_node(0.9516, 0.73515));
+ 	pol->add_node(new point_node(0.9516, 0.73515));
 	pol->add_node(new point_node(0.9906, 0.7059));
 	pol->add_node(new point_node(0.99255, 0.6903));
 	pol->add_node(new point_node(0.975, 0.65325));
@@ -181,8 +191,8 @@ void test()
 	Robot *f_1 = new Robot("fugitive_1", fugitive);
 	test_map.add_robot(f_1);
 
-	test_map.set_robot_position(c_1->ID, 1, -2);
-	test_map.set_robot_position(f_1->ID, -0.5, -0.5);
+	test_map.set_robot_position(c_1->ID, 1, -2, 0);
+	test_map.set_robot_position(f_1->ID, -0.5, -0.5, 0);
 	
 	World_representation abstract_arena = World_representation(
 		test_map.free_space,
