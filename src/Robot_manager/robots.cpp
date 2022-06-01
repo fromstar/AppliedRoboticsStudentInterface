@@ -76,6 +76,19 @@ vector<string> string_to_vector(string sentence, string token)
 /**
  * \fun
  * This is the default constructor for the robot struct.
+ * @param _id: string. It is the unique id of the robot.
+ * @param _type: Robot_type. It is the type associated to the robot and defines
+ * its behaviour in the environment. Available values are:
+ * - catcher: The robot will try to capture the fugitives.
+ * - fugitive: The robot will try to escape from the catcher and reach a gate.
+ * - undefined: It is a general_purpose type, never to be used.
+ * @param _l: logger\*. It is the logger instance which will be used to 
+ * print out the events regarding the Robot instance.
+ * @param _loc: point_node\*. It is the current location of the robot.
+ * @param _max_curvature: double. It is the maximum curvature angle that
+ * the robot can achieve -> physical limit. It is expressed in radiants.
+ * @param _offset: double. It is the offset to be used in enlargin the robot
+ * to avoid collisions with the obstacles during the planning phase.
  */
 Robot::Robot(string _id, Robot_type _type, logger* _l, point_node *_loc,
 			 double _max_curvature, double _offset)
@@ -88,6 +101,11 @@ Robot::Robot(string _id, Robot_type _type, logger* _l, point_node *_loc,
 	l = _l;
 };
 
+/**
+ * \fun
+ * This method allows to set the logger to be used by the Robot instance.
+ * @param _l: logger\*. It is the logger instance to be used for logging.
+ */
 void Robot::set_logger(logger *_l)
 {
 	l = _l;
@@ -288,6 +306,13 @@ void robot_fugitive::set_behaviour(behaviour_fugitive b)
 	behaviour = b;
 };
 
+/**
+ * \fun
+ * This method is used to write the files for the fugitive robot.
+ * @param file_name: string. It is the path in which to write the file.
+ * @param what_to_Write: string. It is the content of the file.
+ * @param extension: string. It is the file extension to be used.
+ */
 void robot_fugitive::write_file(string file_name, string what_to_write,
 								string extension)
 {
@@ -300,12 +325,16 @@ void robot_fugitive::write_file(string file_name, string what_to_write,
 	else
 	{
 		string error_msg = "Unable to open output stream towards " + file_name;
+		to_log(error_msg);
 		throw std::logic_error(error_msg);
-		// cout << "Unable to open output stream" << endl;
 	};
 };
 
-string robot_fugitive::make_pddl_domain_file(World_representation wr)
+/**
+ * \fun
+ * This method is used to create the domain file for the fugitive robot.
+ *  */
+string robot_fugitive::make_pddl_domain_file()
 {
 	to_log("Writing domain file");
 
@@ -313,44 +342,44 @@ string robot_fugitive::make_pddl_domain_file(World_representation wr)
 	string domain_name = "domain_" + self->ID;
 
 	// Write header of the file
-	string domain_file = "(define (domain " + domain_name + ")\n";
+	string domain_file =
+				"(define (domain " + domain_name + ")\n"
+				
+				// Write requirements
+				"\t(:requirements "
+				"\n\t\t:strips :typing :negative-preconditions"
+				"\n\t\t:disjunctive-preconditions\n\t)\n"
 
-	// Write requirements
-	domain_file += "\t(:requirements "
-				   "\n\t\t:strips :typing :negative-preconditions"
-				   "\n\t\t:disjunctive-preconditions\n\t)\n";
+				// Write types
+				"\t(:types\n\t\tfugitive catcher - robot"
+			    "\n\t\tcell gate - location\n\t)\n"
 
-	// Write types
-	domain_file += "\t(:types\n\t\tfugitive catcher - robot"
-				   "\n\t\tcell gate - location\n\t)\n";
+				// Write predicates
+				"\t(:predicates\n"
+				"\t\t(is_in ?r - robot ?loc - location)\n"
+				"\t\t(connected ?loc_start - location ?loc_end - location)"
+				"\n\t)"
 
-	// Write predicates
-	domain_file += "\t(:predicates\n"
-				   "\t\t(is_in ?r - robot ?loc - location)\n"
-				   "\t\t(connected ?loc_start - location ?loc_end - location)"
-				   "\n\t)";
-
-	// Write actions
-	domain_file += "\n\t(:action move"
-				   "\n\t\t:parameters (?r - fugitive ?loc_start - location "
-				   "?loc_end - location)"
-				   "\n\t\t:precondition"
-				   "\n\t\t\t(and"
-				   "\n\t\t\t\t( is_in ?r ?loc_start )"
-				   "\n\t\t\t\t( or"
-				   "\n\t\t\t\t\t( connected ?loc_start ?loc_end )"
-				   "\n\t\t\t\t\t( connected ?loc_end ?loc_start )"
-				   "\n\t\t\t\t)"
-				   "\n\t\t\t)"
-				   "\n\t\t:effect"
-				   "\n\t\t\t(and"
-				   "\n\t\t\t\t( not ( is_in ?r ?loc_start ) )"
-				   "\n\t\t\t\t( is_in ?r ?loc_end)"
-				   "\n\t\t\t)"
-				   "\n\t)";
-
-	// Write file end
-	domain_file += "\n)";
+				// Write actions
+				"\n\t(:action move"
+			    "\n\t\t:parameters (?r - fugitive ?loc_start - location "
+			    "?loc_end - location)"
+			    "\n\t\t:precondition"
+			    "\n\t\t\t(and"
+			    "\n\t\t\t\t( is_in ?r ?loc_start )"
+			    "\n\t\t\t\t( or"
+			    "\n\t\t\t\t\t( connected ?loc_start ?loc_end )"
+			    "\n\t\t\t\t\t( connected ?loc_end ?loc_start )"
+			    "\n\t\t\t\t)"
+			    "\n\t\t\t)"
+			    "\n\t\t:effect"
+			    "\n\t\t\t(and"
+			    "\n\t\t\t\t( not ( is_in ?r ?loc_start ) )"
+			    "\n\t\t\t\t( is_in ?r ?loc_end)"
+			    "\n\t\t\t)"
+			    "\n\t)"
+				// Write file end
+				"\n)";
 
 	// make folder if it doesn't exist
 	int tmp_folder = mkdir(filesPath.c_str(), 0777);
@@ -693,8 +722,7 @@ vector<string> robot_fugitive::make_plan(bool apply, string domain_name,
 										 string problem_name,
 										 string plan_name)
 {
-	run_planner("/home/" + string(getenv("USER")) +
-					"/FF-v2.3/",
+	run_planner("/home/" + string(getenv("USER")) +	"/FF-v2.3/",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + domain_name + ".pddl",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + problem_name + ".pddl",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + plan_name + ".plan");
@@ -846,7 +874,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 													   ".tmp", b_ant);
 		// Suppose that the catcher is the only threat
 		ghost_fugitive.add_antagonist(self);
-		string g_domain_name = ghost_fugitive.make_pddl_domain_file(wr);
+		string g_domain_name = ghost_fugitive.make_pddl_domain_file();
 		string g_problem_name = ghost_fugitive.make_pddl_problem_file(wr);
 		string id_ghost = ghost_fugitive.self->ID;
 		antagonists_plans[id_ghost] = ghost_fugitive.make_plan(false,

@@ -258,7 +258,7 @@ void thread_fugitive_plan(map<string, robot_fugitive *>::iterator f_it, World_re
 {
 
   f_it->second->set_behaviour(aware);
-  f_it->second->make_pddl_domain_file(abstract_arena);
+  f_it->second->make_pddl_domain_file();
   f_it->second->make_pddl_problem_file(abstract_arena);
 }
 
