@@ -935,7 +935,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 				   "\t\t(connected ?loc_start - location ?loc_end - location)\n"
 				   "\t\t(captured ?r - fugitive)\n"
 				   "\t)\n";
-
+	
 	// write actions
 	to_log("Writing action \"Move\"");
 	pddl_domain += "\t(:action move\n"
@@ -986,8 +986,6 @@ void robot_catcher::make_pddl_files(World_representation wr,
 		// Must catch it before it goes to the gate, i.e -> n-1 plan steps
 		for (int i = it->second.size() - 2; i >= 0; i--)
 		{
-			// string processed_tp1 = remove_first_and_last_char(it->second[i]);
-			// vector<string> tmp_plan_p1 = string_to_vector(processed_tp1, " ");
 			vector<string> tmp_plan_p1 = string_to_vector(it->second[i], " ");
 			vector<string> tmp_plan_p2 = string_to_vector(
 				tmp_plan_p1[tmp_plan_p1.size() - 1],
@@ -1008,7 +1006,6 @@ void robot_catcher::make_pddl_files(World_representation wr,
 						   cell_s[cell_s.size() - 1] + " ) )"
 						   "\n\t\t\t\t\t)\n"
 						   "\t\t\t\t)\n";
-			// pddl_domain += "\t\t\t\t)";
 		};
 	};
 
@@ -1082,7 +1079,6 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	for (int i = 0; i < antagonists.size(); i++)
 	{
 		pddl_problem += "\t\t" + upperify(antagonists[i]->ID) + " - " +
-						// antagonists[i]->get_type()
 						antagonists[i]->ID + "\n";
 	};
 
@@ -1092,29 +1088,6 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	to_log("Writing cell connections");
 	pddl_problem += "\t(:init\n";
 	pddl_problem += wr.find_pddl_connections();
-	/*
-	for (it_node = wr.world_free_cells.begin();
-		 it_node != wr.world_free_cells.end(); ++it_node)
-	{
-		Polygon_boost cell_p = it_node->second.cell->to_boost_polygon();
-		map<string, World_node>::iterator tmp;
-		for (tmp = wr.world_free_cells.begin(); tmp != wr.world_free_cells.end();
-			 ++tmp)
-		{
-			if (it_node != tmp)
-			{
-				Polygon_boost tmp_c = tmp->second.cell->to_boost_polygon();
-				if (boost::geometry::touches(cell_p, tmp_c))
-				{
-					// write line
-					pddl_problem += "\t\t( connected " +
-									upperify(it_node->first) + " " +
-									upperify(tmp->first) + " )\n";
-				};
-			};
-		};
-	};
-	*/
 
 	// Write initial location of the agents
 	to_log("Writing initial location of the agents");
@@ -1246,11 +1219,8 @@ vector<string> robot_catcher::make_plan(bool apply, string domain_name,
 	{
 		string error_msg = "Unable to open input plan file. Either folder "
 						   "permission error or No plan Fout -> exit code 12";
-		// to_log(error_msg);
+		to_log(error_msg);
 		throw std::logic_error(error_msg);
-
-		// cout << "Unable to open input plan file, probably no plan found"
-		//	 << endl;
 	};
 	// using ifstream returns an empty line after the last one in file
 	tmp_plan.pop_back(); // remove empty line
@@ -1303,6 +1273,8 @@ void run_planner(string planner_path, string domain_file_path,
 		 << problem_file_path << endl
 		 << plan_path << endl;
 
-	string command = "cd " + planner_path + " \n ./ff -o " + domain_file_path + " -f " + problem_file_path + " > " + plan_path;
-	std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
+	string command = "cd " + planner_path + " \n ./ff -o " + domain_file_path +
+					 " -f " + problem_file_path + " > " + plan_path;
+	std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"),
+												  pclose);
 };

@@ -201,7 +201,12 @@ string lowerify(string word);
 
 /**
  * \fun run_planner
- * Use this function to run the downward planner
+ * Use this function to run the planner addressed by the parameter planner_path
+ * @param planner_path: string. It is the path to the chosen planner.
+ * @param domain_file_path: string. It is the path to the domain file.
+ * @param problem_file_path: string. It is the path to the problem file.
+ * @param plan_path: string. It is the path in which the plan file has to
+ * be created.
  */
 void run_planner(string planner_path, string domain_file_path,
 				 string problem_file_path, string plan_path);
