@@ -116,6 +116,17 @@ void points_map::add_robot(Robot *r)
 	};
 };
 
+/**
+ * \fun
+ * This method allows to set the position for a robot in the structure given
+ * its id.
+ * @param robot_id: string. It is the id of the robot whic position has to be
+ * set.
+ * @param x: double. It is the x coordinate of the new position.
+ * @param y: double. It is the y coordinate of the new position.
+ * @param th: double. It is the orientation in radiants of the robot in the new
+ * position.
+ */
 void points_map::set_robot_position(string robot_id, double x, double y, double th = 0)
 {
 	int existing = robot.count(robot_id);
@@ -130,11 +141,24 @@ void points_map::set_robot_position(string robot_id, double x, double y, double 
 	_robot->theta = th;
 };
 
+/**
+ * \fun
+ * This function is used to add a polygon representing a gate to the 
+ * pointsmap.
+ * @param gt: polygon\*. It is a pointer to a polygon instance representing a
+ * gate in the environment.
+ */
 void points_map::add_gate(polygon *gt)
 { // is a shortcut
 	gates->add_polygon(gt);
 };
 
+/**
+ * \fun
+ * This method allows to add an obstacle to the points map structure.
+ * @param ob: polygon\*. It is a pointer to a polygon representing an obstacle
+ * in the environment.
+ */
 void points_map::add_obstacle(polygon *ob)
 {
 	obstacles->size++;
@@ -154,6 +178,11 @@ void points_map::add_obstacle(polygon *ob)
 	obstacles->offset_tail = obstacles->offset_tail->pnext;
 };
 
+/**
+ * \fun
+ * This method allows to print relevant informations regarding the
+ * points map structure.
+ */
 void points_map::print_info()
 {
 	// Print robots informations.
@@ -165,6 +194,15 @@ void points_map::print_info()
 	};
 };
 
+/**
+ * \fun
+ * This method is used to return an image representing the environment.
+ * @param x_dim: int. It is the width of the image.
+ * @param y_dim: int. It is the height of the image.
+ * @param show_original_polygons: bool. It is a flag telling whether or not
+ * to show the polygons as they are together with their offsetted
+ * representation (true) or not (false).
+ */
 Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons)
 {
 	Mat img_arena(x_dim, y_dim, CV_8UC3, Scalar(255, 255, 255));

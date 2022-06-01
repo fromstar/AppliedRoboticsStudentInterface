@@ -114,6 +114,7 @@ namespace student
 
     arena.make_free_space_cells_squares(4);
     // arena.make_free_space_cells_triangular();
+
     log_test->add_event("Created Roadmap");
 
     Robot *c_1 = new Robot("Catcher_1", catcher, log_test);
@@ -130,6 +131,7 @@ namespace student
         arena.free_space,
         arena.gates,
         log_test);
+	abstract_arena.find_pddl_connections();
 
     robot_manager rm(log_test);
 
@@ -141,7 +143,7 @@ namespace student
     // rm.info(true);
 
     abstract_arena.info();
-    Mat img_arena = arena.plot_arena(400, 500, true);
+    Mat img_arena = arena.plot_arena(600, 600, true);
 
     /**********************************************
      * GENERATE PLANS AND MOVE ROBOTS
@@ -158,7 +160,8 @@ namespace student
 
     thread f_thr(thread_fugitive_plan, f_it, abstract_arena);
     sleep(1);
-    thread c_thr(thread_catcher_plan, c_it, abstract_arena, f_it->second->behaviour, true);
+    thread c_thr(thread_catcher_plan, c_it, abstract_arena,
+				 f_it->second->behaviour, true);
 
     // thread_fugitive_plan(f_it, abstract_arena);
     // thread_catcher_plan(c_it, abstract_arena, f_it->second->behaviour, true);
@@ -254,15 +257,17 @@ namespace student
   }
 }
 
-void thread_fugitive_plan(map<string, robot_fugitive *>::iterator f_it, World_representation abstract_arena)
+void thread_fugitive_plan(map<string, robot_fugitive *>::iterator f_it,
+						  World_representation wr)
 {
-
   f_it->second->set_behaviour(aware);
   f_it->second->make_pddl_domain_file();
-  f_it->second->make_pddl_problem_file(abstract_arena);
+  f_it->second->make_pddl_problem_file(wr);
 }
 
-void thread_catcher_plan(map<string, robot_catcher *>::iterator c_it, World_representation abstract_arena, behaviour_fugitive type, bool a)
+void thread_catcher_plan(map<string, robot_catcher *>::iterator c_it,
+						 World_representation wr,
+						 behaviour_fugitive type, bool a)
 {
-  c_it->second->make_pddl_files(abstract_arena, type, a);
+  c_it->second->make_pddl_files(wr, type, a);
 }

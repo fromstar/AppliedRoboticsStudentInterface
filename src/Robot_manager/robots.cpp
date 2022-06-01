@@ -378,6 +378,7 @@ string robot_fugitive::make_pddl_domain_file()
 			    "\n\t\t\t\t( is_in ?r ?loc_end)"
 			    "\n\t\t\t)"
 			    "\n\t)"
+
 				// Write file end
 				"\n)";
 
@@ -436,6 +437,9 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 
 	// cells connected
 	to_log("Writing cells connections");
+	problem_file += wr.find_pddl_connections();
+
+	/*
 	for (it_1 = wr.world_free_cells.begin(); it_1 != wr.world_free_cells.end();
 		 ++it_1)
 	{
@@ -454,6 +458,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 			};
 		};
 	};
+	*/
 
 	// gates in cells
 	to_log("Find and write in which cells the gates are");
@@ -994,15 +999,15 @@ void robot_catcher::make_pddl_files(World_representation wr,
 						   "\t\t\t\t\t(is_in ?r_f_" +
 						   tmp_s[tmp_s.size() - 1] +
 						   " ?c_" + cell_s[cell_s.size() - 1] + " )\n"
-																"\t\t\t\t\t(and\n"
-																"\t\t\t\t\t\t( is_in ?r_f_" +
+						   "\t\t\t\t\t(and\n"
+						   "\t\t\t\t\t\t( is_in ?r_f_" +
 						   tmp_s[tmp_s.size() - 1] +
 						   " ?c_" + cell_e[cell_e.size() - 1] + " )\n"
-																"\t\t\t\t\t\t( not ( is_in ?r_f_" +
+						   "\t\t\t\t\t\t( not ( is_in ?r_f_" +
 						   tmp_s[tmp_s.size() - 1] + " ?c_" +
 						   cell_s[cell_s.size() - 1] + " ) )"
-													   "\n\t\t\t\t\t)\n"
-													   "\t\t\t\t)\n";
+						   "\n\t\t\t\t\t)\n"
+						   "\t\t\t\t)\n";
 			// pddl_domain += "\t\t\t\t)";
 		};
 	};
@@ -1084,18 +1089,20 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	pddl_problem += "\t)\n";
 
 	// Write initial state
-	to_log("Writing initial state");
+	to_log("Writing cell connections");
 	pddl_problem += "\t(:init\n";
+	pddl_problem += wr.find_pddl_connections();
+	/*
 	for (it_node = wr.world_free_cells.begin();
 		 it_node != wr.world_free_cells.end(); ++it_node)
 	{
+		Polygon_boost cell_p = it_node->second.cell->to_boost_polygon();
 		map<string, World_node>::iterator tmp;
 		for (tmp = wr.world_free_cells.begin(); tmp != wr.world_free_cells.end();
 			 ++tmp)
 		{
 			if (it_node != tmp)
 			{
-				Polygon_boost cell_p = it_node->second.cell->to_boost_polygon();
 				Polygon_boost tmp_c = tmp->second.cell->to_boost_polygon();
 				if (boost::geometry::touches(cell_p, tmp_c))
 				{
@@ -1107,6 +1114,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 			};
 		};
 	};
+	*/
 
 	// Write initial location of the agents
 	to_log("Writing initial location of the agents");

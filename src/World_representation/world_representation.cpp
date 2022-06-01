@@ -9,6 +9,7 @@ namespace bg = boost::geometry;
 namespace bgm = bg::model;
 
 /**
+ * \fun
  * Is the default constructor.
  */
 World_node::World_node(string id, polygon *p, double prob)
@@ -81,11 +82,12 @@ void World_representation::add_cell(World_node cell, bool gate)
  */
 World_representation::World_representation(list_of_polygons *cells,
 										   list_of_polygons *gate_cells,
-										   logger *log)
+										   logger *log, string* connections)
 {
 	l = log;
-	l->add_event("Created world representation");
+	l->add_event("Creating world representation");
 
+	l->add_event("Adding free space cells to world representation");
 	polygon *pol_pointer = cells->head;
 	int cells_counter = 0;
 	while (pol_pointer != NULL)
@@ -97,8 +99,7 @@ World_representation::World_representation(list_of_polygons *cells,
 		cells_counter += 1;
 	};
 
-	l->add_event("Added free space cells to world representation");
-
+	l->add_event("Adding gates cells to world representation");
 	cells_counter = 0;
 	pol_pointer = gate_cells->head;
 	while (pol_pointer != NULL)
@@ -110,11 +111,17 @@ World_representation::World_representation(list_of_polygons *cells,
 		cells_counter += 1;
 	};
 
-	l->add_event("Added gates cells to world representation");
+	pddl_connections = connections;
 
-	l->add_event("End world representation creation");
+	l->add_event("Ended world representation creation");
 };
 
+/**
+ * \fun
+ * This method is used to parse a plan and transform it into two vectors
+ * representing the x and y coordinates of the cells contained in the plan.
+ * @param plan: vector<string>. It is the plan to parse.
+ */
 tuple<vector<double>, vector<double>> World_representation::get_path(vector<string> plan)
 {
 
@@ -159,12 +166,58 @@ tuple<vector<double>, vector<double>> World_representation::get_path(vector<stri
 	return make_tuple(x_path, y_path);
 }
 
+void World_representation::set_connections(string connections){
+	pddl_connections = new string(connections);
+};
+
+/**
+ * \fun
+ * This method is used to return a pddl representation of the connections
+ * among the free space cells.
+ * @return string: the pddl string representing the connections;
+ */
+string World_representation::find_pddl_connections(){
+	l -> add_event("World_representation: Finding cells connections.");
+	if (pddl_connections != NULL){
+		l -> add_event("World_representation: "
+					   "Cells connections already in memory -> returning.");
+		return *pddl_connections;
+	}else{
+		string *connections = new string("");
+		
+		map<string, World_node>::iterator it_1;
+		map<string, World_node>::iterator it_2;
+		
+		for(it_1 = world_free_cells.begin(); it_1 != world_free_cells.end();
+			++it_1)
+		{
+			Polygon_boost p1 = it_1->second.cell->to_boost_polygon();
+			for (it_2 = world_free_cells.begin();
+				 it_2 != world_free_cells.end();
+				 ++it_2)
+			{
+				if (it_1 != it_2)
+				{
+					Polygon_boost p2 = it_2->second.cell->to_boost_polygon();
+					if (bg::touches(p1, p2))
+					{
+						*connections += "\t\t( connected " + it_1->first + " " +
+									   it_2->first + " )\n";
+					};
+				};
+			};
+		};
+		pddl_connections = connections;
+		return *connections;
+	};
+};
+
 /**
  * \func
  * This function is used to generate a pddl problem file from the abstract
  * world representation.
  * The .pddl file is overwritten every time.
- * @param path_pddl_problem_file: string. It is the path in which the problem
+ 7* @param path_pddl_problem_file: string. It is the path in which the problem
  * @param domain_name: string. It is the default name of the domain to use.
  * file will be saved. Default is the current path with name problem.pddl .
  * @param symmetrical: bool. Tells whether or not to suppose that two cells
