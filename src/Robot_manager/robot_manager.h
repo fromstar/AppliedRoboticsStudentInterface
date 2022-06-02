@@ -3,16 +3,20 @@
 
 #include "robots.h"
 #include <string>
+#include <math.h>
 
 /**
  * \struct
  * This struct is made to represent a supervisor class of all the agents
  * inside the environment.
- * Attributes available are.
+ * Attributes available are:
  * @param fugitives: map<string, robot_fugitive\*>. It is the map containing
  * all the agents having the role of fugitives.
  * @param catchers: map<string, robot_catcher\*>. It is the map containing
  * all the agents having the role of catchers.
+ * @param rm_logger: logger\*. It is the logger instance used to record events.
+ * @param trading_done: bool. It is a flag telling whether or not the
+ * association of the antagonists have been done.
  *
  * Available methods are:
  * @see parse_map_robots(map<string, Robot\*> map_r, string f_path). This
@@ -28,6 +32,7 @@ typedef struct robot_manager{
 	map<string, robot_fugitive*> fugitives;
 	map<string, robot_catcher*> catchers;
 	logger* rm_logger = NULL;
+	bool trading_done = false;
 
 	robot_manager(logger* l=new logger);
 	void parse_map_robots(map<string, Robot*> map_r, string f_path=".tmp");

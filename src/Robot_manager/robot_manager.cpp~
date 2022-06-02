@@ -100,46 +100,6 @@ void robot_manager::trade_fugitives(){
 		 * So, it is reasonable to employ the euclidean distance as a
 		 * raw heuristic in chosing how to assign the antagonists.
 		 */
-		 int num_antagonists_c = int(fugitives.size()/catchers.size());
-		 int num_antagonists_f = int(catchers.size()/fugitives.size());
-		 
-		 map<double, Robot*> distance;
-		 map<double, Robot*>::iterator it_low;
-
-		 // Assign antagonists to catchers
-		 map<string, robot_catcher*>::iterator it_c;
-		 map<string, robot_fugitive*>::iterator it_f;
-
-		 for(it_c = catchers.begin(); it_c != catchers.end(); ++it_c)
-		 {
-		 	for(it_f = fugitives.begin(); it_f != fugitives.end(); ++it_f)
-			{
-				double x_diff = it_f->second->self->location->x - 
-							 	it_c->second->self->location->x;
-				double y_diff = it_f->second->self->location->y -
-								it_c->second->self->location->y;
-				double dis = sqrt((pow(x_diff, 2) + pow(y_diff, 2)));
-				distance[dis] = it_f->second->self;
-			};
-			int i=0;
-			do{
-				it_low = distance.lower_bound(0); // Retrieve nearest
-
-				// Add nearest as antagonist of the catcher
-				it_c->second->add_antagonist(it_low->second);
-
-				// Add the catcher as mutual antagonist of the fugitive
-				it_f = fugitives.find(it_low->second->ID);
-				it_f -> second -> add_antagonist(it_c->second->self);
-
-				// Remove nearest from the map
-				distance.erase(it_low);
-				
-				i++;
-			}while(i < num_antagonists_c);
-		 };
-
-
 	};
 	// end options
 	
