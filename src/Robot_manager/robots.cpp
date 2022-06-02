@@ -934,6 +934,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 				   "\t\t(is_in ?r - robot ?loc - location)\n"
 				   "\t\t(connected ?loc_start - location ?loc_end - location)\n"
 				   "\t\t(captured ?r - fugitive)\n"
+				   "\t\t(escaped ?r - fugitive)\n" // new
 				   "\t)\n";
 	
 	// write actions
@@ -941,22 +942,28 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	pddl_domain += "\t(:action move\n"
 				   "\t\t:parameters\n"
 				   "\t\t\t(\n"
-				   "\t\t\t?r_c - catcher\n"
-				   "\t\t\t?loc_start - location\n"
-				   "\t\t\t?loc_end - location\n";
+				   "\t\t\t\t?r_c - catcher\n"
+				   "\t\t\t\t?loc_start - location\n"
+				   "\t\t\t\t?loc_end - location\n";
 	
 	to_log("Started searching subset of cells in plan");
+	vector<string> antagonists_pddl;
 	for (int i = 0; i < antagonists.size(); i++)
 	{
 		vector<string> tmp_s = string_to_vector(antagonists[i]->ID, "_");
-		pddl_domain += "\t\t\t?r_f_" + tmp_s[tmp_s.size() - 1] + " - " +
-					   antagonists[i]->ID + "\n";
+		antagonists_pddl.push_back("?r_f_" + tmp_s[tmp_s.size() - 1]);
+		pddl_domain += "\t\t\t\t" + 
+					   antagonists_pddl[antagonists_pddl.size()-1]
+					   + " - "
+					   + antagonists[i]->ID
+					   + "\n";
 	};
 
-	for (set<string>::iterator it_s = cells.begin(); it_s != cells.end(); ++it_s)
+	for (set<string>::iterator it_s = cells.begin(); it_s != cells.end();
+		 ++it_s)
 	{
 		vector<string> tmp_s = string_to_vector(*it_s, "_");
-		pddl_domain += "\t\t\t?c_" + tmp_s[tmp_s.size() - 1] +
+		pddl_domain += "\t\t\t\t?c_" + tmp_s[tmp_s.size() - 1] +
 					   " - " + *it_s + "\n";
 	};
 	pddl_domain += "\t\t\t)\n";
@@ -968,8 +975,22 @@ void robot_catcher::make_pddl_files(World_representation wr,
 				   "\t\t\t\t(or\n"
 				   "\t\t\t\t\t( connected ?loc_start ?loc_end )\n"
 				   "\t\t\t\t\t( connected ?loc_end ?loc_start )\n"
-				   "\t\t\t\t)\n"
-				   "\t\t\t)\n";
+				   "\t\t\t\t)\n";
+	// new
+	if (antagonists_pddl.size() == 1){
+		pddl_domain += "\t\t\t\t(not ( escaped " + antagonists_pddl[0] +
+					   ") )\n";
+	}else{
+		pddl_domain += "\t\t\t\t( or\n";
+		for(int i=0; i < antagonists_pddl.size(); i++){
+			pddl_domain += "\t\t\t\t\t(not ( escaped " + antagonists_pddl[i] +
+					   	   ") )\n";
+		};
+		pddl_domain += "\t\t\t\t)\n";
+	};
+	// end new
+
+	pddl_domain += "\t\t\t)\n";
 
 	// write effects
 	pddl_domain += "\t\t:effect\n"
@@ -980,7 +1001,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	to_log("Parsing antagonists plans");
 	for (it = antagonists_plans.begin(); it != antagonists_plans.end(); ++it)
 	{
-		pddl_domain += "\t\t\t\t; Plan for fugitive: " + it->first;
+		pddl_domain += "\n\t\t\t\t; Plan for fugitive: " + it->first;
 		// make a condition for each step of the plan
 		vector<string> tmp_s = string_to_vector(it->first, "_");
 		// Must catch it before it goes to the gate, i.e -> n-1 plan steps
@@ -1005,7 +1026,19 @@ void robot_catcher::make_pddl_files(World_representation wr,
 						   tmp_s[tmp_s.size() - 1] + " ?c_" +
 						   cell_s[cell_s.size() - 1] + " ) )"
 						   "\n\t\t\t\t\t)\n"
-						   "\t\t\t\t)\n";
+						   "\t\t\t\t)";
+
+			// new -> tells when fugitive has escaped
+			if (i == it->second.size()-2){
+				pddl_domain += "\n\t\t\t\t(when\n"
+							   "\t\t\t\t\t(is_in ?r_f_" +
+							   tmp_s[tmp_s.size() - 1] +
+							   " ?c_" + cell_s[cell_s.size() - 1] + " )\n"
+							   "\t\t\t\t\t(escaped " + tmp_s[tmp_s.size()-1] + 
+							   ")\n"
+							   "\t\t\t\t)";
+			};
+			// end new
 		};
 	};
 

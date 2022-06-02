@@ -191,6 +191,7 @@ string World_representation::find_pddl_connections(){
 		for(it_1 = world_free_cells.begin(); it_1 != world_free_cells.end();
 			++it_1)
 		{
+			
 			Polygon_boost p1 = it_1->second.cell->to_boost_polygon();
 			for (it_2 = world_free_cells.begin();
 				 it_2 != world_free_cells.end();
@@ -198,11 +199,12 @@ string World_representation::find_pddl_connections(){
 			{
 				if (it_1 != it_2)
 				{
+		
 					Polygon_boost p2 = it_2->second.cell->to_boost_polygon();
 					if (bg::touches(p1, p2))
 					{
 						*connections += "\t\t( connected " + it_1->first + " " +
-									   it_2->first + " )\n";
+						 			    it_2->first + " )\n";
 					};
 				};
 			};
