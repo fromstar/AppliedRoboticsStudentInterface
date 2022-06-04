@@ -53,8 +53,12 @@ tuple<int, curve> dubins(double x0, double y0, double th0, double xf, double yf,
 	{
 		ok = true;
 		tie(s1, s2, s3) = scaleFromStandard(lambda, sc_s1, sc_s2, sc_s3);
-		c = dubinscurve(x0, y0, th0, s1, s2, s3, ksigns[pidx][0] * Kmax, ksigns[pidx][1] * Kmax, ksigns[pidx][2] * Kmax);
-		assert(check(sc_s1, ksigns[pidx][0] * sc_Kmax, sc_s2, ksigns[pidx][1] * sc_Kmax, sc_s3, ksigns[pidx][2] * sc_Kmax, sc_th0, sc_thf));
+		c = dubinscurve(x0, y0, th0, s1, s2, s3,
+						ksigns[pidx][0] * Kmax, ksigns[pidx][1] * Kmax,
+						ksigns[pidx][2] * Kmax);
+		assert(check(sc_s1, ksigns[pidx][0] * sc_Kmax, sc_s2,
+					 ksigns[pidx][1] * sc_Kmax, sc_s3,
+					 ksigns[pidx][2] * sc_Kmax, sc_th0, sc_thf));
 	}
 	return make_tuple(pidx, c);
 }
@@ -461,7 +465,8 @@ vector<double> opti_theta(vector<double> xpath, vector<double> ypath)
 	vector<double> thpath;
 	for (int i = 0; i < xpath.size() - 1; i++)
 	{
-		thpath.push_back(get_angle(xpath[i], ypath[i], xpath[i + 1], ypath[i + 1]));
+		thpath.push_back(get_angle(xpath[i], ypath[i],
+								   xpath[i + 1], ypath[i + 1]));
 	}
 	thpath.push_back(thpath[thpath.size() - 1]);
 
@@ -514,116 +519,265 @@ tuple<double, double, double> get_circle_center(double x1, double y1, double x2,
 	return make_tuple(h, k, r);
 }
 
-curve dubins_no_inter(double x0, double y0, double th0, double xf, double yf, double *thf, double Kmax, points_map arena)
+double_list *theta_discretization(double starting_angle, double res_steps,
+								  double search_angle)
 {
 
-	int pidx = 0;
-	int i=0;
-	double th = 0;
-	double k = 0;
-	bool intersection_arena[3] = {true, true, true};
-	bool intersection_polygons[3] = {true, true, true};
+	double_list *plausible_theta = new double_list();
+	plausible_theta->add_node(new double_node(starting_angle));
 
-	polygon *it;
-	Edge *edges = NULL;
-	point_node *pnt;
-	curve c;
+	double interval = search_angle;
+	double initial_theta = starting_angle - (interval / 2);
+	double step = interval / res_steps;
 
-	/*
-		I continue to calculate the dubins curve until I find one without intersections.
-	*/
-	while (intersection_arena[0] || intersection_arena[1] || intersection_arena[2] || intersection_polygons[0] ||
-		   intersection_polygons[1] || intersection_polygons[2])
+	for (int i = 0; i < res_steps; i++)
 	{
-		tie(pidx, c) = dubins(x0, y0, th0, xf, yf, *thf, Kmax);
+		double_node *tmp = new double_node(initial_theta + (i * step));
+		plausible_theta->add_node(tmp);
+	};
+	return plausible_theta;
+};
 
-		// Curve exist
+curve dubins_no_inter(double x0, double y0, double th0,
+					  double xf, double yf, double *thf,
+					  double Kmax, points_map arena,
+					  double res_steps, double search_angle)
+{
+	curve c, c_min;
+	int pidx, sum_pidx = 0;
+	bool has_c_min = false;
+	bool intersection = false;
+	double_list *angles = theta_discretization(*thf, res_steps, search_angle);
+
+	double_node *observed_angle = angles->head;
+
+	while (observed_angle != NULL)
+	{
+		tie(pidx, c) = dubins(x0, y0, th0, xf, yf, observed_angle->value, Kmax);
+		intersection = false;
 		if (pidx > 0)
 		{
-			// Check intersection curve with arena
-			// Arena points
-			pnt = arena.shrinked_arena->head;
-			do
+			bool inter_a1, inter_a2, inter_a3;
+
+			point_node *pt_arena_1 = arena.shrinked_arena->head;
+			while (pt_arena_1 != NULL && intersection == false)
 			{
-
-				intersection_arena[0] = true;
-				intersection_arena[1] = true;
-				intersection_arena[2] = true;
-
-				point_node *pnt_next;
-
-				if (pnt->pnext != NULL)
+				point_node *pt_arena_2;
+				if (pt_arena_1->pnext == NULL)
 				{
-					pnt_next = pnt->pnext;
+					pt_arena_2 = arena.shrinked_arena->head;
 				}
 				else
 				{
-					pnt_next = arena.shrinked_arena->head;
+					pt_arena_2 = pt_arena_1->pnext;
 				}
 
-				intersection_arena[0] = find_intersection(c.a1, pnt, pnt_next);
-				intersection_arena[1] = find_intersection(c.a2, pnt, pnt_next);
-				intersection_arena[2] = find_intersection(c.a3, pnt, pnt_next);
+				inter_a1 = find_intersection(c.a1, pt_arena_1, pt_arena_2);
+				inter_a2 = find_intersection(c.a2, pt_arena_1, pt_arena_2);
+				inter_a3 = find_intersection(c.a3, pt_arena_1, pt_arena_2);
 
-				pnt = pnt->pnext;
-			} while (pnt != NULL && (!intersection_arena[0] &&
-									 !intersection_arena[1] &&
-									 !intersection_arena[2]));
-
-			// Check intersection curve with polygons
-			it = arena.obstacles->offset_head;
-			int pol_num = 1;
-			do
-			{
-				edges = it->edgify()->head;
-				int edg_num = 1;
-				do
+				if (inter_a1 || inter_a2 || inter_a3)
 				{
-					intersection_polygons[0] = true;
-					intersection_polygons[1] = true;
-					intersection_polygons[2] = true;
+					intersection = true;
+				}
 
-					point_node *p0 = edges->points->head->copy();
-					point_node *p1 = edges->points->tail->copy();
+				pt_arena_1 = pt_arena_1->pnext;
+			}
 
-					intersection_polygons[0] = find_intersection(c.a1, p0, p1);
-					intersection_polygons[1] = find_intersection(c.a2, p0, p1);
-					intersection_polygons[2] = find_intersection(c.a3, p0, p1);
+			polygon *obs = arena.obstacles->offset_head;
+			while (obs != NULL && intersection == false)
+			{
+				point_node *pt_ob_1 = obs->pl->head;
+				while (pt_ob_1 != NULL && intersection == false)
+				{
+					point_node *pt_ob_2;
+					if (pt_ob_1->pnext == NULL)
+					{
+						pt_ob_2 = obs->pl->head;
+					}
+					else
+					{
+						pt_ob_2 = pt_ob_1->pnext;
+					}
 
-					edg_num++;
-					edges = edges->next;
-				} while (edges != NULL && (!intersection_polygons[0] &&
-										   !intersection_polygons[1] &&
-										   !intersection_polygons[2]));
-				it = it->pnext;
-				pol_num += 1;
-			} while (it != NULL && (!intersection_polygons[0] &&
-									!intersection_polygons[1] &&
-									!intersection_polygons[2]));
+					inter_a1 = find_intersection(c.a1, pt_ob_1, pt_ob_2);
+					inter_a2 = find_intersection(c.a2, pt_ob_1, pt_ob_2);
+					inter_a3 = find_intersection(c.a3, pt_ob_1, pt_ob_2);
+
+					if (inter_a1 || inter_a2 || inter_a3)
+					{
+						intersection = true;
+					}
+					pt_ob_1 = pt_ob_1->pnext;
+				}
+				obs = obs->pnext;
+			}
+
+			if (intersection == false)
+			{
+				if (has_c_min == false)
+				{
+					c_min = c;
+					has_c_min = true;
+					*thf = observed_angle->value;
+				}
+				else if (c.L < c_min.L)
+				{
+					c_min = c;
+					*thf = observed_angle->value;
+				}
+			}
 		}
-
-		// If an intersection is found I need to try to modify the arriving theta and the max curvature of the arc.
-		// Is important modify the theta value contained in the vector in the student interface in order to not
-		// have a different arrival angle from the departure angle for the next curve.
-		if (intersection_arena[0] || intersection_arena[1] || intersection_arena[2] || intersection_polygons[0] ||
-			intersection_polygons[1] || intersection_polygons[2])
-		{	
-			// Alternating increase thf and Kmax 
-			if( i % 2 == 0)
-				*thf += 0.0001;
-			else
-				Kmax += 1;
-			i++;
-		}
+		observed_angle = observed_angle->pnext;
 	}
+	return c_min;
 
-	return c;
+	// int pidx = 0;
+	// int i = 0;
+	// double th = 0;
+	// double k = 0;
+	// bool intersection_arena[3] = {true, true, true};
+	// // bool intersection_polygons[3] = {true, true, true};
+	// // bool intersection_arena[3] = {false, false, false};
+	// bool intersection_polygons[3] = {false, false, false};
+
+	// bool no_curves = true;
+
+	// polygon *it = NULL;
+	// Edge *edges = NULL;
+	// point_node *pnt;
+	// curve c;
+	// curve c_min;
+
+	// /*
+	// 	I continue to calculate the dubins curve until
+	// 	I find one without intersections.
+	// */
+	// // Tetha interval discretization -> pi half used. -> 45 degrees
+	// // double res_steps = 180;
+	// // double search_angle = M_PI/2;
+	// /*
+	// double_list *plausible_theta = new double_list();
+	// plausible_theta->add_node(new double_node(*thf));
+	// double interval = M_PI*2; // pi half
+	// double initial_theta = *thf-(interval/2);
+	// double step = interval/res_steps;
+	// for (int i=0; i < res_steps; i++){
+	// 	double_node *tmp = new double_node(initial_theta+(i*step));
+	// 	plausible_theta->add_node(tmp);
+	// };*/
+	// double_list *plausible_theta = theta_discretization(*thf, search_angle,
+	// 													res_steps);
+
+	// double_node *observed_th = plausible_theta->head;
+	// double pidx_sum = 0;
+
+	// while (observed_th != NULL)
+	// {
+	// 	tie(pidx, c) = dubins(x0, y0, th0, xf, yf, observed_th->value, Kmax);
+
+	// 	if (pidx > 0)
+	// 	{
+	// 		pnt = arena.shrinked_arena->head;
+	// 		do
+	// 		{
+
+	// 			intersection_arena[0] = true;
+	// 			intersection_arena[1] = true;
+	// 			intersection_arena[2] = true;
+
+	// 			point_node *pnt_next;
+
+	// 			if (pnt->pnext != NULL)
+	// 			{
+	// 				pnt_next = pnt->pnext;
+	// 			}
+	// 			else
+	// 			{
+	// 				pnt_next = arena.shrinked_arena->head;
+	// 			}
+
+	// 			intersection_arena[0] = find_intersection(c.a1, pnt, pnt_next);
+	// 			intersection_arena[1] = find_intersection(c.a2, pnt, pnt_next);
+	// 			intersection_arena[2] = find_intersection(c.a3, pnt, pnt_next);
+
+	// 			pnt = pnt->pnext;
+	// 		} while (pnt != NULL && (!intersection_arena[0] &&
+	// 								 !intersection_arena[1] &&
+	// 								 !intersection_arena[2]));
+	// 		/*
+	// 		// Check intersection curve with polygons
+	// 		it = arena.obstacles->offset_head;
+	// 		int pol_num = 1;
+	// 		do
+	// 		{
+	// 			edges = it->edgify()->head;
+	// 			int edg_num = 1;
+	// 			do
+	// 			{
+	// 				intersection_polygons[0] = true;
+	// 				intersection_polygons[1] = true;
+	// 				intersection_polygons[2] = true;
+
+	// 				point_node *p0 = edges->points->head->copy();
+	// 				point_node *p1 = edges->points->tail->copy();
+
+	// 				intersection_polygons[0] = find_intersection(c.a1, p0, p1);
+	// 				intersection_polygons[1] = find_intersection(c.a2, p0, p1);
+	// 				intersection_polygons[2] = find_intersection(c.a3, p0, p1);
+
+	// 				edg_num++;
+	// 				edges = edges->next;
+	// 			} while (edges != NULL && (!intersection_polygons[0] &&
+	// 									   !intersection_polygons[1] &&
+	// 									   !intersection_polygons[2]));
+	// 			it = it->pnext;
+	// 			pol_num += 1;
+	// 		} while (it != NULL && (!intersection_polygons[0] &&
+	// 								!intersection_polygons[1] &&
+	// 								!intersection_polygons[2]));
+	// 		*/
+	// 		// if (!intersection_polygons[0] && !intersection_polygons[1] &&
+	// 		//  !intersection_polygons[2] && !intersection_arena[0] &&
+	// 		//	!intersection_arena[1] && !intersection_arena[2])
+	// 		if (!intersection_arena[0] && !intersection_arena[1] &&
+	// 			!intersection_arena[2])
+	// 		{
+	// 			if (no_curves)
+	// 			{
+	// 				no_curves = false;
+	// 				c_min = c;
+	// 			}
+	// 			else if (c.L < c_min.L)
+	// 			{
+	// 				c_min = c;
+	// 			}
+	// 			*thf = observed_th->value;
+	// 		}
+	// 		else
+	// 		{
+	// 			pidx = 0;
+	// 		}
+	// 	}
+	// 	pidx_sum += pidx;
+	// 	observed_th = observed_th->pnext; // Go to next angle
+	// 	if (pidx_sum <= 0 && observed_th == NULL)
+	// 	{
+	// 		*thf = (*thf + M_PI);
+	// 		double new_search_interval = (2 * M_PI) - search_angle;
+
+	// 		c_min = dubins_no_inter(x0, y0, th0, xf, yf, thf,
+	// 								Kmax, arena, new_search_interval, res_steps);
+	// 	}
+	// }
+
+	// return c_min;
 }
 
 bool find_intersection(arc a, point_node *pnt, point_node *pnt_next)
 {
 	/*
-		Given an arc and a line we search an intersection 
+		Given an arc and a line we search an intersection
 		using the function intersCricleLine
 	*/
 	point_list *pts = NULL;
@@ -734,3 +888,17 @@ Path push_path(curve c, Path p)
 
 	return p;
 }
+
+double f_func(double arc_length, double k, double theta)
+{
+	double arg_sinc = (k * arc_length) / 2;
+	double arg_cos = theta + arg_sinc;
+	return arc_length * sinc(arg_sinc) * cos(arg_cos);
+};
+
+double g_func(double arc_length, double k, double theta)
+{
+	double arg_sinc = (k * arc_length) / 2;
+	double arg_sin = theta + arg_sinc;
+	return arc_length * sinc(arg_sinc) * sin(arg_sin);
+};

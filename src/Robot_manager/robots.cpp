@@ -1212,7 +1212,7 @@ vector<string> robot_catcher::make_plan(bool apply, string domain_name,
 										string plan_name)
 {
 	// to_log(self->ID + ": Started running planner");
-	run_planner("/home/" + string(getenv("USER")) + "/FF-v2.3/",
+	run_planner("/home/" + string(getenv("USER")) + "/Metric-FF/",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + domain_name + ".pddl",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + problem_name + ".pddl",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + plan_name + ".plan");

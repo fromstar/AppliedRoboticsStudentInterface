@@ -49,11 +49,16 @@ double cross2D(double *, double *);
 double dot2D(double *, double *);
 tuple <point_list *, double_list *> intersCircleLine(double, double, double, double, double, double, double);
 tuple <double, double, double> get_circle_center(double, double, double, double, double, double);
-curve dubins_no_inter(double, double, double, double, double, double*, double, points_map);
+curve dubins_no_inter(double, double, double, double, double, double*, double,
+					  points_map, double, double);
 bool pt_in_arc(point_node *, arc);
 bool find_intersection(arc, point_node*, point_node*);
 vector<double> opti_theta(vector<double> xpath, vector<double> ypath);
 Pose get_pose(arc);
 Path push_path(curve, Path);
 
+// Start new
+double f_func(double arc_length, double k, double theta);
+double g_func(double arc_length, double k, double theta);
+// End new
 #endif

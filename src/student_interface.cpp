@@ -9,8 +9,10 @@
 #include <thread>
 #include <time.h>
 
-void thread_fugitive_plan(map<string, robot_fugitive *>::iterator, World_representation);
-void thread_catcher_plan(map<string, robot_catcher *>::iterator, World_representation, behaviour_fugitive, bool);
+void thread_fugitive_plan(map<string, robot_fugitive *>::iterator,
+                          World_representation);
+void thread_catcher_plan(map<string, robot_catcher *>::iterator,
+                         World_representation, behaviour_fugitive, bool);
 
 /*
 PLANNER https://fai.cs.uni-saarland.de/hoffmann/ff/FF-v2.3.tgz
@@ -68,12 +70,15 @@ namespace student
     throw std::logic_error("STUDENT FUNCTION - FIND ROBOT - NOT IMPLEMENTED");
   }
 
-  bool planPath(const Polygon &borders, const std::vector<Polygon> &obstacle_list, const std::vector<Polygon> &gate_list, const std::vector<float> x, const std::vector<float> y, const std::vector<float> theta, std::vector<Path> &path, const std::string &config_folder)
+  bool planPath(const Polygon &borders, const std::vector<Polygon> &obstacle_list,
+                const std::vector<Polygon> &gate_list, const std::vector<float> x,
+                const std::vector<float> y, const std::vector<float> theta,
+                std::vector<Path> &path, const std::string &config_folder)
   {
     // throw std::logic_error( "STUDENT FUNCTION - PLAN PATH - NOT IMPLEMENTED" );
 
     bool push_first = false;
-	clock_t starting_clock = clock();
+    clock_t starting_clock = clock();
 
     logger *log_test = new logger("test_log.txt");
     log_test->add_event("Code started");
@@ -112,13 +117,13 @@ namespace student
 
     arena.merge_obstacles();
 
-    arena.make_free_space_cells_squares(4);
+    arena.make_free_space_cells_squares(3);
     // arena.make_free_space_cells_triangular();
 
     log_test->add_event("Created Roadmap");
 
     Robot *c_1 = new Robot("Catcher_1", catcher, log_test);
-   	arena.add_robot(c_1);
+    arena.add_robot(c_1);
 
     Robot *f_1 = new Robot("Fugitive_1", fugitive, log_test);
     arena.add_robot(f_1);
@@ -131,7 +136,7 @@ namespace student
         arena.free_space,
         arena.gates,
         log_test);
-	abstract_arena.find_pddl_connections();
+    abstract_arena.find_pddl_connections();
 
     robot_manager rm(log_test);
 
@@ -161,15 +166,15 @@ namespace student
     thread f_thr(thread_fugitive_plan, f_it, abstract_arena);
     sleep(1);
     thread c_thr(thread_catcher_plan, c_it, abstract_arena,
-				 f_it->second->behaviour, true);
+                 f_it->second->behaviour, true);
 
     // thread_fugitive_plan(f_it, abstract_arena);
     // thread_catcher_plan(c_it, abstract_arena, f_it->second->behaviour, true);
     f_thr.join();
     c_thr.join();
-	
-	// Show plans of the robots
-	rm.info(true);
+
+    // Show plans of the robots
+    rm.info(true);
 
     /* Fugitive  path vectors */
     vector<double> fx_path;
@@ -177,6 +182,7 @@ namespace student
     vector<double> fth_path; // The angles are in radiants!
 
     clock_t tStart = clock();
+
     /* Get the cells centroids of the fugitive path */
     tie(fx_path, fy_path) = abstract_arena.get_path(f_it->second->self->plan);
 
@@ -184,9 +190,17 @@ namespace student
     fth_path = opti_theta(fx_path, fy_path);
 
     curve c;
+    double kmax = 37;
+    double res_steps = 180;
+    double search_angle = M_PI * 2;
 
-    /* Calculate dubin's curves without intersection for the first action(from robot location to the firs cell) */
-    c = dubins_no_inter(f_it->second->self->location->x, f_it->second->self->location->y, f_1->theta, fx_path[0], fy_path[0], &fth_path[0], 0, arena);
+    /* Calculate dubin's curves without intersection for the first action
+     * (from robot location to the firs cell)
+     */
+    c = dubins_no_inter(f_it->second->self->location->x,
+                        f_it->second->self->location->y, f_1->theta,
+                        fx_path[0], fy_path[0], &fth_path[0], kmax, arena,
+                        res_steps, search_angle);
 
     /* Push to the simulator path the first action */
     path[0] = push_path(c, path[0]);
@@ -197,11 +211,14 @@ namespace student
     /* Calculate fugitive's dubin curves without intersection */
     for (int i = 0; i < fx_path.size() - 1; i++)
     {
-      c = dubins_no_inter(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1], fy_path[i + 1], &fth_path[i + 1], 0, arena);
+      c = dubins_no_inter(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1],
+                          fy_path[i + 1], &fth_path[i + 1], kmax, arena,
+                          res_steps, search_angle);
 
-      /* 
-        Push only the first action move to the simulator. In this way I have to run the simulation multiple times
-         and make a plan every time.
+      /*
+        Push only the first action move to the simulator.
+    In this way I have to run the simulation multiple times
+        and make a plan every time.
        */
       if (push_first)
       {
@@ -225,13 +242,19 @@ namespace student
 
     cth_path = opti_theta(cx_path, cy_path);
 
-    c = dubins_no_inter(c_it->second->self->location->x, c_it->second->self->location->y, c_1->theta, cx_path[0], cy_path[0], &cth_path[0], 0, arena);
+    c = dubins_no_inter(c_it->second->self->location->x,
+                        c_it->second->self->location->y, c_1->theta,
+                        cx_path[0], cy_path[0], &cth_path[0], kmax, arena,
+                        res_steps, search_angle);
+
     path[1] = push_path(c, path[1]);
     img_arena = plotdubins(c, "b", "b", "b", img_arena);
 
     for (int i = 0; i < cx_path.size() - 1; i++)
     {
-      c = dubins_no_inter(cx_path[i], cy_path[i], cth_path[i], cx_path[i + 1], cy_path[i + 1], &cth_path[i + 1], 0, arena);
+      c = dubins_no_inter(cx_path[i], cy_path[i], cth_path[i], cx_path[i + 1],
+                          cy_path[i + 1], &cth_path[i + 1], kmax, arena,
+                          res_steps, search_angle);
 
       if (push_first)
       {
@@ -243,13 +266,14 @@ namespace student
 
       img_arena = plotdubins(c, "b", "b", "b", img_arena);
     }
-	
-	float elapsed_time = (float(clock() - starting_clock))/CLOCKS_PER_SEC;
-	log_test->add_event("Code ended in " + to_string(elapsed_time) + "s\n");
+
+    float elapsed_time = (float(clock() - starting_clock)) / CLOCKS_PER_SEC;
+    log_test->add_event("Code ended in " + to_string(elapsed_time) + "s\n");
 
     if (!push_first)
     {
       imshow("Arena", img_arena);
+      imwrite("Arena.png", img_arena);
       waitKey(0);
     }
 
@@ -258,7 +282,7 @@ namespace student
 }
 
 void thread_fugitive_plan(map<string, robot_fugitive *>::iterator f_it,
-						  World_representation wr)
+                          World_representation wr)
 {
   f_it->second->set_behaviour(aware);
   f_it->second->make_pddl_domain_file();
@@ -266,8 +290,8 @@ void thread_fugitive_plan(map<string, robot_fugitive *>::iterator f_it,
 }
 
 void thread_catcher_plan(map<string, robot_catcher *>::iterator c_it,
-						 World_representation wr,
-						 behaviour_fugitive type, bool a)
+                         World_representation wr,
+                         behaviour_fugitive type, bool a)
 {
   c_it->second->make_pddl_files(wr, type, a);
 }
