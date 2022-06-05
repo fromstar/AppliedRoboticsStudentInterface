@@ -117,7 +117,7 @@ namespace student
 
     arena.merge_obstacles();
 
-    arena.make_free_space_cells_squares(3);
+    arena.make_free_space_cells_squares();
     // arena.make_free_space_cells_triangular();
 
     log_test->add_event("Created Roadmap");
@@ -188,36 +188,27 @@ namespace student
 
     /*Get the starting angle for moving from a cell to another one */
     fth_path = opti_theta(fx_path, fy_path);
+    
+    fx_path[0] = f_it->second->self->location->x;
+    fy_path[0] = f_it->second->self->location->y;
+    fth_path[0] = f_1->theta; 
 
     curve c;
-    double kmax = 37;
-    double res_steps = 180;
+    // // double kmax = 36;
+    double kmax = 39;
+    // double kmax = 41;
     double search_angle = M_PI * 2;
-
-    /* Calculate dubin's curves without intersection for the first action
-     * (from robot location to the firs cell)
-     */
-    c = dubins_no_inter(f_it->second->self->location->x,
-                        f_it->second->self->location->y, f_1->theta,
-                        fx_path[0], fy_path[0], &fth_path[0], kmax, arena,
-                        res_steps, search_angle);
-
-    /* Push to the simulator path the first action */
-    path[0] = push_path(c, path[0]);
-
-    /* Plot the dubins curve to the arena's img */
-    img_arena = plotdubins(c, "r", "r", "r", img_arena);
 
     /* Calculate fugitive's dubin curves without intersection */
     for (int i = 0; i < fx_path.size() - 1; i++)
     {
       c = dubins_no_inter(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1],
                           fy_path[i + 1], &fth_path[i + 1], kmax, arena,
-                          res_steps, search_angle);
+                          search_angle);
 
       /*
         Push only the first action move to the simulator.
-    In this way I have to run the simulation multiple times
+        In this way I have to run the simulation multiple times
         and make a plan every time.
        */
       if (push_first)
@@ -242,19 +233,15 @@ namespace student
 
     cth_path = opti_theta(cx_path, cy_path);
 
-    c = dubins_no_inter(c_it->second->self->location->x,
-                        c_it->second->self->location->y, c_1->theta,
-                        cx_path[0], cy_path[0], &cth_path[0], kmax, arena,
-                        res_steps, search_angle);
-
-    path[1] = push_path(c, path[1]);
-    img_arena = plotdubins(c, "b", "b", "b", img_arena);
+    cx_path[0] = c_it->second->self->location->x;
+    cy_path[0] = c_it->second->self->location->y;
+    cth_path[0] = c_1->theta; 
 
     for (int i = 0; i < cx_path.size() - 1; i++)
     {
       c = dubins_no_inter(cx_path[i], cy_path[i], cth_path[i], cx_path[i + 1],
                           cy_path[i + 1], &cth_path[i + 1], kmax, arena,
-                          res_steps, search_angle);
+                          search_angle);
 
       if (push_first)
       {

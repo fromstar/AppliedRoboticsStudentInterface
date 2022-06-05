@@ -519,20 +519,19 @@ tuple<double, double, double> get_circle_center(double x1, double y1, double x2,
 	return make_tuple(h, k, r);
 }
 
-double_list *theta_discretization(double starting_angle, double res_steps,
-								  double search_angle)
+double_list *theta_discretization(double starting_angle, double search_angle)
 {
 
 	double_list *plausible_theta = new double_list();
 	plausible_theta->add_node(new double_node(starting_angle));
+	double res_steps = 0.0174533;  // 1 degree converted in radiants
 
-	double interval = search_angle;
-	double initial_theta = starting_angle - (interval / 2);
-	double step = interval / res_steps;
+	double initial_theta = starting_angle - (search_angle / 2);
+	double step = search_angle / res_steps;
 
-	for (int i = 0; i < res_steps; i++)
+	for (int i = 0; i < step; i++)
 	{
-		double_node *tmp = new double_node(initial_theta + (i * step));
+		double_node *tmp = new double_node(initial_theta + (i * res_steps));
 		plausible_theta->add_node(tmp);
 	};
 	return plausible_theta;
@@ -541,17 +540,21 @@ double_list *theta_discretization(double starting_angle, double res_steps,
 curve dubins_no_inter(double x0, double y0, double th0,
 					  double xf, double yf, double *thf,
 					  double Kmax, points_map arena,
-					  double res_steps, double search_angle)
+					  double search_angle)
 {
 	curve c, c_min;
-	int pidx, sum_pidx = 0;
+	int pidx, min_pidx = 0;
+	double initial_th = *thf;
+
 	bool has_c_min = false;
 	bool intersection = false;
-	double_list *angles = theta_discretization(*thf, res_steps, search_angle);
+	bool finished_angles = false;
+
+	double_list *angles = theta_discretization(initial_th, search_angle);
 
 	double_node *observed_angle = angles->head;
 
-	while (observed_angle != NULL)
+	while (observed_angle != NULL && finished_angles == false)
 	{
 		tie(pidx, c) = dubins(x0, y0, th0, xf, yf, observed_angle->value, Kmax);
 		intersection = false;
@@ -620,15 +623,24 @@ curve dubins_no_inter(double x0, double y0, double th0,
 					c_min = c;
 					has_c_min = true;
 					*thf = observed_angle->value;
+					min_pidx = pidx;
 				}
 				else if (c.L < c_min.L)
 				{
 					c_min = c;
 					*thf = observed_angle->value;
+					min_pidx = pidx;
 				}
 			}
 		}
 		observed_angle = observed_angle->pnext;
+		if (observed_angle == NULL && min_pidx <= 0)
+		{
+			finished_angles = true;
+			initial_th = initial_th - M_PI;
+			search_angle = (2 * M_PI) - search_angle;
+			observed_angle = theta_discretization(initial_th, search_angle)->head;
+		}
 	}
 	return c_min;
 

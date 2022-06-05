@@ -21,7 +21,7 @@ typedef struct list_of_obstacles
 	polygon *tail = NULL;
 	polygon *offset_head = NULL;
 	polygon *offset_tail = NULL;
-	double offset = 0.100;
+	double offset = 0.090;
 	int size = 0;
 	int offset_size = 0;
 
@@ -43,7 +43,7 @@ typedef struct points_map
 
 	points_map(logger *l) { log = l; };
 
-	void add_arena_points(point_list *ArenaPoints, double offset = 0.102);
+	void add_arena_points(point_list *ArenaPoints, double offset = 0.090);
 	void add_robot(Robot *r);
 	void set_robot_position(string robot_id, double x, double y, double th);
 	void add_obstacle(polygon *ob);

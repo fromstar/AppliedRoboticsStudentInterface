@@ -727,7 +727,7 @@ vector<string> robot_fugitive::make_plan(bool apply, string domain_name,
 										 string problem_name,
 										 string plan_name)
 {
-	run_planner("/home/" + string(getenv("USER")) +	"/FF-v2.3/",
+	run_planner("/home/" + string(getenv("USER")) +	"/Metric-FF/",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + domain_name + ".pddl",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + problem_name + ".pddl",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + plan_name + ".plan");
