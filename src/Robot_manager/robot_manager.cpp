@@ -177,3 +177,37 @@ void robot_manager::info(bool detailed){
 		cout << string(80, '-') << endl;
 	};
 };
+
+void thread_fugitive_planner(map<string, robot_fugitive *>::iterator f_it,
+							   World_representation wr){
+		f_it->second->make_pddl_domain_file();
+		f_it->second->make_pddl_problem_file(wr); 
+};
+
+void thread_catcher_planner(map<string, robot_catcher *>::iterator c_it,
+							  World_representation wr,
+			 				  behaviour_fugitive type){
+	c_it->second->make_pddl_files(wr, type);
+};
+
+void robot_manager::run_agents_planners(World_representation wr,
+						 behaviour_fugitive supposed_fugitive_behaviour){
+	rm_logger -> add_event("Started threads for the fugitives");
+	// Run fugitives threads
+	map<string, robot_fugitive*>::iterator f_it;
+	for(f_it = fugitives.begin(); f_it != fugitives.end(); ++f_it){
+		thread f_thr(thread_fugitive_planner, f_it, wr);
+		f_thr.join();
+	};
+
+	sleep(1);
+
+	rm_logger -> add_event("Started threads for the catchers");
+	// Run catchers threads
+	map<string, robot_catcher*>::iterator c_it;
+	for(c_it = catchers.begin(); c_it != catchers.end(); ++c_it){
+		thread c_thr(thread_catcher_planner, c_it, wr,
+					 supposed_fugitive_behaviour);
+		c_thr.join();
+	};	
+};

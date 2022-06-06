@@ -842,7 +842,7 @@ void robot_catcher::to_log(string message){
 };
 
 void robot_catcher::make_pddl_files(World_representation wr,
-									behaviour_fugitive b_ant, bool do_plan)
+									behaviour_fugitive b_ant)
 {
 	if (antagonists.size() == 0)
 	{

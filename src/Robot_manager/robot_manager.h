@@ -4,6 +4,7 @@
 #include "robots.h"
 #include <string>
 #include <math.h>
+#include <thread> 
 
 /**
  * \struct
@@ -39,6 +40,14 @@ typedef struct robot_manager{
 	void add_robot(Robot* r, string f_path=".tmp");
 	void trade_fugitives();
 	void info(bool detailed=false);
+	void run_agents_planners(World_representation wr,
+							 behaviour_fugitive supposed_fugitive_behaviour);
 }robot_manager;
+
+void thread_fugitive_planner(map<string, robot_fugitive *>::iterator f_it,
+							 World_representation wr);
+void thread_catcher_planner(map<string, robot_catcher *>::iterator c_it,
+  						    World_representation wr,
+							behaviour_fugitive type);
 
 #endif

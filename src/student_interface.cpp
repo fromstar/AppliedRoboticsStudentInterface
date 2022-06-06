@@ -158,22 +158,24 @@ namespace student
 
     map<string, robot_fugitive *>::iterator f_it;
     f_it = rm.fugitives.begin();
+	// f_it->set_behaviour(aware);
 
     map<string, robot_catcher *>::iterator c_it;
     c_it = rm.catchers.begin();
     // c_it->second->make_pddl_files(abstract_arena, f_it->second->behaviour, true);
 
-    thread f_thr(thread_fugitive_plan, f_it, abstract_arena);
-    sleep(1);
-    thread c_thr(thread_catcher_plan, c_it, abstract_arena,
-                 f_it->second->behaviour, true);
+    // thread f_thr(thread_fugitive_plan, f_it, abstract_arena);
+    // sleep(1);
+    // thread c_thr(thread_catcher_plan, c_it, abstract_arena,
+    //              f_it->second->behaviour, true);
 
     // thread_fugitive_plan(f_it, abstract_arena);
     // thread_catcher_plan(c_it, abstract_arena, f_it->second->behaviour, true);
-    f_thr.join();
-    c_thr.join();
+    // f_thr.join();
+    // c_thr.join();
 
     // Show plans of the robots
+	rm.run_agents_planners(abstract_arena, aware);
     rm.info(true);
 
     /* Fugitive  path vectors */
@@ -271,14 +273,14 @@ namespace student
 void thread_fugitive_plan(map<string, robot_fugitive *>::iterator f_it,
                           World_representation wr)
 {
-  f_it->second->set_behaviour(aware);
+  // f_it->second->set_behaviour(aware);
   f_it->second->make_pddl_domain_file();
   f_it->second->make_pddl_problem_file(wr);
 }
 
 void thread_catcher_plan(map<string, robot_catcher *>::iterator c_it,
                          World_representation wr,
-                         behaviour_fugitive type, bool a)
+                         behaviour_fugitive type)
 {
-  c_it->second->make_pddl_files(wr, type, a);
+  c_it->second->make_pddl_files(wr, type);
 }

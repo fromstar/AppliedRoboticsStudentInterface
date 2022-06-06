@@ -162,8 +162,7 @@ typedef struct robot_catcher {
   void write_file(string file_name, string what_to_write,
 		  		  string extension=".pddl");
   void make_pddl_files(World_representation wr,
-		  			   behaviour_fugitive b_ant=least_steps,
-					   bool do_plan=true);
+		  			   behaviour_fugitive b_ant=least_steps);
   vector<string> make_plan(bool apply=true, string domain_name="domain.pddl",
 		  				   string problem_name="problem.pddl",
  						   string plan_name="MyPlan.plan");
