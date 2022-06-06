@@ -43,6 +43,17 @@ point_node *point_node::copy()
 	return new point_node(x, y);
 };
 
+bool point_node::operator == (const point_node* p){
+	if (x == p->x && y == p->y)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+};
+
 void point_node::Print()
 {
 	printf("%0.4f,%0.4f\n", x, y);

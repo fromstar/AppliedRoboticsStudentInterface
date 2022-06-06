@@ -75,7 +75,7 @@ namespace student
                 const std::vector<float> y, const std::vector<float> theta,
                 std::vector<Path> &path, const std::string &config_folder)
   {
-    bool push_first = true;
+    bool push_first = false;
     clock_t starting_clock = clock();
 
     logger *log_test = new logger("test_log.txt");
@@ -115,7 +115,7 @@ namespace student
 
     arena.merge_obstacles();
 
-    arena.make_free_space_cells_squares();
+    arena.make_free_space_cells_squares(4);
     // arena.make_free_space_cells_triangular();
 
     log_test->add_event("Created Roadmap");

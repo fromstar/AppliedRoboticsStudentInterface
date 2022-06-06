@@ -348,16 +348,21 @@ string robot_fugitive::make_pddl_domain_file()
 				// Write requirements
 				"\t(:requirements "
 				"\n\t\t:strips :typing :negative-preconditions"
-				"\n\t\t:disjunctive-preconditions\n\t)\n"
+				"\n\t\t:disjunctive-preconditions"
+				"\n\t)\n"
 
 				// Write types
 				"\t(:types\n\t\tfugitive catcher - robot"
 			    "\n\t\tcell gate - location\n\t)\n"
+				
+				// Write cost function
+			 	"\t(:functions (total-cost) - number)\n"
 
 				// Write predicates
 				"\t(:predicates\n"
 				"\t\t(is_in ?r - robot ?loc - location)\n"
-				"\t\t(connected ?loc_start - location ?loc_end - location)"
+				"\t\t(connected ?loc_start - location ?loc_end - location)\n"
+				"\t\t(is_diagonal ?c1 - location ?c2 - location)"
 				"\n\t)"
 
 				// Write actions
@@ -376,8 +381,24 @@ string robot_fugitive::make_pddl_domain_file()
 			    "\n\t\t\t(and"
 			    "\n\t\t\t\t( not ( is_in ?r ?loc_start ) )"
 			    "\n\t\t\t\t( is_in ?r ?loc_end)"
+				"\n\t\t\t\t(when"
+				"\n\t\t\t\t\t( or"
+				"\n\t\t\t\t\t\t( is_diagonal ?loc_start ?loc_end )"
+				"\n\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
+				"\n\t\t\t\t\t)"
+				"\n\t\t\t\t\t( increase (total-cost) 3)"
+				"\n\t\t\t\t)"
+				"\n\t\t\t\t(when"
+				"\n\t\t\t\t\t( not"
+				"\n\t\t\t\t\t\t( or"
+				"\n\t\t\t\t\t\t\t( is_diagonal ?loc_start ?loc_end )"
+				"\n\t\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
+				"\n\t\t\t\t\t\t)"
+				"\n\t\t\t\t\t)"
+				"\n\t\t\t\t\t( increase (total-cost) 2)"
+				"\n\t\t\t\t)"
 			    "\n\t\t\t)"
-			    "\n\t)"
+				"\n\t)"
 
 				// Write file end
 				"\n)";
@@ -432,6 +453,8 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 
 	// Write initial state
 	problem_file += "\t(:init\n";
+	problem_file += "\t\t ( = (total-cost) 0)\n"; // Initial value of cost
+
 	map<string, World_node>::iterator it_1;
 	map<string, World_node>::iterator it_2;
 
@@ -515,7 +538,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	};
 	problem_file += "\t)\n";
 	to_log("Ended antagonists search");
-
+	
 	// Write goal
 	problem_file += "\t(:goal\n";
 	switch (behaviour)
@@ -869,6 +892,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 				   "\t\t:strips :typing :negative-preconditions\n"
 				   "\t\t:disjunctive-preconditions\n"
 				   "\t\t:conditional-effects\n"
+				   "\t\t:action-costs\n"
 				   "\t)\n";
 
 	// create plans for each antagonists -> used to make an aware decision
@@ -928,13 +952,17 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	};
 	pddl_domain += "\t)\n";
 
+	// Write cost function
+	pddl_domain += "\t(:functions (total-cost) - number)\n";
+
 	// write predicates
 	to_log("Writing predicates");
 	pddl_domain += "\t(:predicates\n"
 				   "\t\t(is_in ?r - robot ?loc - location)\n"
 				   "\t\t(connected ?loc_start - location ?loc_end - location)\n"
 				   "\t\t(captured ?r - fugitive)\n"
-				   "\t\t(escaped ?r - fugitive)\n" // new
+				   "\t\t(escaped ?r - fugitive)\n"
+				   "\t\t(is_diagonal ?c1 - location ?c2 - location)\n"
 				   "\t)\n";
 	
 	// write actions
@@ -1041,10 +1069,30 @@ void robot_catcher::make_pddl_files(World_representation wr,
 			// end new
 		};
 	};
+	
+	// Check if cells are diagonal
+	pddl_domain += "\n\t\t\t\t(when"
+				   "\n\t\t\t\t\t( or"
+				   "\n\t\t\t\t\t\t( is_diagonal ?loc_start ?loc_end )" 
+				   "\n\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
+				   "\n\t\t\t\t\t)"
+				   "\n\t\t\t\t\t( increase (total-cost) 5)"
+				   "\n\t\t\t\t)"
+				   "\n\t\t\t\t(when"
+				   "\n\t\t\t\t\t( not"
+				   "\n\t\t\t\t\t\t( or"
+				   "\n\t\t\t\t\t\t\t( is_diagonal ?loc_start ?loc_end )"
+				   "\n\t\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
+				   "\n\t\t\t\t\t\t)"
+				   "\n\t\t\t\t\t)"
+				   "\n\t\t\t\t\t( increase (total-cost) 2)"
+				   "\n\t\t\t\t)";
+				   // "\n\t)";
 
+	pddl_domain += "\n\t\t\t)\n";  // End of move action
+	pddl_domain += "\t)\n";		   //
+	
 	to_log("Writing action \"Capture\"");
-	pddl_domain += "\n\t\t\t)\n";
-	pddl_domain += "\t)\n";
 
 	pddl_domain += "\t(:action capture\n"
 				   "\t\t:parameters (?r_catcher - catcher "
@@ -1056,7 +1104,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 				   "\t\t\t)\n"
 				   "\t\t:effect ( captured ?r_fugitive)\n";
 	pddl_domain += "\t)\n";
-
+	
 	// Write end of pddl domain
 	pddl_domain += "\n)";
 
@@ -1119,7 +1167,8 @@ void robot_catcher::make_pddl_files(World_representation wr,
 
 	// Write initial state
 	to_log("Writing cell connections");
-	pddl_problem += "\t(:init\n";
+	pddl_problem += "\t(:init\n"
+					"\t\t( = (total-cost) 0)\n";
 	pddl_problem += wr.find_pddl_connections();
 
 	// Write initial location of the agents
@@ -1177,6 +1226,8 @@ void robot_catcher::make_pddl_files(World_representation wr,
 		pddl_problem += "\t\t)\n";
 	};
 	pddl_problem += "\t)\n";
+
+	pddl_problem += "(:metric minimize (total-cost))\n";
 
 	// write file end
 	pddl_problem += ")\n";
@@ -1307,7 +1358,7 @@ void run_planner(string planner_path, string domain_file_path,
 		 << plan_path << endl;
 
 	string command = "cd " + planner_path + " \n ./ff -o " + domain_file_path +
-					 " -f " + problem_file_path + " -O" + " > " + plan_path;
+					 " -f " + problem_file_path + " > " + plan_path;
 	std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"),
 												  pclose);
 };

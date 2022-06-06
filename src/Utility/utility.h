@@ -50,6 +50,7 @@ struct point_node{
 		}
 	point_node* copy();
 	void Print();
+	bool operator == (const point_node* p);
 }typedef point_node;
 
 struct point_list{

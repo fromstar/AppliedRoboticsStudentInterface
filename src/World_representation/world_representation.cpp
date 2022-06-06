@@ -206,6 +206,29 @@ string World_representation::find_pddl_connections(){
 						*connections += "\t\t( connected " + it_1->first + " " +
 						 			    it_2->first + " )\n";
 					};
+					
+					int points_in_common = 0;
+					point_node *tmp_pol_1 = it_1->second.cell->pl->head;
+					while(tmp_pol_1 != NULL && points_in_common <= 1)
+					{
+						point_node *tmp_pol_2 = it_2->second.cell->pl->head;
+						while(tmp_pol_2 != NULL && points_in_common <= 1)
+						{
+								if (tmp_pol_1->x == tmp_pol_2->x && 
+									tmp_pol_1->y == tmp_pol_2->y)
+								{
+									points_in_common += 1;
+								};
+							tmp_pol_2 = tmp_pol_2 -> pnext;
+						};
+						tmp_pol_1 = tmp_pol_1 -> pnext;
+					};
+					if (points_in_common == 1)
+					{
+						*connections += "\t\t( is_diagonal " + it_1->first +
+										" " + it_2->first + " )\n";
+					};
+
 				};
 			};
 		};
