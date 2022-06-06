@@ -1307,7 +1307,7 @@ void run_planner(string planner_path, string domain_file_path,
 		 << plan_path << endl;
 
 	string command = "cd " + planner_path + " \n ./ff -o " + domain_file_path +
-					 " -f " + problem_file_path + " > " + plan_path;
+					 " -f " + problem_file_path + " -O" + " > " + plan_path;
 	std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"),
 												  pclose);
 };

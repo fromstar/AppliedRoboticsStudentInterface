@@ -75,9 +75,7 @@ namespace student
                 const std::vector<float> y, const std::vector<float> theta,
                 std::vector<Path> &path, const std::string &config_folder)
   {
-    // throw std::logic_error( "STUDENT FUNCTION - PLAN PATH - NOT IMPLEMENTED" );
-
-    bool push_first = false;
+    bool push_first = true;
     clock_t starting_clock = clock();
 
     logger *log_test = new logger("test_log.txt");
@@ -158,24 +156,13 @@ namespace student
 
     map<string, robot_fugitive *>::iterator f_it;
     f_it = rm.fugitives.begin();
-	// f_it->set_behaviour(aware);
+    // f_it->set_behaviour(aware);
 
     map<string, robot_catcher *>::iterator c_it;
     c_it = rm.catchers.begin();
-    // c_it->second->make_pddl_files(abstract_arena, f_it->second->behaviour, true);
-
-    // thread f_thr(thread_fugitive_plan, f_it, abstract_arena);
-    // sleep(1);
-    // thread c_thr(thread_catcher_plan, c_it, abstract_arena,
-    //              f_it->second->behaviour, true);
-
-    // thread_fugitive_plan(f_it, abstract_arena);
-    // thread_catcher_plan(c_it, abstract_arena, f_it->second->behaviour, true);
-    // f_thr.join();
-    // c_thr.join();
 
     // Show plans of the robots
-	rm.run_agents_planners(abstract_arena, aware);
+    rm.run_agents_planners(abstract_arena, aware);
     rm.info(true);
 
     /* Fugitive  path vectors */
@@ -190,39 +177,74 @@ namespace student
 
     /*Get the starting angle for moving from a cell to another one */
     fth_path = opti_theta(fx_path, fy_path);
-    
+
+    /* Overwrite first cell centroid's coordinates with robot's coordinates */
     fx_path[0] = f_it->second->self->location->x;
     fy_path[0] = f_it->second->self->location->y;
-    fth_path[0] = f_1->theta; 
+    fth_path[0] = f_1->theta;
 
     curve c;
-    // // double kmax = 36;
-    double kmax = 39;
-    // double kmax = 41;
+    int pidx;
+
+    /* Copy of the fugitive theta's vector */
+    vector<double> original_theta = fth_path;
+
+    /* Vector that stores all the dubins path for the fugitive */
+    vector<curve> f_finded_curves;
+
+    /* Vector that stores the thetas used for all the dubins curve found */
+    vector<double> f_used_theta[fx_path.size()];
+
+    double kmax = 35;
+
+    /* Space where to search a minimum dubins curve */
     double search_angle = M_PI * 2;
 
+    int i = 0;
+    
     /* Calculate fugitive's dubin curves without intersection */
-    for (int i = 0; i < fx_path.size() - 1; i++)
+    while (i < fx_path.size() - 1)
     {
-      c = dubins_no_inter(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1],
-                          fy_path[i + 1], &fth_path[i + 1], kmax, arena,
-                          search_angle);
 
-      /*
-        Push only the first action move to the simulator.
-        In this way I have to run the simulation multiple times
-        and make a plan every time.
-       */
-      if (push_first)
+      tie(c, pidx) = dubins_no_inter(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1],
+                                     fy_path[i + 1], &fth_path[i + 1], kmax, arena,
+                                     search_angle, f_used_theta[i]);
+      
+      /* If pidx > 0 a curve is found */
+      if (pidx > 0)
       {
-        if (i == 0)
-          path[0] = push_path(c, path[0]);
+        /* Store the curve found and the arrival theta used for that */
+        f_finded_curves.push_back(c);
+        f_used_theta[i].push_back(fth_path[i + 1]);
+        i++;
       }
       else
-        path[0] = push_path(c, path[0]);
-
-      img_arena = plotdubins(c, "r", "r", "r", img_arena);
+      {
+        if (i > 0)
+        {
+          /* If no curve is found the last curve is removed to compute 
+           * another one with a different arrival angle. */
+          f_finded_curves.pop_back();
+          
+          /* Restore the original theta. In this way we avoid to use 
+          * different angles than the previous ones */
+          fth_path[i] = original_theta[i];
+          i--;
+        }
+        else
+        {
+          /*
+           * Aggiungere al report che se kmax è troppo piccolo rischiamo di avere curve troppo larghe 
+           * e potrebbe capitare di non riuscire a trovare un percorso continuo per il robot. Se dovesse
+           * capitare un' idea potrebbe essere quella di incrementare kmax per permettere curve più strette
+           * (rischiando di farlo sterzare male) oppure di ridurre l'offset(rischiando schianti)...
+           *  O entrambi per un divertimento maggiore. 
+           */
+          throw std::logic_error("NO DUBINS PATH AVAILABLE - kmax too small\n");
+        }
+      }
     }
+
     printf("Time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
 
     // CATCHER PLAN
@@ -237,23 +259,63 @@ namespace student
 
     cx_path[0] = c_it->second->self->location->x;
     cy_path[0] = c_it->second->self->location->y;
-    cth_path[0] = c_1->theta; 
+    cth_path[0] = c_1->theta;
 
-    for (int i = 0; i < cx_path.size() - 1; i++)
+    original_theta = cth_path;
+    vector<double> c_used_theta[fx_path.size()];
+    vector<curve> c_finded_curves;
+    bool no_moves = false;
+
+    i = 0;
+    while (i < cx_path.size() - 1)
     {
-      c = dubins_no_inter(cx_path[i], cy_path[i], cth_path[i], cx_path[i + 1],
-                          cy_path[i + 1], &cth_path[i + 1], kmax, arena,
-                          search_angle);
+      tie(c, pidx) = dubins_no_inter(cx_path[i], cy_path[i], cth_path[i], cx_path[i + 1],
+                                     cy_path[i + 1], &cth_path[i + 1], kmax, arena,
+                                     search_angle, c_used_theta[i]);
 
-      if (push_first)
+      if (pidx > 0)
       {
-        if (i == 0)
-          path[1] = push_path(c, path[1]);
+        c_finded_curves.push_back(c);
+        c_used_theta[i].push_back(fth_path[i + 1]);
+        i++;
       }
       else
-        path[1] = push_path(c, path[1]);
+      {
+        if (i > 0)
+        {
+          c_finded_curves.pop_back();
+          cth_path[i] = original_theta[i];
+          i--;
+        }
+        else
+        {
+          throw std::logic_error("NO DUBINS PATH AVAILABLE");
+        }
+      }
+    }
 
-      img_arena = plotdubins(c, "b", "b", "b", img_arena);
+    /*
+      Push only the first action move to the simulator.
+      In this way I have to run the simulation multiple times
+      and make a plan every time.
+     */
+    if (push_first)
+    {
+      path[0] = push_path(f_finded_curves[0], path[0]);
+      path[1] = push_path(c_finded_curves[0], path[1]);
+    }
+    else
+    {
+      for (int i = 0; i < f_finded_curves.size(); i++)
+      {
+        path[0] = push_path(f_finded_curves[i], path[0]);
+        img_arena = plotdubins(f_finded_curves[i], "r", "r", "r", img_arena);
+      }
+      for (int i = 0; i < c_finded_curves.size(); i++)
+      {
+        path[1] = push_path(c_finded_curves[i], path[1]);
+        img_arena = plotdubins(c_finded_curves[i], "b", "b", "b", img_arena);
+      }
     }
 
     float elapsed_time = (float(clock() - starting_clock)) / CLOCKS_PER_SEC;
