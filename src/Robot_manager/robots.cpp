@@ -6,6 +6,10 @@
 #include <filesystem>
 #include <algorithm>
 
+
+#define DIAGONAL_MOVE_COST 3
+#define PERPENDICULAR_MOVE_COST 2
+
 using pt = boost::geometry::model::d2::point_xy<double>;
 using Polygon_boost = boost::geometry::model::polygon<pt>;
 
@@ -386,7 +390,8 @@ string robot_fugitive::make_pddl_domain_file()
 				"\n\t\t\t\t\t\t( is_diagonal ?loc_start ?loc_end )"
 				"\n\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
 				"\n\t\t\t\t\t)"
-				"\n\t\t\t\t\t( increase (total-cost) 3)"
+				"\n\t\t\t\t\t( increase (total-cost) " +
+							  to_string(DIAGONAL_MOVE_COST) + ")"
 				"\n\t\t\t\t)"
 				"\n\t\t\t\t(when"
 				"\n\t\t\t\t\t( not"
@@ -395,7 +400,8 @@ string robot_fugitive::make_pddl_domain_file()
 				"\n\t\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
 				"\n\t\t\t\t\t\t)"
 				"\n\t\t\t\t\t)"
-				"\n\t\t\t\t\t( increase (total-cost) 2)"
+				"\n\t\t\t\t\t( increase (total-cost) " +
+							  to_string(PERPENDICULAR_MOVE_COST) + ")"
 				"\n\t\t\t\t)"
 			    "\n\t\t\t)"
 				"\n\t)"
@@ -538,6 +544,9 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	};
 	problem_file += "\t)\n";
 	to_log("Ended antagonists search");
+	
+	// write metrics
+	problem_file += "\t(:metric minimize (total-cost))\n";
 	
 	// Write goal
 	problem_file += "\t(:goal\n";
@@ -750,7 +759,7 @@ vector<string> robot_fugitive::make_plan(bool apply, string domain_name,
 										 string problem_name,
 										 string plan_name)
 {
-	run_planner("/home/" + string(getenv("USER")) +	"/Metric-FF/",
+	run_planner("/home/" + string(getenv("USER")) +	"/Metric-FF-updated/",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + domain_name + ".pddl",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + problem_name + ".pddl",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + plan_name + ".plan");
@@ -1076,7 +1085,8 @@ void robot_catcher::make_pddl_files(World_representation wr,
 				   "\n\t\t\t\t\t\t( is_diagonal ?loc_start ?loc_end )" 
 				   "\n\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
 				   "\n\t\t\t\t\t)"
-				   "\n\t\t\t\t\t( increase (total-cost) 5)"
+				   "\n\t\t\t\t\t( increase (total-cost) " + 
+				   				 to_string(DIAGONAL_MOVE_COST) + ")"
 				   "\n\t\t\t\t)"
 				   "\n\t\t\t\t(when"
 				   "\n\t\t\t\t\t( not"
@@ -1085,7 +1095,8 @@ void robot_catcher::make_pddl_files(World_representation wr,
 				   "\n\t\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
 				   "\n\t\t\t\t\t\t)"
 				   "\n\t\t\t\t\t)"
-				   "\n\t\t\t\t\t( increase (total-cost) 2)"
+				   "\n\t\t\t\t\t( increase (total-cost) " +
+				   				 to_string(PERPENDICULAR_MOVE_COST) + ")"
 				   "\n\t\t\t\t)";
 				   // "\n\t)";
 
@@ -1099,12 +1110,29 @@ void robot_catcher::make_pddl_files(World_representation wr,
 				   "?r_fugitive - fugitive ?loc - cell)\n"
 				   "\t\t:precondition\n"
 				   "\t\t\t(and\n"
-				   "\t\t\t\t( is_in ?r_catcher ?loc)\n"
-				   "\t\t\t\t( is_in ?r_fugitive ?loc)\n"
+				   "\t\t\t\t( is_in ?r_catcher ?loc )\n"
+				   "\t\t\t\t( is_in ?r_fugitive ?loc )\n"
+				   // "\t\t\t\t( or\n"
+				   // "\t\t\t\t\t( connected ?loc_c ?loc_f )"
+				   // "\t\t\t\t\t( connected ?loc_f ?loc_c )"
+				   // "\t\t\t\t)"
 				   "\t\t\t)\n"
-				   "\t\t:effect ( captured ?r_fugitive)\n";
-	pddl_domain += "\t)\n";
-	
+				   "\t\t:effect ( captured ?r_fugitive )\n"
+				   "\t)\n";
+
+	// Write stay action
+	to_log("Writing action \"Stay\"");
+	pddl_domain += "\t(:action stay\n"
+				   "\t\t:parameters (?r_catcher - catcher ?loc - location)\n"
+				   "\t\t:precondition\n"
+				   "\t\t\t( is_in ?r_catcher ?loc)\n"
+				   "\t\t:effect "
+				   "\n\t\t\t(and"
+				   "\n\t\t\t\t( is_in ?r_catcher ?loc)"
+				   "\n\t\t\t\t(increase (total-cost) 1)"
+				   "\n\t\t\t)"
+				   "\n\t)\n";
+
 	// Write end of pddl domain
 	pddl_domain += "\n)";
 
@@ -1207,6 +1235,9 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	};
 	to_log("Written location of antagonists");
 	pddl_problem += "\t)\n";
+	
+	// write metrics
+	pddl_problem += "\t(:metric minimize (total-cost))\n";
 
 	// write goal
 	to_log("Writing goal");
@@ -1226,8 +1257,6 @@ void robot_catcher::make_pddl_files(World_representation wr,
 		pddl_problem += "\t\t)\n";
 	};
 	pddl_problem += "\t)\n";
-
-	pddl_problem += "(:metric minimize (total-cost))\n";
 
 	// write file end
 	pddl_problem += ")\n";
@@ -1263,10 +1292,11 @@ vector<string> robot_catcher::make_plan(bool apply, string domain_name,
 										string plan_name)
 {
 	// to_log(self->ID + ": Started running planner");
-	run_planner("/home/" + string(getenv("USER")) + "/Metric-FF/",
+	run_planner("/home/" + string(getenv("USER")) + "/Metric-FF-updated/",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + domain_name + ".pddl",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + problem_name + ".pddl",
-				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + plan_name + ".plan");
+				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + plan_name + ".plan",
+				true);
 	// to_log(self->ID + ": Ended planner run");
 
 	string tmp_line;
@@ -1308,7 +1338,9 @@ vector<string> robot_catcher::make_plan(bool apply, string domain_name,
 	};
 	// using ifstream returns an empty line after the last one in file
 	tmp_plan.pop_back(); // remove empty line
-	
+	for(int i=0; i<tmp_plan.size(); i++){
+		cout << tmp_plan[i] << endl;
+	};	
 	if (apply)
 	{
 		self->set_plan(tmp_plan);
@@ -1348,7 +1380,8 @@ void robot_catcher::info()
  * @param problem_file_path: string. Is the path of the problem file to use.
  */
 void run_planner(string planner_path, string domain_file_path,
-				 string problem_file_path, string plan_path = "MyPlan.plan")
+				 string problem_file_path, string plan_path,
+				 bool is_catcher)
 {
 
 	cout << "called planner for: " << planner_path << "ff" << endl
@@ -1357,7 +1390,16 @@ void run_planner(string planner_path, string domain_file_path,
 		 << problem_file_path << endl
 		 << plan_path << endl;
 
-	string command = "cd " + planner_path + " \n ./ff -o " + domain_file_path +
+	int algorithm = 3;
+	if(is_catcher)
+	{
+		algorithm = 5;
+	};
+
+	string command = "cd " + planner_path +
+					 " \n ./ff -s " + to_string(algorithm) +
+					 " -o " +
+					 domain_file_path +
 					 " -f " + problem_file_path + " > " + plan_path;
 	std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"),
 												  pclose);

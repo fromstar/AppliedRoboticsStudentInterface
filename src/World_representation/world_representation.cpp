@@ -162,7 +162,6 @@ tuple<vector<double>, vector<double>> World_representation::get_path(vector<stri
 			y_path.push_back(world_free_cells[path[3]].cell->centroid->y);
 		}
 	}
-
 	return make_tuple(x_path, y_path);
 }
 

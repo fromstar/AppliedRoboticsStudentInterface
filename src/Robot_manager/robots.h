@@ -206,9 +206,12 @@ string lowerify(string word);
  * @param problem_file_path: string. It is the path to the problem file.
  * @param plan_path: string. It is the path in which the plan file has to
  * be created.
+ * @param is_catcher: bool. It's a flag telling whether or not the function
+ * has been called by a catcher.
  */
 void run_planner(string planner_path, string domain_file_path,
-				 string problem_file_path, string plan_path);
+				 string problem_file_path, string plan_path="MyPlan.plan",
+				 bool is_catcher=false);
 
 /**
  * \fun string_to_vector(string sentence, string token).

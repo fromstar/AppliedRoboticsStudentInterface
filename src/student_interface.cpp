@@ -115,7 +115,7 @@ namespace student
 
     arena.merge_obstacles();
 
-    arena.make_free_space_cells_squares(4);
+    arena.make_free_space_cells_squares(3);
     // arena.make_free_space_cells_triangular();
 
     log_test->add_event("Created Roadmap");
@@ -164,6 +164,7 @@ namespace student
     // Show plans of the robots
     rm.run_agents_planners(abstract_arena, aware);
     rm.info(true);
+	
 
     /* Fugitive  path vectors */
     vector<double> fx_path;
@@ -209,7 +210,7 @@ namespace student
       tie(c, pidx) = dubins_no_inter(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1],
                                      fy_path[i + 1], &fth_path[i + 1], kmax, arena,
                                      search_angle, f_used_theta[i]);
-      
+     
       /* If pidx > 0 a curve is found */
       if (pidx > 0)
       {
@@ -255,9 +256,9 @@ namespace student
 
     tie(cx_path, cy_path) = abstract_arena.get_path(c_it->second->self->plan);
 
-    cth_path = opti_theta(cx_path, cy_path);
+	cth_path = opti_theta(cx_path, cy_path);
 
-    cx_path[0] = c_it->second->self->location->x;
+	cx_path[0] = c_it->second->self->location->x;
     cy_path[0] = c_it->second->self->location->y;
     cth_path[0] = c_1->theta;
 
@@ -332,6 +333,7 @@ namespace student
   }
 }
 
+/*
 void thread_fugitive_plan(map<string, robot_fugitive *>::iterator f_it,
                           World_representation wr)
 {
@@ -346,3 +348,4 @@ void thread_catcher_plan(map<string, robot_catcher *>::iterator c_it,
 {
   c_it->second->make_pddl_files(wr, type);
 }
+*/
