@@ -44,10 +44,4 @@ typedef struct robot_manager{
 							 behaviour_fugitive supposed_fugitive_behaviour);
 }robot_manager;
 
-void thread_fugitive_planner(map<string, robot_fugitive *>::iterator f_it,
-							 World_representation wr);
-void thread_catcher_planner(map<string, robot_catcher *>::iterator c_it,
-  						    World_representation wr,
-							behaviour_fugitive type);
-
 #endif

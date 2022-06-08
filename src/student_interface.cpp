@@ -147,11 +147,14 @@ namespace student
 
     abstract_arena.info();
     Mat img_arena = arena.plot_arena(600, 600, true);
+    // imshow("Arena", img_arena);
+
+    // waitKey(0);
 
     /**********************************************
      * GENERATE PLANS AND MOVE ROBOTS
      ***********************************************/
-
+    
     // FUGITIVE PLAN
 
     map<string, robot_fugitive *>::iterator f_it;
@@ -162,9 +165,9 @@ namespace student
     c_it = rm.catchers.begin();
 
     // Show plans of the robots
+
     rm.run_agents_planners(abstract_arena, aware);
     rm.info(true);
-	
 
     /* Fugitive  path vectors */
     vector<double> fx_path;
@@ -180,9 +183,12 @@ namespace student
     fth_path = opti_theta(fx_path, fy_path);
 
     /* Overwrite first cell centroid's coordinates with robot's coordinates */
-    fx_path[0] = f_it->second->self->location->x;
-    fy_path[0] = f_it->second->self->location->y;
-    fth_path[0] = f_1->theta;
+    if (fx_path.size() != 0)
+    {
+      fx_path[0] = f_it->second->self->location->x;
+      fy_path[0] = f_it->second->self->location->y;
+      fth_path[0] = f_1->theta;
+    }
 
     curve c;
     int pidx;
@@ -196,21 +202,21 @@ namespace student
     /* Vector that stores the thetas used for all the dubins curve found */
     vector<double> f_used_theta[fx_path.size()];
 
-    double kmax = 35;
-
+    // double kmax = 27;
+    double kmax = 30;
     /* Space where to search a minimum dubins curve */
     double search_angle = M_PI * 2;
 
     int i = 0;
-    
+    int size = fx_path.size();
     /* Calculate fugitive's dubin curves without intersection */
-    while (i < fx_path.size() - 1)
+    while (i < size - 1)
     {
 
       tie(c, pidx) = dubins_no_inter(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1],
                                      fy_path[i + 1], &fth_path[i + 1], kmax, arena,
                                      search_angle, f_used_theta[i]);
-     
+
       /* If pidx > 0 a curve is found */
       if (pidx > 0)
       {
@@ -223,23 +229,23 @@ namespace student
       {
         if (i > 0)
         {
-          /* If no curve is found the last curve is removed to compute 
+          /* If no curve is found the last curve is removed to compute
            * another one with a different arrival angle. */
           f_finded_curves.pop_back();
-          
-          /* Restore the original theta. In this way we avoid to use 
-          * different angles than the previous ones */
+
+          /* Restore the original theta. In this way we avoid to use
+           * different angles than the previous ones */
           fth_path[i] = original_theta[i];
           i--;
         }
         else
         {
           /*
-           * Aggiungere al report che se kmax è troppo piccolo rischiamo di avere curve troppo larghe 
+           * Aggiungere al report che se kmax è troppo piccolo rischiamo di avere curve troppo larghe
            * e potrebbe capitare di non riuscire a trovare un percorso continuo per il robot. Se dovesse
            * capitare un' idea potrebbe essere quella di incrementare kmax per permettere curve più strette
            * (rischiando di farlo sterzare male) oppure di ridurre l'offset(rischiando schianti)...
-           *  O entrambi per un divertimento maggiore. 
+           *  O entrambi per un divertimento maggiore.
            */
           throw std::logic_error("NO DUBINS PATH AVAILABLE - kmax too small\n");
         }
@@ -256,19 +262,22 @@ namespace student
 
     tie(cx_path, cy_path) = abstract_arena.get_path(c_it->second->self->plan);
 
-	cth_path = opti_theta(cx_path, cy_path);
-
-	cx_path[0] = c_it->second->self->location->x;
-    cy_path[0] = c_it->second->self->location->y;
-    cth_path[0] = c_1->theta;
+    cth_path = opti_theta(cx_path, cy_path);
+    
+    if (cx_path.size() > 0)
+    {
+      cx_path[0] = c_it->second->self->location->x;
+      cy_path[0] = c_it->second->self->location->y;
+      cth_path[0] = c_1->theta;
+    }
 
     original_theta = cth_path;
     vector<double> c_used_theta[fx_path.size()];
     vector<curve> c_finded_curves;
     bool no_moves = false;
-
+    size = cx_path.size();
     i = 0;
-    while (i < cx_path.size() - 1)
+    while (i < size - 1)
     {
       tie(c, pidx) = dubins_no_inter(cx_path[i], cy_path[i], cth_path[i], cx_path[i + 1],
                                      cy_path[i + 1], &cth_path[i + 1], kmax, arena,
@@ -307,6 +316,7 @@ namespace student
     }
     else
     {
+
       for (int i = 0; i < f_finded_curves.size(); i++)
       {
         path[0] = push_path(f_finded_curves[i], path[0]);
@@ -317,6 +327,20 @@ namespace student
         path[1] = push_path(c_finded_curves[i], path[1]);
         img_arena = plotdubins(c_finded_curves[i], "b", "b", "b", img_arena);
       }
+
+      // for (int i = 0; i < f_finded_curves.size(); i++)
+      // {
+      //  // path[0] = push_path(f_finded_curves[i], path[0]);
+      //   img_arena = plotdubins(f_finded_curves[i], "r", "r", "r", img_arena);
+      // }
+      // for (int i = 0; i < c_finded_curves.size(); i++)
+      // {
+      //   if(i < c_finded_curves.size()-1)
+      //     path[0] = push_path(f_finded_curves[i], path[0]);
+
+      //   path[1] = push_path(c_finded_curves[i], path[1]);
+      //   img_arena = plotdubins(c_finded_curves[i], "b", "b", "b", img_arena);
+      // }
     }
 
     float elapsed_time = (float(clock() - starting_clock)) / CLOCKS_PER_SEC;

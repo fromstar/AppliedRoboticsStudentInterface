@@ -463,13 +463,15 @@ tuple<point_list *, double_list *> intersCircleLine(double a, double b, double r
 vector<double> opti_theta(vector<double> xpath, vector<double> ypath)
 {
 	vector<double> thpath;
-	for (int i = 0; i < xpath.size() - 1; i++)
+	if (xpath.size() > 0)
 	{
-		thpath.push_back(get_angle(xpath[i], ypath[i],
-								   xpath[i + 1], ypath[i + 1]));
+		for (int i = 0; i < xpath.size() - 1; i++)
+		{
+			thpath.push_back(get_angle(xpath[i], ypath[i],
+									   xpath[i + 1], ypath[i + 1]));
+		}
+		thpath.push_back(thpath[thpath.size() - 1]);
 	}
-	thpath.push_back(thpath[thpath.size() - 1]);
-
 	return thpath;
 }
 
@@ -552,17 +554,17 @@ tuple<curve, int> dubins_no_inter(double x0, double y0, double th0,
 	vector<double> angles = theta_discretization(initial_th, search_angle);
 
 	/*
-	 * Delete all already used thetas 
+	 * Delete all already used thetas
 	 */
-	for(int i=0; i < used_th.size();i++)
+	for (int i = 0; i < used_th.size(); i++)
 	{
-		int j=0;
+		int j = 0;
 		bool deleted = false;
-		while(j < angles.size() && deleted == false)
+		while (j < angles.size() && deleted == false)
 		{
-			if(used_th[i] == angles[j])
+			if (used_th[i] == angles[j])
 			{
-				angles.erase(angles.begin()+j);
+				angles.erase(angles.begin() + j);
 				deleted = true;
 			}
 			j++;
@@ -570,7 +572,7 @@ tuple<curve, int> dubins_no_inter(double x0, double y0, double th0,
 	}
 
 	int i = 0;
-	
+
 	/* Compute dubins path for all the angles available*/
 	while (i < angles.size() && finished_angles == false)
 	{
@@ -605,7 +607,7 @@ tuple<curve, int> dubins_no_inter(double x0, double y0, double th0,
 
 				pt_arena_1 = pt_arena_1->pnext;
 			}
-			
+
 			/* Search an intersection between the arcs of the dubins curve and all the obstacles */
 			polygon *obs = arena.obstacles->offset_head;
 			while (obs != NULL && intersection == false)
@@ -658,7 +660,7 @@ tuple<curve, int> dubins_no_inter(double x0, double y0, double th0,
 		}
 		i++;
 
-		/* If no curves is found I take the opposite searh area */ 
+		/* If no curves is found I take the opposite searh area */
 		if (i == angles.size() && min_pidx <= 0)
 		{
 			finished_angles = true;

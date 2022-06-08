@@ -759,7 +759,7 @@ vector<string> robot_fugitive::make_plan(bool apply, string domain_name,
 										 string problem_name,
 										 string plan_name)
 {
-	run_planner("/home/" + string(getenv("USER")) +	"/Metric-FF-updated/",
+	run_planner("/home/" + string(getenv("USER")) +	"/workspace/project/Metric-FF/",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + domain_name + ".pddl",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + problem_name + ".pddl",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + plan_name + ".plan");
@@ -801,7 +801,8 @@ vector<string> robot_fugitive::make_plan(bool apply, string domain_name,
 			 << endl;
 	};
 	// using ifstream returns an empty line after the last one in file
-	tmp_plan.pop_back(); // remove empty line
+	if(tmp_plan.size() != 0)
+		tmp_plan.pop_back(); // remove empty line
 
 	if (apply)
 	{
@@ -1292,7 +1293,7 @@ vector<string> robot_catcher::make_plan(bool apply, string domain_name,
 										string plan_name)
 {
 	// to_log(self->ID + ": Started running planner");
-	run_planner("/home/" + string(getenv("USER")) + "/Metric-FF-updated/",
+	run_planner("/home/" + string(getenv("USER")) + "/workspace/project/Metric-FF/",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + domain_name + ".pddl",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + problem_name + ".pddl",
 				"/home/" + string(getenv("USER")) + "/.ros/" + filesPath + "/" + plan_name + ".plan",
@@ -1337,7 +1338,9 @@ vector<string> robot_catcher::make_plan(bool apply, string domain_name,
 		throw std::logic_error(error_msg);
 	};
 	// using ifstream returns an empty line after the last one in file
-	tmp_plan.pop_back(); // remove empty line
+
+	if(tmp_plan.size() > 0)
+		tmp_plan.pop_back(); // remove empty line
 	for(int i=0; i<tmp_plan.size(); i++){
 		cout << tmp_plan[i] << endl;
 	};	
