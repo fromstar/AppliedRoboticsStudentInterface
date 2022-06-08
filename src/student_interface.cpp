@@ -112,12 +112,12 @@ namespace student
       }
       arena.add_gate(new polygon(pol));
     }
- 	   
-	arena.merge_obstacles();
-	arena.convexify_obstacles();
+
+    arena.merge_obstacles();
+    arena.convexify_obstacles();
 
     arena.make_free_space_cells_squares(3);
-	
+
     // arena.make_free_space_cells_triangular();
 
     log_test->add_event("Created Roadmap");
@@ -149,9 +149,9 @@ namespace student
 
     abstract_arena.info();
     Mat img_arena = arena.plot_arena(600, 600, true);
-	
-	// imshow("Arena", img_arena);
-    // waitKey(0);
+
+    imshow("Arena", img_arena);
+    waitKey(0);
 
     // imshow("Arena", img_arena);
 
@@ -160,7 +160,7 @@ namespace student
     /**********************************************
      * GENERATE PLANS AND MOVE ROBOTS
      ***********************************************/
-    
+
     // FUGITIVE PLAN
 
     map<string, robot_fugitive *>::iterator f_it;
@@ -174,7 +174,7 @@ namespace student
 
     rm.run_agents_planners(abstract_arena, aware);
     rm.info(true);
-     
+
     /* Fugitive  path vectors */
     vector<double> fx_path;
     vector<double> fy_path;
@@ -209,7 +209,7 @@ namespace student
     vector<double> f_used_theta[fx_path.size()];
 
     // double kmax = 27;
-    double kmax = 25;
+    double kmax = 30;
     /* Space where to search a minimum dubins curve */
     double search_angle = M_PI * 2;
 
@@ -269,7 +269,7 @@ namespace student
     tie(cx_path, cy_path) = abstract_arena.get_path(c_it->second->self->plan);
 
     cth_path = opti_theta(cx_path, cy_path);
-    
+
     if (cx_path.size() > 0)
     {
       cx_path[0] = c_it->second->self->location->x;

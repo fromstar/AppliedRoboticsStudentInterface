@@ -491,7 +491,6 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 
 	// gates in cells
 	to_log("Find and write in which cells the gates are");
-	int found_gates = 0;
 	map<string, World_node> missed_gates = wr.world_gates;
 
 	for (it_1 = wr.world_free_cells.begin(); it_1 != wr.world_free_cells.end();
@@ -508,17 +507,17 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 				problem_file += "\t\t( connected " + it_2->first + " " +
 								it_1->first + " )\n";
 				missed_gates.erase(it_2->first);
-				found_gates +=1;
 			};
 		};
 	};
-
-	if (found_gates < wr.world_gates.size())
+	
+	if(missed_gates.size() > 0)
 	{
 		// Associate gate to the nearest cell
 		// warning: association to just 1 cell
 		for (it_2 = missed_gates.begin(); it_2 != missed_gates.end(); it_2++)
 		{
+			cout<<it_2->first<< endl;
 			map<double, string> cell_distance;
 			
 			for (it_1 = wr.world_free_cells.begin();
