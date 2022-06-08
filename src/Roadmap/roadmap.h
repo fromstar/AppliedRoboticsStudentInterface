@@ -49,6 +49,7 @@ typedef struct points_map
 	void add_obstacle(polygon *ob);
 	void add_gate(polygon *gt);
 	void merge_obstacles();
+	void convexify_obstacles();
 	void make_free_space_cells_triangular(int res = 3);
 	void make_free_space_cells_squares(int res = 3);
 	void print_info();

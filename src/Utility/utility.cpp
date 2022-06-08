@@ -38,6 +38,11 @@ void double_list::delete_list()
 	size = 0;
 }
 
+double point_node::distance(point_node* p)
+{
+	return sqrt(pow(x - p->x, 2) + pow(y - p->y, 2)); 
+};
+
 point_node *point_node::copy()
 {
 	return new point_node(x, y);

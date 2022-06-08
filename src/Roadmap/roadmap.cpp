@@ -442,6 +442,28 @@ void points_map::merge_obstacles()
 	log->add_event("Obstacles in touch merged");
 }
 
+
+/**
+ * \fun
+ * This function is used to make the convex hull of an obstacle in
+ * the points map.
+ */
+void points_map::convexify_obstacles()
+{
+	polygon *pol = obstacles->offset_head;
+	while(pol != NULL)
+	{
+		// convert to boost
+		Polygon_boost boost_pol = pol->to_boost_polygon();
+		Polygon_boost output;
+		bg::convex_hull(boost_pol, output);	
+		pol->pl->delete_list();  // Remove old allocation of data
+		pol->pl = boost_polygon_to_polygon(output)->pl;
+		pol = pol->pnext;
+	};
+};
+
+
 /**
  * This function is used to subset a polygon into a finite number of cells.
  * The cells are formed creating a triange connecting every edge of the polygon
