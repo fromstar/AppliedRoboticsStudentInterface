@@ -545,6 +545,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	// Fugitive
 	to_log("Find and write agents location");
 	pt fugitive_location = pt(self->location->x, self->location->y);
+	bool found_agent = false;
 	for (it_1 = wr.world_free_cells.begin(); it_1 != wr.world_free_cells.end();
 		 ++it_1)
 	{
@@ -554,9 +555,36 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 		{
 			problem_file += "\t\t( is_in " + self->ID + " " +
 							it_1->first + " )\n";
+			found_agent = true;
 			break; // can only be in one position
 		};
 	};
+
+	if(found_agent == false)  // agent is nowhere
+	{
+		map<double, string> cell_distance;
+		for (it_1 = wr.world_free_cells.begin();
+			 it_1 != wr.world_free_cells.end(); it_1++)
+		{
+			
+			point_node *agent = self->where();
+			point_node *cell = it_1->second.cell->centroid;
+			double distance = agent->distance(cell);
+			cell_distance[distance] = it_1->first;
+		};
+
+		if (cell_distance.size() == 0)
+		{
+			cout << "This should never happen. No cells in arena?" << endl;
+		};
+
+		
+		map<double, string>::iterator nearest_cell;
+		nearest_cell = cell_distance.upper_bound(0.0);
+		problem_file += "\t\t(is_in " + self->ID + " " +
+							nearest_cell->second + " )\n";
+	};
+
 	to_log("Ended fugitive search");
 
 	// Antagonists
@@ -1235,6 +1263,9 @@ void robot_catcher::make_pddl_files(World_representation wr,
 
 	// Write initial location of the agents
 	to_log("Writing initial location of the agents");
+	
+	bool found_agent = false;
+
 	pt self_location = pt(self->location->x, self->location->y);
 	for (it_node = wr.world_free_cells.begin();
 		 it_node != wr.world_free_cells.end(); ++it_node)
@@ -1244,9 +1275,34 @@ void robot_catcher::make_pddl_files(World_representation wr,
 		{
 			pddl_problem += "\t\t( is_in " + upperify(self->ID) + " " +
 							upperify(it_node->first) + ")\n";
+			found_agent = true;
 			break;
 		};
 	};
+	
+	if(found_agent == false)  // agent is nowhere
+	{
+		map<double, string> cell_distance;
+		for (it_node = wr.world_free_cells.begin();
+			 it_node != wr.world_free_cells.end(); it_node++)
+		{	
+			point_node *agent = self->where();
+			point_node *cell = it_node->second.cell->centroid;
+			double distance = agent->distance(cell);
+			cell_distance[distance] = it_node->first;
+		};
+
+		if (cell_distance.size() == 0)
+		{
+			cout << "This should never happen. No cells in arena?" << endl;
+		};
+	
+		map<double, string>::iterator nearest_cell;
+		nearest_cell = cell_distance.upper_bound(0.0);
+		pddl_problem += "\t\t(is_in " + self->ID + " " +
+						nearest_cell->second + " )\n";
+	};
+
 	to_log("Written location of catcher");
 
 	for (int i = 0; i < antagonists.size(); i++)
