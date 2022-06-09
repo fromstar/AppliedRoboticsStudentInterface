@@ -172,6 +172,20 @@ typedef struct list_of_polygons
 	void append_other_list(list_of_polygons *p);
 } list_of_polygons;
 
+typedef struct list_of_obstacles
+{
+	polygon *head = NULL;
+	polygon *tail = NULL;
+	polygon *offset_head = NULL;
+	polygon *offset_tail = NULL;
+	double offset = 105e-3;
+	int size = 0;
+	int offset_size = 0;
+
+	~list_of_obstacles();
+	void delete_offsetted_list();
+} list_of_obstacles;
+
 double sinc(double);
 double mod2pi(double);
 double rangeSymm(double);

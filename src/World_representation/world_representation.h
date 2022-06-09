@@ -36,12 +36,16 @@ typedef struct World_representation
 	logger *l = NULL;
 	map<string, World_node> world_free_cells;
 	map<string, World_node> world_gates;
+	vector<World_node> obstacles;
+
 	string *pddl_connections = NULL;
 
 	// map<string, Robot *> world_robots;
 
 	World_representation(list_of_polygons *cells, list_of_polygons *gate_cells,
-						 logger *log = new logger(), string *connections=NULL);
+						 logger *log = new logger(),
+						 list_of_obstacles *obs=NULL,
+						 string *connections=NULL);
 	void add_cell(World_node cell, bool gate = false);
 	/*
 	void to_pddl(string path_pddl_problem_file = "problem.pddl",

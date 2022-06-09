@@ -15,6 +15,7 @@
 using pt = boost::geometry::model::d2::point_xy<double>;
 using Polygon_boost = boost::geometry::model::polygon<pt>;
 
+/*
 typedef struct list_of_obstacles
 {
 	polygon *head = NULL;
@@ -28,6 +29,7 @@ typedef struct list_of_obstacles
 	~list_of_obstacles();
 	void delete_offsetted_list();
 } list_of_obstacles;
+*/
 
 typedef struct points_map
 {

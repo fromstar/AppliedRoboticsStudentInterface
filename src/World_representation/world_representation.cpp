@@ -82,7 +82,9 @@ void World_representation::add_cell(World_node cell, bool gate)
  */
 World_representation::World_representation(list_of_polygons *cells,
 										   list_of_polygons *gate_cells,
-										   logger *log, string* connections)
+										   logger *log,
+										   list_of_obstacles *obs,
+										   string* connections)
 {
 	l = log;
 	l->add_event("Creating world representation");
@@ -111,8 +113,24 @@ World_representation::World_representation(list_of_polygons *cells,
 		cells_counter += 1;
 	};
 
-	pddl_connections = connections;
+	if (obs != NULL)
+	{
+		polygon * tmp = obs->head;
+		while(tmp != NULL)
+		{
+			World_node ob_temp = World_node("Obstacle", tmp);
+			obstacles.push_back(ob_temp);
+			tmp = tmp->pnext;
+		};
+		l->add_event("Added obstacles");
+	};
 
+	if (connections != NULL)
+	{
+		pddl_connections = connections;
+		l->add_event("Added pddl connections");
+
+	};
 	l->add_event("Ended world representation creation");
 };
 

@@ -21,6 +21,7 @@ using pt = bgm::d2::point_xy<double>;
 using Polygon_boost = bgm::polygon<pt>;
 using Multi_Polygon_boost = bgm::multi_polygon<Polygon_boost>;
 
+/*
 list_of_obstacles::~list_of_obstacles()
 {
 	polygon *tmp = head;
@@ -50,6 +51,7 @@ void list_of_obstacles::delete_offsetted_list()
 	}
 	offset_size = 0;
 };
+*/
 
 void points_map::add_arena_points(point_list *ArenaPoints, double offset)
 {

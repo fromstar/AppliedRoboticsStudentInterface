@@ -654,6 +654,37 @@ void list_of_polygons::append_other_list(list_of_polygons *p)
 	size += p->size;
 };
 
+
+list_of_obstacles::~list_of_obstacles()  
+{                                        
+    polygon *tmp = head;                 
+    polygon *otmp = offset_head;         
+    while (head != NULL)                 
+    {                                    
+	        tmp = head;                      
+	        head = head->pnext;              
+	        delete tmp;                      
+	    }                                    
+    while (offset_head != NULL)          
+    {                                    
+	        tmp = offset_head;               
+	        offset_head = offset_head->pnext;
+	        delete tmp;                      
+	    }                                    
+};                                       
+
+void list_of_obstacles::delete_offsetted_list()
+{                                              
+    polygon *tmp;                              
+    while (offset_head != NULL)                
+    {                                          
+	        tmp = offset_head;                     
+	        offset_head = offset_head->pnext;      
+	        delete tmp;                            
+	    }                                          
+    offset_size = 0;                           
+};                                             
+
 string exec(const char *cmd)
 {
 	std::array<char, 128> buffer;

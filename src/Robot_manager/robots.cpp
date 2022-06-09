@@ -562,6 +562,26 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 
 	if(found_agent == false)  // agent is nowhere
 	{
+		bool in_obstacle = false;
+		bool outside_arena = false;
+		if (wr.obstacles.size() >0 )
+		{ 
+			int i = 0;
+			while(i < wr.obstacles.size() && in_obstacle == false)
+			{
+				Polygon_boost ob_boost = wr.obstacles[i].cell->to_boost_polygon();
+				if (boost::geometry::covered_by(fugitive_location, ob_boost))
+				{
+					in_obstacle = true;
+				}
+				i++;
+			}
+		}
+		if(in_obstacle == false)
+		{
+			outside_arena = true;
+		}
+
 		map<double, string> cell_distance;
 		for (it_1 = wr.world_free_cells.begin();
 			 it_1 != wr.world_free_cells.end(); it_1++)
@@ -583,7 +603,17 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 		nearest_cell = cell_distance.upper_bound(0.0);
 		problem_file += "\t\t(is_in " + upperify(self->ID) + " " +
 							upperify(nearest_cell->second) + " )\n";
+		if(in_obstacle == true)
+		{
+			self->inside_offset_obstacle = true;
+		}
+		else
+		{
+			self->inside_offset_arena = true;
+		};
 	};
+	
+	
 
 	to_log("Ended fugitive search");
 
@@ -1282,6 +1312,27 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	
 	if(found_agent == false)  // agent is nowhere
 	{
+		bool in_obstacle = false;
+	 	bool outside_arena = false; 
+
+		if (wr.obstacles.size() >0 )
+		{
+			int i = 0;
+			while(i < wr.obstacles.size() && in_obstacle == false)
+			{
+				Polygon_boost ob_boost = wr.obstacles[i].cell->to_boost_polygon();
+				if (boost::geometry::covered_by(self_location, ob_boost))
+				{
+					in_obstacle = true;	
+				}
+				i++;
+			}
+		}
+		if(in_obstacle == false)
+		{
+			outside_arena = true;
+		}	
+
 		map<double, string> cell_distance;
 		for (it_node = wr.world_free_cells.begin();
 			 it_node != wr.world_free_cells.end(); it_node++)
@@ -1301,6 +1352,15 @@ void robot_catcher::make_pddl_files(World_representation wr,
 		nearest_cell = cell_distance.upper_bound(0.0);
 		pddl_problem += "\t\t(is_in " + upperify(self->ID) + " " +
 						upperify(nearest_cell->second) + " )\n";
+
+		if(in_obstacle == true)
+		{
+			self->inside_offset_obstacle = true; 
+		}
+		else
+		{
+			self->inside_offset_arena = true;
+		}
 	};
 
 	to_log("Written location of catcher");
@@ -1340,6 +1400,29 @@ void robot_catcher::make_pddl_files(World_representation wr,
 		for(ant_it = missed_agents.begin(); ant_it != missed_agents.end();
 			ant_it++)
 		{
+			pt ant_location = pt(ant_it->second->location->x,
+								 ant_it->second->location->y);
+			bool in_obstacle = false;
+		 	bool outside_arena = false; 
+
+			if (wr.obstacles.size() >0 )
+			{
+				int i = 0;
+				while(i < wr.obstacles.size() && in_obstacle == false)
+				{
+					Polygon_boost ob_boost = wr.obstacles[i].cell->to_boost_polygon();
+					if (boost::geometry::covered_by(ant_location, ob_boost))
+					{
+						in_obstacle = true;	
+					}
+					i++;
+				}
+			}
+			if(in_obstacle == false)
+			{
+				outside_arena = true;
+			}	
+
 			map<double, string> cell_distance;
 			for (it_node = wr.world_free_cells.begin();
 				 it_node != wr.world_free_cells.end(); it_node++)
@@ -1359,6 +1442,15 @@ void robot_catcher::make_pddl_files(World_representation wr,
 			nearest_cell = cell_distance.upper_bound(0.0);
 			pddl_problem += "\t\t(is_in " + upperify(ant_it->second->ID) +
 							" " + upperify(nearest_cell->second) + " )\n";
+			if(in_obstacle == true)
+			{
+				ant_it->second->inside_offset_obstacle = true; 
+			}
+			else
+			{
+				ant_it->second->inside_offset_arena = true;
+			}
+
 		};
 	};
 	to_log("Written location of antagonists");
