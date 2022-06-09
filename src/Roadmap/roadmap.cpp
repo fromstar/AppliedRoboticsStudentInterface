@@ -447,7 +447,7 @@ void points_map::merge_obstacles()
 	{
 		bool interrupt = false;
 		Polygon_boost gate_boost = tmp_gate->to_boost_polygon();
-		polygon *tmp_ob = obstacles->head;
+		polygon *tmp_ob = obstacles->offset_head;
 		while(tmp_ob != NULL && interrupt == false)
 		{
 			Polygon_boost ob_boost = tmp_ob->to_boost_polygon();
@@ -501,6 +501,46 @@ void points_map::convexify_obstacles()
 		pol->pl->delete_list();  // Remove old allocation of data
 		pol->pl = boost_polygon_to_polygon(output)->pl;
 		pol = pol->pnext;
+	};
+	
+	// If gate is inside obstacle remove the gate
+	polygon * tmp_gate = gates->head;
+	polygon * tmp_gate_prev = NULL;
+	while(tmp_gate != NULL)
+	{
+		bool interrupt = false;
+		Polygon_boost gate_boost = tmp_gate->to_boost_polygon();
+		polygon *tmp_ob = obstacles->offset_head;
+		while(tmp_ob != NULL && interrupt == false)
+		{
+			Polygon_boost ob_boost = tmp_ob->to_boost_polygon();
+
+			if (bg::within(gate_boost, ob_boost))
+			{
+				// Remove gate from the list
+				// Case gate is at the start of the list
+				if(tmp_gate == gates->head)
+				{
+					gates->head = tmp_gate->pnext;
+					delete tmp_gate;
+				}
+				else
+				{
+					tmp_gate_prev->pnext = tmp_gate->pnext;
+					delete tmp_gate;
+					tmp_gate = tmp_gate_prev;
+					if (tmp_gate == gates->tail)
+					{
+						gates->tail = tmp_gate_prev;
+					}
+				};
+				interrupt = true;  // Avoid parsing further obstacles
+			};
+
+			tmp_ob = tmp_ob -> pnext;
+		};
+		tmp_gate_prev = tmp_gate;
+		tmp_gate = tmp_gate->pnext;
 	};
 };
 
