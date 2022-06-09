@@ -540,7 +540,7 @@ vector<double> theta_discretization(double starting_angle, double search_angle)
 
 tuple<curve, int> dubins_no_inter(double x0, double y0, double th0,
 								  double xf, double yf, double *thf,
-								  double Kmax, points_map arena,
+								  double Kmax, point_list *arena_limits, polygon *obstacle,
 								  double search_angle, vector<double> used_th)
 {
 	curve c, c_min;
@@ -583,13 +583,13 @@ tuple<curve, int> dubins_no_inter(double x0, double y0, double th0,
 			bool inter_a1, inter_a2, inter_a3;
 
 			/* Search an intersection between the arcs of the dubins curve and the arena */
-			point_node *pt_arena_1 = arena.shrinked_arena->head;
+			point_node *pt_arena_1 = arena_limits->head;
 			while (pt_arena_1 != NULL && intersection == false)
 			{
 				point_node *pt_arena_2;
 				if (pt_arena_1->pnext == NULL)
 				{
-					pt_arena_2 = arena.shrinked_arena->head;
+					pt_arena_2 = arena_limits->head;
 				}
 				else
 				{
@@ -609,7 +609,7 @@ tuple<curve, int> dubins_no_inter(double x0, double y0, double th0,
 			}
 
 			/* Search an intersection between the arcs of the dubins curve and all the obstacles */
-			polygon *obs = arena.obstacles->offset_head;
+			polygon *obs = obstacle;
 			while (obs != NULL && intersection == false)
 			{
 				point_node *pt_ob_1 = obs->pl->head;

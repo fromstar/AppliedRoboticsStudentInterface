@@ -1,7 +1,7 @@
 #include "utility.h"
 
-int SCALE_1 = 100;
-int SCALE_2 = 250;
+int SCALE_1 = 300;
+int SCALE_2 = 450;
 
 void double_list::add_node(double_node *node)
 {
@@ -654,36 +654,35 @@ void list_of_polygons::append_other_list(list_of_polygons *p)
 	size += p->size;
 };
 
-
-list_of_obstacles::~list_of_obstacles()  
-{                                        
-    polygon *tmp = head;                 
-    polygon *otmp = offset_head;         
-    while (head != NULL)                 
-    {                                    
-	        tmp = head;                      
-	        head = head->pnext;              
-	        delete tmp;                      
-	    }                                    
-    while (offset_head != NULL)          
-    {                                    
-	        tmp = offset_head;               
-	        offset_head = offset_head->pnext;
-	        delete tmp;                      
-	    }                                    
-};                                       
+list_of_obstacles::~list_of_obstacles()
+{
+	polygon *tmp = head;
+	polygon *otmp = offset_head;
+	while (head != NULL)
+	{
+		tmp = head;
+		head = head->pnext;
+		delete tmp;
+	}
+	while (offset_head != NULL)
+	{
+		tmp = offset_head;
+		offset_head = offset_head->pnext;
+		delete tmp;
+	}
+};
 
 void list_of_obstacles::delete_offsetted_list()
-{                                              
-    polygon *tmp;                              
-    while (offset_head != NULL)                
-    {                                          
-	        tmp = offset_head;                     
-	        offset_head = offset_head->pnext;      
-	        delete tmp;                            
-	    }                                          
-    offset_size = 0;                           
-};                                             
+{
+	polygon *tmp;
+	while (offset_head != NULL)
+	{
+		tmp = offset_head;
+		offset_head = offset_head->pnext;
+		delete tmp;
+	}
+	offset_size = 0;
+};
 
 string exec(const char *cmd)
 {

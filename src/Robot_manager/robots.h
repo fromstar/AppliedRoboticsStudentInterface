@@ -71,6 +71,8 @@ typedef struct Robot {
   double offset = 1;
   string desire = "NaN";
   vector<string> plan;
+  bool inside_offset_arena = false;
+  bool inside_offset_obstacle = false;
 
   Robot(string _id = "Default_id", Robot_type _type = undefined,
 	logger* _l=new logger(), point_node *loc = new point_node(0, 0),

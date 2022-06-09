@@ -51,7 +51,7 @@ double dot2D(double *, double *);
 tuple<point_list *, double_list *> intersCircleLine(double, double, double, double, double, double, double);
 tuple<double, double, double> get_circle_center(double, double, double, double, double, double);
 tuple<curve, int> dubins_no_inter(double, double, double, double, double, double *, double,
-								  points_map, double, vector<double>);
+								  point_list*, polygon*, double, vector<double>);
 bool pt_in_arc(point_node *, arc);
 bool find_intersection(arc, point_node *, point_node *);
 vector<double> opti_theta(vector<double> xpath, vector<double> ypath);

@@ -135,7 +135,8 @@ namespace student
     World_representation abstract_arena = World_representation(
         arena.free_space,
         arena.gates,
-        log_test);
+        log_test,
+        arena.obstacles);
     abstract_arena.find_pddl_connections();
 
     robot_manager rm(log_test);
@@ -148,14 +149,10 @@ namespace student
     // rm.info(true);
 
     abstract_arena.info();
-    Mat img_arena = arena.plot_arena(600, 600, true);
+    Mat img_arena = arena.plot_arena(1080, 1080, true);
 
     imshow("Arena", img_arena);
     waitKey(0);
-
-    // imshow("Arena", img_arena);
-
-    // waitKey(0);
 
     /**********************************************
      * GENERATE PLANS AND MOVE ROBOTS
@@ -209,7 +206,7 @@ namespace student
     vector<double> f_used_theta[fx_path.size()];
 
     // double kmax = 27;
-    double kmax = 30;
+    double kmax = 55;
     /* Space where to search a minimum dubins curve */
     double search_angle = M_PI * 2;
 
@@ -218,10 +215,23 @@ namespace student
     /* Calculate fugitive's dubin curves without intersection */
     while (i < size - 1)
     {
+      point_list *tmp_arena_limits = arena.shrinked_arena;
+      polygon *tmp_obstacle = arena.obstacles->offset_head;
+
+      if(f_1->inside_offset_arena)
+      {
+        tmp_arena_limits = arena.arena;
+        f_1->inside_offset_arena = false;
+      }
+      if(f_1->inside_offset_obstacle)
+      {
+        tmp_obstacle = arena.obstacles->head;
+        f_1->inside_offset_obstacle = false;
+      }
 
       tie(c, pidx) = dubins_no_inter(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1],
-                                     fy_path[i + 1], &fth_path[i + 1], kmax, arena,
-                                     search_angle, f_used_theta[i]);
+                                     fy_path[i + 1], &fth_path[i + 1], kmax, tmp_arena_limits, 
+                                     tmp_obstacle, search_angle, f_used_theta[i]);
 
       /* If pidx > 0 a curve is found */
       if (pidx > 0)
@@ -285,9 +295,23 @@ namespace student
     i = 0;
     while (i < size - 1)
     {
+      point_list *tmp_arena_limits = arena.shrinked_arena;
+      polygon *tmp_obstacle = arena.obstacles->offset_head;
+
+      if(c_1->inside_offset_arena)
+      {
+        tmp_arena_limits = arena.arena;
+        c_1->inside_offset_arena = false;
+      }
+      if(c_1->inside_offset_obstacle)
+      {
+        tmp_obstacle = arena.obstacles->head;
+        c_1->inside_offset_obstacle = false;
+      }
+
       tie(c, pidx) = dubins_no_inter(cx_path[i], cy_path[i], cth_path[i], cx_path[i + 1],
-                                     cy_path[i + 1], &cth_path[i + 1], kmax, arena,
-                                     search_angle, c_used_theta[i]);
+                                     cy_path[i + 1], &cth_path[i + 1], kmax, arena.shrinked_arena, 
+                                     arena.obstacles->offset_head, search_angle, c_used_theta[i]);
 
       if (pidx > 0)
       {
