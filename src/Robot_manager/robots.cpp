@@ -581,8 +581,8 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 		
 		map<double, string>::iterator nearest_cell;
 		nearest_cell = cell_distance.upper_bound(0.0);
-		problem_file += "\t\t(is_in " + self->ID + " " +
-							nearest_cell->second + " )\n";
+		problem_file += "\t\t(is_in " + upperify(self->ID) + " " +
+							upperify(nearest_cell->second) + " )\n";
 	};
 
 	to_log("Ended fugitive search");
@@ -1299,11 +1299,19 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	
 		map<double, string>::iterator nearest_cell;
 		nearest_cell = cell_distance.upper_bound(0.0);
-		pddl_problem += "\t\t(is_in " + self->ID + " " +
-						nearest_cell->second + " )\n";
+		pddl_problem += "\t\t(is_in " + upperify(self->ID) + " " +
+						upperify(nearest_cell->second) + " )\n";
 	};
 
 	to_log("Written location of catcher");
+	
+	// Write antagonist location
+	found_agent = false;
+	map<string, Robot*> missed_agents;
+	for(int i=0; i < antagonists.size(); i++)
+	{
+		missed_agents[antagonists[i]->ID] = antagonists[i];
+	};
 
 	for (int i = 0; i < antagonists.size(); i++)
 	{
@@ -1319,8 +1327,38 @@ void robot_catcher::make_pddl_files(World_representation wr,
 								upperify(antagonists[i]->ID) +
 								" " + upperify(it_node->first) +
 								")\n";
+				missed_agents.erase(antagonists[i]->ID);
+				found_agent = true;
 				break;
 			};
+		};
+	};
+
+	if(missed_agents.size() > 0)  // some antagonists are nowhere
+	{
+		map<string, Robot*>::iterator ant_it;
+		for(ant_it = missed_agents.begin(); ant_it != missed_agents.end();
+			ant_it++)
+		{
+			map<double, string> cell_distance;
+			for (it_node = wr.world_free_cells.begin();
+				 it_node != wr.world_free_cells.end(); it_node++)
+			{	
+				point_node *agent = ant_it->second->where();
+				point_node *cell = it_node->second.cell->centroid;
+				double distance = agent->distance(cell);
+				cell_distance[distance] = it_node->first;
+			};
+
+			if (cell_distance.size() == 0)
+			{
+				cout << "This should never happen. No cells in arena?" << endl;
+			};
+			
+			map<double, string>::iterator nearest_cell;
+			nearest_cell = cell_distance.upper_bound(0.0);
+			pddl_problem += "\t\t(is_in " + upperify(ant_it->second->ID) +
+							" " + upperify(nearest_cell->second) + " )\n";
 		};
 	};
 	to_log("Written location of antagonists");
