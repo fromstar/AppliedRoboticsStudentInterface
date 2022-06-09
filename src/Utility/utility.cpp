@@ -441,6 +441,7 @@ void polygon::recompute_centroid(){
 polygon::~polygon()
 {
 	pl->delete_list();
+	delete(centroid);
 };
 
 Edge_list *polygon::edgify()
