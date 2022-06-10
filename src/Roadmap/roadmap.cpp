@@ -259,9 +259,12 @@ Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons)
         stringstream ss;
         ss << count_free;
         string cell_id = ss.str();
-        cv::putText(img_arena, "hello", 
-                    cv::Point(tmp->centroid->x, tmp->centroid->y-0.05),
-                    cv::FONT_HERSHEY_SIMPLEX, 0.8, Scalar(255, 255, 255));
+		
+		// Write ID of cell
+        // cv::putText(img_arena, "hello", 
+        //             cv::Point(tmp->centroid->x, tmp->centroid->y-0.05),
+        //             cv::FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 255, 255),
+		// 			2, false);
 
 		tmp = tmp->pnext;
         count_free += 1;
@@ -346,7 +349,7 @@ void points_map::merge_obstacles()
 	// check which polygons intersect
 	vector<Polygon_boost> output;
 	int i = 0; // number of polygons present
-	double psize = polys.size();
+	int psize = polys.size();
 	while (i < psize)
 	{
 		int j = i + 1;
@@ -360,6 +363,9 @@ void points_map::merge_obstacles()
 				// polys.erase(polys.begin() + j);
 				// polys.push_back(output[output.size()-1]);
 				polys[i] = output[output.size() - 1];
+                polys.erase(polys.begin()+j);
+                psize--;
+                j--;
 				// psize = polys.size();
 				// i=0, j=1;
 			}
@@ -423,26 +429,24 @@ void points_map::merge_obstacles()
 	obstacles->delete_offsetted_list();
 
 	// Repopulate with updatate offsetted polygons
-	for (i = 0; i < polys.size(); i++)
+    for (i = 0; i < polys.size(); i++)
 	{
-		point_list *pl = boost_polygon_to_point_list(polys[i]);
-
-		// pl->print_list();
+		polygon *pl = boost_polygon_to_polygon(polys[i]);
 
 		if (obstacles->offset_head == NULL)
 		{
-			obstacles->offset_head = new polygon(pl);
+			obstacles->offset_head = pl;
 			obstacles->offset_tail = obstacles->offset_head;
 		}
 		else
 		{
-			obstacles->offset_tail->pnext = new polygon(pl);
+			obstacles->offset_tail->pnext = pl;
 			obstacles->offset_tail = obstacles->offset_tail->pnext;
 		}
 		obstacles->offset_size++;
 	}
 
-	// If gate is inside obstacle remove the gate
+	// If gate is inside obstacles remove the gate
 	polygon * tmp_gate = gates->head;
 	polygon * tmp_gate_prev = NULL;
 	while(tmp_gate != NULL)
@@ -633,39 +637,57 @@ vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
 	int prev_output = 0;
 	int arena_size = arena.size();
 	int arena_ob_size = obstacles.size();
-	for (int i = 0; i < arena_size; i++)
+
+	for (int i = 0; i < arena_size; i++)  // i is the index of the cell
 	{
-		for (int j = 0; j < arena_ob_size; j++)
+        int j = 0;  // Index of the obstacle
+        bool interrupt_ob = false;
+        while(j < arena_ob_size && interrupt_ob == false)
 		{
-			if (bg::intersects(arena[i], obstacles[j]))
-			{
-				bg::difference(arena[i], obstacles[j], output);
-				int diff = output.size() - prev_output;
-				prev_output = output.size();
+            // Apply only if cells are outside the obstacles
+			if (bg::covered_by(arena[i], obstacles[j]) == false){
+                if (bg::intersects(arena[i], obstacles[j]))
+                {
+                    bg::difference(arena[i], obstacles[j], output);
+                    int diff = output.size() - prev_output;
+                    prev_output = output.size();
 
-				// printf("Polygon_boost %d and obstacle %d intersects", i, j);
-				// printf(" -> %d new cells\n", diff);
-
-				arena[i] = output[output.size() - 1];
-				if (diff > 1)
-				{
-					tmp_output = arena;
-					for (int k = 1; k < diff; k++)
-					{
-						int output_idx = output.size() - 1 - k;
-						vector<Polygon_boost>::iterator it;
-						it = tmp_output.begin();
-						tmp_output.insert(it + i + k, output[output_idx]);
-						arena_size += 1;
-					};
-					arena = tmp_output;
-				};
-			};
+                    arena[i] = output[output.size() - 1];
+                    if (diff > 1)
+                    {
+                        tmp_output = arena;
+                        for (int k = 1; k < diff; k++)
+                        {
+                            int output_idx = output.size() - 1 - k;
+                            vector<Polygon_boost>::iterator it;
+                            it = tmp_output.begin();
+                            tmp_output.insert(it + i + k, output[output_idx]);
+                            arena_size += 1;
+                        };
+                        arena = tmp_output;
+                    };
+			    };
+            }
+            else
+            {
+                // Delete cells covered by obstacles;
+                arena.erase(arena.begin()+i);
+                i--;
+                interrupt_ob = true;
+            };
+            j++;
 		};
 	};
 	return arena;
 };
 
+/**
+ * \fun
+ * This method is used to create cells in the free space that
+ * compose a free movement grid.
+ * @param res: int. It is the resolution steps of the algorithm -> how many
+ * 					times does it runs.
+ */
 void points_map::make_free_space_cells_squares(int res)
 {
 	// generate arena subsetting
@@ -741,22 +763,9 @@ void points_map::make_free_space_cells_squares(int res)
 	*/
 
 	// Remove obstacles from the cells
-
-	vector<Polygon_boost> output;
-	for (int i_o = 0; i_o != ob_boost.size(); i_o++)
-	{
-		for (int i_c = 0; i_c != cells.size(); i_c++)
-		{
-			if (bg::intersects(cells[i_c], ob_boost[i_o]))
-			{
-				bg::difference(cells[i_c], ob_boost[i_o], output);
-				cells[i_c] = output[output.size() - 1];
-			};
-		};
-	};
-
 	cells = difference_of_vectors(cells, ob_boost);
-
+    
+    // Populate free space cells list
 	list_of_polygons *new_cells = new list_of_polygons();
 	for (int i = 0; i < cells.size(); i++)
 	{

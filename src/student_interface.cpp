@@ -75,7 +75,7 @@ namespace student
                 const std::vector<float> y, const std::vector<float> theta,
                 std::vector<Path> &path, const std::string &config_folder)
   {
-    bool push_first = true;
+    bool push_first = false;
     clock_t starting_clock = clock();
 
     logger *log_test = new logger("test_log.txt");
@@ -113,7 +113,10 @@ namespace student
       arena.add_gate(new polygon(pol));
     }
 
+    arena.convexify_obstacles();
+	
     arena.merge_obstacles();
+    
     arena.convexify_obstacles();
 
     arena.make_free_space_cells_squares(3);
@@ -151,13 +154,13 @@ namespace student
     abstract_arena.info();
     Mat img_arena = arena.plot_arena(1080, 1080, true);
 
-    // imshow("Arena", img_arena);
-    // waitKey(0);
+    imshow("Arena", img_arena);
+    waitKey(0);
 
     /**********************************************
      * GENERATE PLANS AND MOVE ROBOTS
      ***********************************************/
-
+	
     // FUGITIVE PLAN
 
     map<string, robot_fugitive *>::iterator f_it;
