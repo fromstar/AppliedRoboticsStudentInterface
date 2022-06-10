@@ -75,7 +75,7 @@ namespace student
                 const std::vector<float> y, const std::vector<float> theta,
                 std::vector<Path> &path, const std::string &config_folder)
   {
-    bool push_first = false;
+    bool push_first = true;
     clock_t starting_clock = clock();
 
     logger *log_test = new logger("test_log.txt");
@@ -151,8 +151,8 @@ namespace student
     abstract_arena.info();
     Mat img_arena = arena.plot_arena(1080, 1080, true);
 
-    imshow("Arena", img_arena);
-    waitKey(0);
+    // imshow("Arena", img_arena);
+    // waitKey(0);
 
     /**********************************************
      * GENERATE PLANS AND MOVE ROBOTS
@@ -206,7 +206,7 @@ namespace student
     vector<double> f_used_theta[fx_path.size()];
 
     // double kmax = 27;
-    double kmax = 55;
+    double kmax = 40;
     /* Space where to search a minimum dubins curve */
     double search_angle = M_PI * 2;
 
@@ -342,7 +342,8 @@ namespace student
     if (push_first)
     {
       path[0] = push_path(f_finded_curves[0], path[0]);
-      path[1] = push_path(c_finded_curves[0], path[1]);
+      if(c_finded_curves.size() != 0)
+        path[1] = push_path(c_finded_curves[0], path[1]);
     }
     else
     {
