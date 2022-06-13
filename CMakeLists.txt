@@ -25,6 +25,7 @@ add_library(student SHARED
    src/Robot_manager/robot_manager.cpp
    src/Robot_manager/robots.cpp
    src/student_interface.cpp
+   src/Connector/connector.cpp
 )
 
 target_link_libraries(student
