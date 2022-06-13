@@ -4,6 +4,7 @@
 #include "../Utility/utility.h"
 #include "../Log/logger.h"
 #include "../Robot_manager/robot_manager.h"
+#include "../Connector/connector.h"
 
 #include <iostream>
 #include <stdio.h>
@@ -39,6 +40,7 @@ typedef struct points_map
 	list_of_obstacles *obstacles = new list_of_obstacles;
 	list_of_polygons *gates = new list_of_polygons;
 	list_of_polygons *free_space = new list_of_polygons;
+    Connection_map connections;
 	// Robot *robot = NULL; // to update using list_of_robots
 	map<string, Robot *> robot;
 	logger *log;
@@ -55,16 +57,17 @@ typedef struct points_map
 	void make_free_space_cells_triangular(int res = 3);
 	void make_free_space_cells_squares(int res = 3);
 	void print_info();
-	Mat plot_arena(int x_dim, int y_dim, bool show_original_polygons = true);
+	Mat plot_arena(int x_dim, int y_dim, bool show_original_polygons=true,
+                   bool show_cells_id=false);
 	void shrink_arena(double offset = 0);
 	void del_map();
 	// void ~points_map();
 } points_map;
 
 // outsider functions
-point_list *boost_polygon_to_point_list(Polygon_boost p);
-polygon *boost_polygon_to_polygon(Polygon_boost p);
-polygon *boost_polygon_to_polygon(Polygon_boost p);
+// point_list *boost_polygon_to_point_list(Polygon_boost p);
+// polygon *boost_polygon_to_polygon(Polygon_boost p);
+// polygon *boost_polygon_to_polygon(Polygon_boost p);
 list_of_polygons *subset_polygon(polygon *p, int levels = 1);
 vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
 											vector<Polygon_boost> obstacles);

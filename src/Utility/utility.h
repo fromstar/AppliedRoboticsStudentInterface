@@ -12,6 +12,13 @@
 #include <string.h>
 #include "../../../simulator/src/9_project_interface/include/utils.hpp"
 
+
+#define DIM_X_PLOT 600
+#define DIM_Y_PLOT 900
+
+#define SCALE_1 DIM_X_PLOT/2
+#define SCALE_2 DIM_Y_PLOT/2
+
 using pt = boost::geometry::model::d2::point_xy<double>;
 using Polygon_boost = boost::geometry::model::polygon<pt>;
 
@@ -20,7 +27,7 @@ using namespace cv;
 using namespace std;
 
 struct double_node{
-	double value;
+	double value = 0;
 	double_node *pnext = NULL;
 	
 	double_node(double a){
@@ -40,17 +47,17 @@ struct double_list{
 }typedef double_list;
 
 struct point_node{
-	double x;
-	double y;
+	double x = 0;
+	double y = 0;
 	point_node *pnext = NULL;
 	
-	point_node(double a, double b){
+	point_node(double a=0, double b=0){
 		x=a;
 		y=b;
 		}
 	point_node* copy();
 	void Print();
-	double distance(point_node* p);
+	double distance(point_node* p=NULL);
 	bool operator == (const point_node* p);
 }typedef point_node;
 
@@ -66,6 +73,7 @@ struct point_list{
 	void print_list();
 	void delete_list();
 	point_list* pop();
+    Polygon_boost to_boost_polygon();
 }typedef point_list;
 
 /**
@@ -145,10 +153,13 @@ typedef struct Edge_list{
  * elements.
  */
 typedef struct polygon{
+    string id = "NaN";
 	point_list *pl = NULL;
 	point_node *centroid = NULL;
 	polygon *pnext = NULL;
-	
+    double area = 0.0;  // It is setted only if is a free space cells,
+                        // look at roadmap.cpp -> \fun make_free_space_cells_squares
+
 	// constructor
 	polygon(point_list* pls);
 	~polygon();
@@ -159,6 +170,7 @@ typedef struct polygon{
   	void concatenate(polygon *p);
 	void recompute_centroid();
 	Polygon_boost to_boost_polygon();  // Polygon_boost of boost lybrary
+    int points_in_common(polygon *p);
   	void info();
 }polygon;
 
@@ -198,5 +210,6 @@ string exec(const char *cmd);
 double get_angle(double,double,double,double);
 bool is_in_arc(double,double,double);
 
-
+polygon *boost_polygon_to_polygon(Polygon_boost p);
+point_list *boost_polygon_to_point_list(Polygon_boost p);
 #endif

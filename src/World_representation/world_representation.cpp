@@ -84,7 +84,7 @@ World_representation::World_representation(list_of_polygons *cells,
 										   list_of_polygons *gate_cells,
 										   logger *log,
 										   list_of_obstacles *obs,
-										   string* connections)
+										   string connections)
 {
 	l = log;
 	l->add_event("Creating world representation");
@@ -125,7 +125,7 @@ World_representation::World_representation(list_of_polygons *cells,
 		l->add_event("Added obstacles");
 	};
 
-	if (connections != NULL)
+	if (connections != "NaN")
 	{
 		pddl_connections = connections;
 		l->add_event("Added pddl connections");
@@ -184,7 +184,7 @@ tuple<vector<double>, vector<double>> World_representation::get_path(vector<stri
 }
 
 void World_representation::set_connections(string connections){
-	pddl_connections = new string(connections);
+	pddl_connections = connections;
 };
 
 /**
@@ -195,13 +195,13 @@ void World_representation::set_connections(string connections){
  */
 string World_representation::find_pddl_connections(){
 	l -> add_event("World_representation: Finding cells connections.");
-	if (pddl_connections != NULL){
+	if (pddl_connections != "NaN"){
 		l -> add_event("World_representation: "
 					   "Cells connections already in memory -> returning.");
-		return *pddl_connections;
+		return pddl_connections;
 	}else{
-		string *connections = new string("");
-		
+		// string *connections = new string("");
+	    pddl_connections = "";	
 		map<string, World_node>::iterator it_1;
 		map<string, World_node>::iterator it_2;
 		
@@ -220,11 +220,14 @@ string World_representation::find_pddl_connections(){
 					Polygon_boost p2 = it_2->second.cell->to_boost_polygon();
 					if (bg::touches(p1, p2))
 					{
-						*connections += "\t\t( connected " + it_1->first + " " +
-						 			    it_2->first + " )\n";
+						pddl_connections += "\t\t( connected " + it_1->first + " " +
+						 	    		    it_2->first + " )\n";
 					};
 					
-					int points_in_common = 0;
+                    polygon *temp_1 = it_1->second.cell;
+                    polygon *temp_2 = it_2->second.cell;
+					int points_in_common = temp_1->points_in_common(temp_2);
+                    /*
 					point_node *tmp_pol_1 = it_1->second.cell->pl->head;
 					while(tmp_pol_1 != NULL && points_in_common <= 1)
 					{
@@ -240,17 +243,18 @@ string World_representation::find_pddl_connections(){
 						};
 						tmp_pol_1 = tmp_pol_1 -> pnext;
 					};
+                    */
 					if (points_in_common == 1)
 					{
-						*connections += "\t\t( is_diagonal " + it_1->first +
-										" " + it_2->first + " )\n";
+						pddl_connections += "\t\t( is_diagonal " + it_1->first +
+							    			" " + it_2->first + " )\n";
 					};
 
 				};
 			};
 		};
-		pddl_connections = connections;
-		return *connections;
+		// pddl_connections = connections;
+		return pddl_connections;
 	};
 };
 
