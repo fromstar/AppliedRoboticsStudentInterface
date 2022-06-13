@@ -112,14 +112,21 @@ namespace student
       }
       arena.add_gate(new polygon(pol));
     }
-
-    arena.convexify_obstacles();
-	
+   
+    // arena.convexify_obstacles();
+    cout << " Error ?" << endl;	
     arena.merge_obstacles();
+    cout << "maybe" << endl;
     
     arena.convexify_obstacles();
+    cout << "Or maybe not" << endl;
+    // Mat test = arena.plot_arena(1080, 1080, true, true);
+    // imshow("Arena", test);
+    // waitKey(0);
 
     arena.make_free_space_cells_squares(3);
+
+    cout << "Made free space" << endl;
 
     // arena.make_free_space_cells_triangular();
 
@@ -140,6 +147,7 @@ namespace student
         arena.gates,
         log_test,
         arena.obstacles);
+        // arena.connections.find_pddl_connections());
     abstract_arena.find_pddl_connections();
 
     robot_manager rm(log_test);
@@ -152,10 +160,7 @@ namespace student
     // rm.info(true);
 
     abstract_arena.info();
-    Mat img_arena = arena.plot_arena(1080, 1080, true);
-
-    imshow("Arena", img_arena);
-    waitKey(0);
+    Mat img_arena = arena.plot_arena(1080, 1080, true, true);
 
     /**********************************************
      * GENERATE PLANS AND MOVE ROBOTS
@@ -209,7 +214,7 @@ namespace student
     vector<double> f_used_theta[fx_path.size()];
 
     // double kmax = 27;
-    double kmax = 40;
+    double kmax = 100;
     /* Space where to search a minimum dubins curve */
     double search_angle = M_PI * 2;
 
