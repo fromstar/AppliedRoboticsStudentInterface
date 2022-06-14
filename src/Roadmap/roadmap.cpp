@@ -57,7 +57,7 @@ void list_of_obstacles::delete_offsetted_list()
 void points_map::add_arena_points(point_list *ArenaPoints, double offset)
 {
 	arena = ArenaPoints;
-	shrink_arena(offset); 
+	shrink_arena(offset);
 };
 
 void points_map::shrink_arena(double offset)
@@ -66,15 +66,15 @@ void points_map::shrink_arena(double offset)
 		return;
 
 	polygon *p = new polygon(arena);
-	
+
 	shrinked_arena = new point_list();
 	point_node *p1 = arena->head;
 
 	double new_x, new_y;
 
-	while(p1 != NULL)
+	while (p1 != NULL)
 	{
-		if(p1->x < p->centroid->x)
+		if (p1->x < p->centroid->x)
 		{
 			new_x = p1->x + offset;
 		}
@@ -83,7 +83,7 @@ void points_map::shrink_arena(double offset)
 			new_x = p1->x - offset;
 		}
 
-		if(p1->y < p->centroid->y)
+		if (p1->y < p->centroid->y)
 		{
 			new_y = p1->y + offset;
 		}
@@ -146,7 +146,7 @@ void points_map::set_robot_position(string robot_id, double x, double y, double 
 
 /**
  * \fun
- * This function is used to add a polygon representing a gate to the 
+ * This function is used to add a polygon representing a gate to the
  * pointsmap.
  * @param gt: polygon\*. It is a pointer to a polygon instance representing a
  * gate in the environment.
@@ -207,12 +207,12 @@ void points_map::print_info()
  * representation (true) or not (false).
  */
 Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons,
-                           bool show_cells_id)
+						   bool show_cells_id)
 {
 	Mat img_arena(x_dim, y_dim, CV_8UC3, Scalar(255, 255, 255));
 
 	img_arena = plot_points(arena, img_arena, Scalar(0, 0, 0), true);
-	img_arena = plot_points(shrinked_arena, img_arena, Scalar(121,18,65), true);
+	img_arena = plot_points(shrinked_arena, img_arena, Scalar(121, 18, 65), true);
 
 	polygon *tmp = NULL;
 
@@ -256,17 +256,17 @@ Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons,
 		free_space_centroid->add_node(tmp->centroid->copy());
 		free_space_centroid->add_node(tmp->centroid->copy());
 		img_arena = plot_points(free_space_centroid, img_arena,
-                                Scalar(0, 255, 255), false, 2);	
-        if (show_cells_id)
-        {
-            // Write ID of cell
-            double x = ((tmp->centroid->x - 0.05) * SCALE_1) + SCALE_2;
-            double y = (tmp->centroid->y * -SCALE_1) + SCALE_2;
-            cv::putText(img_arena, tmp->id, 
-                        cv::Point(x, y),
-                        cv::FONT_HERSHEY_DUPLEX , 0.3, Scalar(0, 0, 0));
-            tmp = tmp->pnext;
-        }
+								Scalar(0, 255, 255), false, 2);
+		if (show_cells_id)
+		{
+			// Write ID of cell
+			double x = ((tmp->centroid->x - 0.05) * SCALE_1) + SCALE_2;
+			double y = (tmp->centroid->y * -SCALE_1) + SCALE_2;
+			cv::putText(img_arena, tmp->id,
+						cv::Point(x, y),
+						cv::FONT_HERSHEY_DUPLEX, 0.3, Scalar(0, 0, 0));
+			tmp = tmp->pnext;
+		}
 	};
 
 	// plot robots
@@ -354,44 +354,44 @@ void points_map::merge_obstacles()
 	while (i < psize)
 	{
 		int j = i + 1;
-        bool lock = false;
+		bool lock = false;
 		while (j < psize && lock == false)
-		{   
-            // cout << "Intersects? " <<
-            //    boost::geometry::intersects(polys[i], polys[j]) << endl;
-            // cout << "Within? " <<
-            //     boost::geometry::intersects(polys[i], polys[j]) << endl;
-            
-            // if (boost::geometry::intersects(polys[i], polys[j]) == false)
-            // {
-                if (boost::geometry::intersects(polys[i], polys[j]))
-                {
-                    // Update the polygon list
-                    boost::geometry::union_(polys[i], polys[j], output);
-                    // polys.erase(polys.begin() + i);
-                    // polys.erase(polys.begin() + j);
-                    // polys.push_back(output[output.size()-1]);
-                    polys[i] = output[output.size() - 1];
-                    polys.erase(polys.begin()+j);
-                    psize--;
-                    j--;
-                    // psize = polys.size();
-                    // i=0, j=1;
-                }
+		{
+			// cout << "Intersects? " <<
+			//    boost::geometry::intersects(polys[i], polys[j]) << endl;
+			// cout << "Within? " <<
+			//     boost::geometry::intersects(polys[i], polys[j]) << endl;
 
-            // }
+			// if (boost::geometry::intersects(polys[i], polys[j]) == false)
+			// {
+			if (boost::geometry::intersects(polys[i], polys[j]))
+			{
+				// Update the polygon list
+				boost::geometry::union_(polys[i], polys[j], output);
+				// polys.erase(polys.begin() + i);
+				// polys.erase(polys.begin() + j);
+				// polys.push_back(output[output.size()-1]);
+				polys[i] = output[output.size() - 1];
+				polys.erase(polys.begin() + j);
+				psize--;
+				j--;
+				// psize = polys.size();
+				// i=0, j=1;
+			}
+
+			// }
 			j++;
 		}
 		i++;
 	}
 
 	// Check intersections with arena
-    polygon * arena_in_use = NULL;
-    
-    if (arena != NULL)
-    {
-        arena_in_use = new polygon(arena);
-    }
+	polygon *arena_in_use = NULL;
+
+	if (arena != NULL)
+	{
+		arena_in_use = new polygon(arena);
+	}
 	else
 	{
 		printf("No arena points setted. Unable to check intersections.");
@@ -446,7 +446,7 @@ void points_map::merge_obstacles()
 	obstacles->delete_offsetted_list();
 
 	// Repopulate with updatate offsetted polygons
-    for (i = 0; i < polys.size(); i++)
+	for (i = 0; i < polys.size(); i++)
 	{
 		polygon *pl = boost_polygon_to_polygon(polys[i]);
 
@@ -464,14 +464,14 @@ void points_map::merge_obstacles()
 	}
 
 	// If gate is inside obstacles remove the gate
-	polygon * tmp_gate = gates->head;
-	polygon * tmp_gate_prev = NULL;
-	while(tmp_gate != NULL)
+	polygon *tmp_gate = gates->head;
+	polygon *tmp_gate_prev = NULL;
+	while (tmp_gate != NULL)
 	{
 		bool interrupt = false;
 		Polygon_boost gate_boost = tmp_gate->to_boost_polygon();
 		polygon *tmp_ob = obstacles->offset_head;
-		while(tmp_ob != NULL && interrupt == false)
+		while (tmp_ob != NULL && interrupt == false)
 		{
 			Polygon_boost ob_boost = tmp_ob->to_boost_polygon();
 
@@ -479,7 +479,7 @@ void points_map::merge_obstacles()
 			{
 				// Remove gate from the list
 				// Case gate is at the start of the list
-				if(tmp_gate == gates->head)
+				if (tmp_gate == gates->head)
 				{
 					gates->head = tmp_gate->pnext;
 					delete tmp_gate;
@@ -494,18 +494,17 @@ void points_map::merge_obstacles()
 						gates->tail = tmp_gate_prev;
 					}
 				};
-				interrupt = true;  // Avoid parsing further obstacles
+				interrupt = true; // Avoid parsing further obstacles
 			};
 
-			tmp_ob = tmp_ob -> pnext;
+			tmp_ob = tmp_ob->pnext;
 		};
 		tmp_gate_prev = tmp_gate;
 		tmp_gate = tmp_gate->pnext;
 	};
-	
+
 	log->add_event("Obstacles in touch merged");
 }
-
 
 /**
  * \fun
@@ -515,26 +514,26 @@ void points_map::merge_obstacles()
 void points_map::convexify_obstacles()
 {
 	polygon *pol = obstacles->offset_head;
-	while(pol != NULL)
+	while (pol != NULL)
 	{
 		// convert to boost
 		Polygon_boost boost_pol = pol->to_boost_polygon();
 		Polygon_boost output;
-		bg::convex_hull(boost_pol, output);	
-		pol->pl->delete_list();  // Remove old allocation of data
+		bg::convex_hull(boost_pol, output);
+		pol->pl->delete_list(); // Remove old allocation of data
 		pol->pl = boost_polygon_to_polygon(output)->pl;
 		pol = pol->pnext;
 	};
-	
+
 	// If gate is inside obstacle remove the gate
-	polygon * tmp_gate = gates->head;
-	polygon * tmp_gate_prev = NULL;
-	while(tmp_gate != NULL)
+	polygon *tmp_gate = gates->head;
+	polygon *tmp_gate_prev = NULL;
+	while (tmp_gate != NULL)
 	{
 		bool interrupt = false;
 		Polygon_boost gate_boost = tmp_gate->to_boost_polygon();
 		polygon *tmp_ob = obstacles->offset_head;
-		while(tmp_ob != NULL && interrupt == false)
+		while (tmp_ob != NULL && interrupt == false)
 		{
 			Polygon_boost ob_boost = tmp_ob->to_boost_polygon();
 
@@ -542,7 +541,7 @@ void points_map::convexify_obstacles()
 			{
 				// Remove gate from the list
 				// Case gate is at the start of the list
-				if(tmp_gate == gates->head)
+				if (tmp_gate == gates->head)
 				{
 					gates->head = tmp_gate->pnext;
 					delete tmp_gate;
@@ -557,16 +556,54 @@ void points_map::convexify_obstacles()
 						gates->tail = tmp_gate_prev;
 					}
 				};
-				interrupt = true;  // Avoid parsing further obstacles
+				interrupt = true; // Avoid parsing further obstacles
 			};
 
-			tmp_ob = tmp_ob -> pnext;
+			tmp_ob = tmp_ob->pnext;
 		};
 		tmp_gate_prev = tmp_gate;
 		tmp_gate = tmp_gate->pnext;
 	};
-};
 
+	if (gates != NULL)
+	{
+
+		std::vector<Polygon_boost> polys;
+		polygon *pol_iter = obstacles->offset_head;
+		// Convert polygons in Boost polygon object
+		while (pol_iter != NULL)
+		{
+			polys.push_back(pol_iter->to_boost_polygon());
+			pol_iter = pol_iter->pnext;
+		}
+
+		polygon *tmp_gate = gates->head;
+		gates = NULL; // Delete old gates list
+		vector<Polygon_boost> tmp_new_gates;
+		points_map *tmp_map = new points_map(NULL);
+
+		while (tmp_gate != NULL)
+		{
+			Polygon_boost _gate = tmp_gate->to_boost_polygon();
+			for (int k = 0; k < polys.size(); k++)
+			{
+				if (boost::geometry::intersects(_gate, polys[k]))
+				{
+					boost::geometry::difference(_gate, polys[k],
+												tmp_new_gates);
+					point_list *pl = boost_polygon_to_point_list(
+						tmp_new_gates[tmp_new_gates.size() - 1]);
+					polygon *new_gate = new polygon(pl);
+					new_gate->pnext = tmp_gate->pnext;
+					tmp_gate = new_gate;
+				};
+			};
+			tmp_map->add_gate(tmp_gate);
+			tmp_gate = tmp_gate->pnext;
+		};
+		gates = tmp_map->gates;
+	};
+};
 
 /**
  * This function is used to subset a polygon into a finite number of cells.
@@ -655,59 +692,59 @@ vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
 	int arena_size = arena.size();
 	int arena_ob_size = obstacles.size();
 
-	for (int i = 0; i < arena_size; i++)  // i is the index of the cell
+	for (int i = 0; i < arena_size; i++) // i is the index of the cell
 	{
-        int j = 0;  // Index of the obstacle
-        bool interrupt_ob = false;
-        while(j < arena_ob_size && interrupt_ob == false)
+		int j = 0; // Index of the obstacle
+		bool interrupt_ob = false;
+		while (j < arena_ob_size && interrupt_ob == false)
 		{
-            // Apply only if cells are outside the obstacles
-			if (bg::covered_by(arena[i], obstacles[j]) == false){
-                if (bg::intersects(arena[i], obstacles[j]))
-                {
-                    cout << "Intersects" << endl;
-                    bg::difference(arena[i], obstacles[j], output);
-                    int diff = output.size() - prev_output;
-                    prev_output = output.size();
-                   
-                    cout << "Output size: " << output.size() << endl; 
-                    cout << "Difference: " << diff << " Size output: "
-                         << prev_output << endl;
-                    
-                    arena[i] = output[output.size() - 1];
-                    
-                    if (diff > 1)
-                    {
-                        cout << "In diff > 1" << endl;
-                        // tmp_output = arena;
-                        for (int k = 1; k < diff; k++)
-                        {
-                            int output_idx = output.size() - 1 - k;
-                            vector<Polygon_boost>::iterator it;
-                            // it = tmp_output.begin();
-                            it = arena.begin();
-                            // tmp_output
-                            // arena.insert(it + i + k, output[output_idx]);
-                            arena.push_back(output[output_idx]);
-                            arena_size++;
-                        };
-                        // arena = tmp_output;
-                    };
-                    
-                    cout << "In " << i << "/" << arena_size <<
-                            " - " << j << "/" << arena_ob_size << endl; 
-			    };
-            }
-            else
-            {
-                // Delete cells covered by obstacles;
-                cout << "Covered" << endl;
-                arena.erase(arena.begin()+i);
-                i--;
-                arena_size--;
-                interrupt_ob = true;
-            };
-            j++;
+			// Apply only if cells are outside the obstacles
+			if (bg::covered_by(arena[i], obstacles[j]) == false)
+			{
+				if (bg::intersects(arena[i], obstacles[j]))
+				{
+					cout << "Intersects" << endl;
+					bg::difference(arena[i], obstacles[j], output);
+					int diff = output.size() - prev_output;
+					prev_output = output.size();
+
+					cout << "Output size: " << output.size() << endl;
+					cout << "Difference: " << diff << " Size output: "
+						 << prev_output << endl;
+
+					arena[i] = output[output.size() - 1];
+
+					if (diff > 1)
+					{
+						cout << "In diff > 1" << endl;
+						// tmp_output = arena;
+						for (int k = 1; k < diff; k++)
+						{
+							int output_idx = output.size() - 1 - k;
+							vector<Polygon_boost>::iterator it;
+							// it = tmp_output.begin();
+							it = arena.begin();
+							// tmp_output
+							// arena.insert(it + i + k, output[output_idx]);
+							arena.push_back(output[output_idx]);
+							arena_size++;
+						};
+						// arena = tmp_output;
+					};
+
+					cout << "In " << i << "/" << arena_size << " - " << j << "/" << arena_ob_size << endl;
+				};
+			}
+			else
+			{
+				// Delete cells covered by obstacles;
+				cout << "Covered" << endl;
+				arena.erase(arena.begin() + i);
+				i--;
+				arena_size--;
+				interrupt_ob = true;
+			};
+			j++;
 		};
 	};
 	return arena;
@@ -722,7 +759,7 @@ vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
  */
 void points_map::make_free_space_cells_squares(int res)
 {
-    cout << "Good boy" << endl;
+	cout << "Good boy" << endl;
 
 	// generate arena subsetting
 	list_of_polygons *tmp_list = new list_of_polygons();
@@ -769,9 +806,9 @@ void points_map::make_free_space_cells_squares(int res)
 
 	polygon *tmp_pol;
 
-    cout << "Made FS cells" << endl;
+	cout << "Made FS cells" << endl;
 
-    // convert cells to boost polygons
+	// convert cells to boost polygons
 	vector<Polygon_boost> cells;
 	tmp_pol = tmp_list->head;
 	while (tmp_pol != NULL)
@@ -798,53 +835,53 @@ void points_map::make_free_space_cells_squares(int res)
 	};
 	*/
 
-    cout << "Before difference" << endl;
+	cout << "Before difference" << endl;
 	// Remove obstacles from the cells
 	cells = difference_of_vectors(cells, ob_boost);
-    cout << "After difference" << endl;
+	cout << "After difference" << endl;
 
-    // Populate free space cells list
+	// Populate free space cells list
 	// list_of_polygons *new_cells = new list_of_polygons();
-    // Connection_map connections;
+	// Connection_map connections;
 	for (int i = 0; i < cells.size(); i++)
 	{
 		polygon *p = boost_polygon_to_polygon(cells[i]);
-        if (p != NULL){
-            p->id = "CELL_" + to_string(i);  // Set id of polygon
-            p->area = bg::area(cells[i]);  // Set area of the cell
-    
-            connections.add_element(p);
-            if(connections.connections[p->id].master == NULL)
-            {
-                cout << p->id << " is NULL!" << endl;
-            }
-         }
+		if (p != NULL)
+		{
+			p->id = "CELL_" + to_string(i); // Set id of polygon
+			p->area = bg::area(cells[i]);	// Set area of the cell
 
+			connections.add_element(p);
+			if (connections.connections[p->id].master == NULL)
+			{
+				cout << p->id << " is NULL!" << endl;
+			}
+		}
 	};
-    connections.info();
-    connections.aggregate();
-    // connections.info();
+	connections.info();
+	connections.aggregate();
+	// connections.info();
 
-    // Populate free space
-    map<string, polygon*> els = connections.elements();
-    map<string, polygon*>::iterator new_it;
-    for(new_it = els.begin(); new_it != els.end(); new_it++)
-    {
-        free_space->add_polygon(new_it->second);
-    }
-    // free_space->add_polygon(connections.connections["CELL_0"].second.begin()->second);
+	// Populate free space
+	map<string, polygon *> els = connections.elements();
+	map<string, polygon *>::iterator new_it;
+	for (new_it = els.begin(); new_it != els.end(); new_it++)
+	{
+		free_space->add_polygon(new_it->second);
+	}
+	// free_space->add_polygon(connections.connections["CELL_0"].second.begin()->second);
 
-    /*
-    map<string, polygon*> new_cells;
-    new_cells = connections.elements();
-    map<string, polygon*>::iterator new_it;
-    for(new_it = new_cells.begin(); new_it != new_cells.end(); new_it++)
-    {
-        free_space->add_polygon(new_it->second);
-    };
-    */
+	/*
+	map<string, polygon*> new_cells;
+	new_cells = connections.elements();
+	map<string, polygon*>::iterator new_it;
+	for(new_it = new_cells.begin(); new_it != new_cells.end(); new_it++)
+	{
+		free_space->add_polygon(new_it->second);
+	};
+	*/
 
-    /*
+	/*
 	tmp_list = new_cells;
 
 	polygon *pol_pointer = tmp_list->head;
@@ -853,7 +890,7 @@ void points_map::make_free_space_cells_squares(int res)
 		free_space->add_polygon(pol_pointer);
 		pol_pointer = pol_pointer->pnext;
 	};
-    */
+	*/
 };
 
 /**

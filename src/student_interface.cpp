@@ -112,17 +112,12 @@ namespace student
       }
       arena.add_gate(new polygon(pol));
     }
-   
-    // arena.convexify_obstacles();
-    cout << " Error ?" << endl;	
-    arena.merge_obstacles();
-    cout << "maybe" << endl;
-    
+
+    // Before merging obstacle they must be convexify to avoid boost:: error
     arena.convexify_obstacles();
-    cout << "Or maybe not" << endl;
-    // Mat test = arena.plot_arena(1080, 1080, true, true);
-    // imshow("Arena", test);
-    // waitKey(0);
+
+    arena.merge_obstacles();    
+    arena.convexify_obstacles();
 
     arena.make_free_space_cells_squares(3);
 
@@ -214,7 +209,7 @@ namespace student
     vector<double> f_used_theta[fx_path.size()];
 
     // double kmax = 27;
-    double kmax = 100;
+    double kmax = 40;
     /* Space where to search a minimum dubins curve */
     double search_angle = M_PI * 2;
 
@@ -349,7 +344,8 @@ namespace student
      */
     if (push_first)
     {
-      path[0] = push_path(f_finded_curves[0], path[0]);
+      if(f_finded_curves.size() != 0)
+        path[0] = push_path(f_finded_curves[0], path[0]);
       if(c_finded_curves.size() != 0)
         path[1] = push_path(c_finded_curves[0], path[1]);
     }

@@ -358,13 +358,12 @@ void Connection_map::aggregate()
     for(int i=0; i<available_id; i++)
     {
         string id = valid_id[i];
-        double master_sector_area = connections[id].mean_area;
+        // double master_sector_area = connections[id].mean_area;
         double master_area = connections[id].master->area;
-       
         double global_area = global_mean_area();
-
+         
         if(// ivalid_id.count(id) == 1 &&
-           master_area < 0.5*global_area)//*master_sector_area)
+           master_area < 0.8*global_area)//*master_sector_area)
         {
             string includer="NaN";
 
@@ -393,69 +392,6 @@ void Connection_map::aggregate()
         }
     }
     
-    /*
-    // Aggregates smallest areas together 
-    // Small i.e. -> half the mean average
-    // map<string, pair<double, unordered_map<string, polygon*>>>::iterator c_it;
-    map<string, Master_node> connections_copy = connections;
-    map<string, Master_node>::iterator c_copy = connections_copy.begin();
-    int elements = 0;
-    // c_it = connections.begin();
-   // for( int i=0; i<connection_size; i++) //c_it != connections.end())
-    while(c_copy != connections_copy.end())
-    {
-        cout << "No problem: " << c_copy->first << " Elments: "
-             << elements << "/" << connections.size() << endl;
-        map<string, polygon*> connections_subset = c_copy->second.adjacent_connections;
-        // map<string, polygon*>::iterator supp_it = connections_subset.begin();
-        elements +=1;
-
-        if (c_copy->second.master->area < 0.5*c_copy->second.mean_area)
-        {
-            cout << c_copy->first << endl;
-            // Find second smallest area
-
-            // check on adjacent connections
-            string min_id = min_max_element_area(connections_subset);
-            if (min_id != "NaN")
-            {
-                cout << "Aggregating: to_update: " << min_id <<
-                        " to_remove: " << c_copy->first << endl;
-
-                unify(min_id, c_copy->first);
-            }
-            else
-            {
-                // If no adjacent connection found, rely on diagonals
-                connections_subset = c_copy->second.diagonal_connections;
-                min_id = min_max_element_area(connections_subset);
-                if(min_id != "NaN")
-                {
-                    cout << "Err_2" << endl;
-                    cout << "Aggregating: to_update: " << min_id <<
-                            " to_remove: " << c_copy->first << endl;
-                    unify(min_id, c_copy->first);
-                    cout << "Err_3" << endl;
-                }
-            }
-
-            cout << endl;
-            cout << "\nAggregated for: to_update:" << min_id << " to_rempve:"
-                 << c_copy->first << endl;
-
-            info();
-            cout << endl << endl;
-
-            cout << "Problem: " << c_copy->first << " Elments: "
-                 << elements << "/" << connections.size() << endl;
-        };
-        // c_it = connections.begin();
-        // for(int i=0; i<elements; i++){
-        c_copy++;
-        // }
-    };
-    info();
-    */
 };
 
 double Connection_map::global_mean_area()
