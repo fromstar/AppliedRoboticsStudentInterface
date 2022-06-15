@@ -78,6 +78,7 @@ typedef struct Robot {
 	logger* _l=new logger(), point_node *loc = new point_node(0, 0),
 	double _max_curvature = 0, double _offset = 1);
 
+  Robot* copy();
   void set_id(string _id);
   void set_robot_type(Robot_type rt);
   point_node *where();
@@ -221,4 +222,9 @@ void run_planner(string planner_path, string domain_file_path,
  * @return vector<string>
  */
 vector<string> string_to_vector(string sentence, string token);
+
+string plan_in_pddl_conditional_effects(string id_agent,
+                                        vector<string> plan,
+                                        int threshold = -1,
+                                        bool consider_end_escape=true);
 #endif
