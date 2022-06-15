@@ -190,7 +190,7 @@ typedef struct list_of_obstacles
 	polygon *tail = NULL;
 	polygon *offset_head = NULL;
 	polygon *offset_tail = NULL;
-	double offset = 105e-3;
+	double offset = 102e-3;
 	int size = 0;
 	int offset_size = 0;
 

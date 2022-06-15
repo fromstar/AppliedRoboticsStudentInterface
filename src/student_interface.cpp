@@ -116,7 +116,7 @@ namespace student
     // Before merging obstacle they must be convexify to avoid boost:: error
     arena.convexify_obstacles();
 
-    arena.merge_obstacles();    
+    arena.merge_obstacles();
     arena.convexify_obstacles();
 
     arena.make_free_space_cells_squares(3);
@@ -142,7 +142,7 @@ namespace student
         arena.gates,
         log_test,
         arena.obstacles);
-        // arena.connections.find_pddl_connections());
+    // arena.connections.find_pddl_connections());
     abstract_arena.find_pddl_connections();
 
     robot_manager rm(log_test);
@@ -160,7 +160,7 @@ namespace student
     /**********************************************
      * GENERATE PLANS AND MOVE ROBOTS
      ***********************************************/
-	
+
     // FUGITIVE PLAN
 
     map<string, robot_fugitive *>::iterator f_it;
@@ -209,31 +209,34 @@ namespace student
     vector<double> f_used_theta[fx_path.size()];
 
     // double kmax = 27;
-    double kmax = 40;
+    double kmax = 50;
     /* Space where to search a minimum dubins curve */
-    double search_angle = M_PI * 2;
+    double search_angle = M_PI / 2;
 
     int i = 0;
     int size = fx_path.size();
+
+    bool inside_offset_arena = f_1->inside_offset_arena;
+    bool inside_offset_obstacle = f_1->inside_offset_obstacle;
     /* Calculate fugitive's dubin curves without intersection */
     while (i < size - 1)
     {
       point_list *tmp_arena_limits = arena.shrinked_arena;
       polygon *tmp_obstacle = arena.obstacles->offset_head;
 
-      if(f_1->inside_offset_arena)
+      if (f_1->inside_offset_arena)
       {
         tmp_arena_limits = arena.arena;
-        f_1->inside_offset_arena = false;
+        inside_offset_arena = false;
       }
-      if(f_1->inside_offset_obstacle)
+      if (f_1->inside_offset_obstacle)
       {
         tmp_obstacle = arena.obstacles->head;
-        f_1->inside_offset_obstacle = false;
+        inside_offset_obstacle = false;
       }
 
       tie(c, pidx) = dubins_no_inter(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1],
-                                     fy_path[i + 1], &fth_path[i + 1], kmax, tmp_arena_limits, 
+                                     fy_path[i + 1], &fth_path[i + 1], kmax, tmp_arena_limits,
                                      tmp_obstacle, search_angle, f_used_theta[i]);
 
       /* If pidx > 0 a curve is found */
@@ -256,6 +259,12 @@ namespace student
            * different angles than the previous ones */
           fth_path[i] = original_theta[i];
           i--;
+
+          if (i == 0)
+          {
+            inside_offset_arena = f_1->inside_offset_arena;
+            inside_offset_obstacle = f_1->inside_offset_obstacle;
+          }
         }
         else
         {
@@ -291,35 +300,38 @@ namespace student
     }
 
     original_theta = cth_path;
-    vector<double> c_used_theta[fx_path.size()];
+    vector<double> c_used_theta[cx_path.size()];
     vector<curve> c_finded_curves;
     bool no_moves = false;
     size = cx_path.size();
     i = 0;
+
+    inside_offset_arena = c_1->inside_offset_arena;
+    inside_offset_obstacle = c_1->inside_offset_obstacle;
     while (i < size - 1)
     {
       point_list *tmp_arena_limits = arena.shrinked_arena;
       polygon *tmp_obstacle = arena.obstacles->offset_head;
 
-      if(c_1->inside_offset_arena)
+      if (c_1->inside_offset_arena)
       {
         tmp_arena_limits = arena.arena;
-        c_1->inside_offset_arena = false;
+        inside_offset_arena = false;
       }
-      if(c_1->inside_offset_obstacle)
+      if (c_1->inside_offset_obstacle)
       {
         tmp_obstacle = arena.obstacles->head;
-        c_1->inside_offset_obstacle = false;
+        inside_offset_obstacle = false;
       }
 
       tie(c, pidx) = dubins_no_inter(cx_path[i], cy_path[i], cth_path[i], cx_path[i + 1],
-                                     cy_path[i + 1], &cth_path[i + 1], kmax, arena.shrinked_arena, 
+                                     cy_path[i + 1], &cth_path[i + 1], kmax, arena.shrinked_arena,
                                      arena.obstacles->offset_head, search_angle, c_used_theta[i]);
 
       if (pidx > 0)
       {
         c_finded_curves.push_back(c);
-        c_used_theta[i].push_back(fth_path[i + 1]);
+        c_used_theta[i].push_back(cth_path[i + 1]);
         i++;
       }
       else
@@ -329,6 +341,11 @@ namespace student
           c_finded_curves.pop_back();
           cth_path[i] = original_theta[i];
           i--;
+          if (i == 0)
+          {
+            inside_offset_arena = c_1->inside_offset_arena;
+            inside_offset_obstacle = c_1->inside_offset_obstacle;
+          }
         }
         else
         {
@@ -344,9 +361,9 @@ namespace student
      */
     if (push_first)
     {
-      if(f_finded_curves.size() != 0)
+      if (f_finded_curves.size() != 0)
         path[0] = push_path(f_finded_curves[0], path[0]);
-      if(c_finded_curves.size() != 0)
+      if (c_finded_curves.size() != 0)
         path[1] = push_path(c_finded_curves[0], path[1]);
     }
     else
@@ -362,20 +379,6 @@ namespace student
         path[1] = push_path(c_finded_curves[i], path[1]);
         img_arena = plotdubins(c_finded_curves[i], "b", "b", "b", img_arena);
       }
-
-      // for (int i = 0; i < f_finded_curves.size(); i++)
-      // {
-      //  // path[0] = push_path(f_finded_curves[i], path[0]);
-      //   img_arena = plotdubins(f_finded_curves[i], "r", "r", "r", img_arena);
-      // }
-      // for (int i = 0; i < c_finded_curves.size(); i++)
-      // {
-      //   if(i < c_finded_curves.size()-1)
-      //     path[0] = push_path(f_finded_curves[i], path[0]);
-
-      //   path[1] = push_path(c_finded_curves[i], path[1]);
-      //   img_arena = plotdubins(c_finded_curves[i], "b", "b", "b", img_arena);
-      // }
     }
 
     float elapsed_time = (float(clock() - starting_clock)) / CLOCKS_PER_SEC;
@@ -391,20 +394,3 @@ namespace student
     return true;
   }
 }
-
-/*
-void thread_fugitive_plan(map<string, robot_fugitive *>::iterator f_it,
-                          World_representation wr)
-{
-  // f_it->second->set_behaviour(aware);
-  f_it->second->make_pddl_domain_file();
-  f_it->second->make_pddl_problem_file(wr);
-}
-
-void thread_catcher_plan(map<string, robot_catcher *>::iterator c_it,
-                         World_representation wr,
-                         behaviour_fugitive type)
-{
-  c_it->second->make_pddl_files(wr, type);
-}
-*/

@@ -47,7 +47,7 @@ typedef struct points_map
 
 	points_map(logger *l) { log = l; };
 
-	void add_arena_points(point_list *ArenaPoints, double offset = 105e-3);
+	void add_arena_points(point_list *ArenaPoints, double offset = 102e-3);
 	void add_robot(Robot *r);
 	void set_robot_position(string robot_id, double x, double y, double th);
 	void add_obstacle(polygon *ob);
