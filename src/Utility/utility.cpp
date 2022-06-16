@@ -617,26 +617,6 @@ Polygon_boost point_list::to_boost_polygon()
 
 Polygon_boost polygon::to_boost_polygon()
 {
-    /*
-	point_node *pn = pl->head;
-	string pts = "POLYGON((";
-	while (pn != NULL)
-	{
-		pts.append(to_string(pn->x));
-		pts.append(" ");
-		pts.append(to_string(pn->y));
-		pts.append(",");
-
-		pn = pn->pnext;
-	}
-	pts.append("))");
-
-	Polygon_boost p;
-	boost::geometry::read_wkt(pts, p);
-	if (!boost::geometry::is_valid(p))
-	{
-		boost::geometry::correct(p); // Fixes edge order -> e.g. clockwise
-	};*/
 	return pl->to_boost_polygon();
 };
 
@@ -797,20 +777,6 @@ point_list *boost_polygon_to_point_list(Polygon_boost p)
 
 polygon *boost_polygon_to_polygon(Polygon_boost p)                         
 {   
-    /*    
-    point_list *pl = new point_list();                                     
-    pt new_centroid;                                                       
-    boost::geometry::centroid(p, new_centroid);                            
-    for (auto it = boost::begin(boost::geometry::exterior_ring(p));        
-         it != boost::end(boost::geometry::exterior_ring(p)); ++it)        
-    {                                                                      
-            double x = boost::geometry::get<0>(*it);                                        
-            double y = boost::geometry::get<1>(*it);                                        
-                                                                               
-            pl->add_node(new point_node(x, y));                                
-        }                                                                      
-    point_list *new_pol_list = pl->pop();
-    */
     point_list * new_pol_list = boost_polygon_to_point_list(p);
     
     pt new_centroid;

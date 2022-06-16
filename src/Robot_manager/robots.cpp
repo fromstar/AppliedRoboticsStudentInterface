@@ -433,6 +433,98 @@ string robot_fugitive::make_pddl_domain_file()
 	return domain_name;
 };
 
+
+string find_agent_location_pddl(Robot* agent, World_representation wr,
+                                bool return_loc_id)
+{
+    string found_pddl = "";
+	bool found_agent = false;
+    map<string, World_node>::const_iterator it_1 = wr.world_free_cells.cbegin();
+	pt agent_location = pt(agent->location->x, agent->location->y);
+
+    while(it_1 != wr.world_free_cells.cend() || found_agent == true)
+	{
+		Polygon_boost p1 = it_1->second.cell->to_boost_polygon();
+
+		if (boost::geometry::covered_by(agent_location, p1))
+		{
+            if (return_loc_id == false)
+            {
+                found_pddl += "\t\t( is_in " + upperify(agent->ID) + " " +
+		      				  upperify(it_1->first) + " )\n";
+            }
+            else
+            {
+                found_pddl = it_1->first;
+            }
+			found_agent = true;
+		};
+
+        it_1++;
+	};
+
+	if (found_agent == false) // agent is nowhere
+	{
+		bool in_obstacle = false;
+		bool outside_arena = false;
+		if (wr.obstacles.size() > 0)
+		{
+			int i = 0;
+			while (i < wr.obstacles.size() && in_obstacle == false)
+			{
+				Polygon_boost ob_boost = wr.obstacles[i].cell->to_boost_polygon();
+				if (boost::geometry::covered_by(agent_location, ob_boost))
+				{
+					in_obstacle = true;
+				}
+				i++;
+			}
+		}
+		if (in_obstacle == false)
+		{
+			outside_arena = true;
+		}
+
+		map<double, string> cell_distance;
+		for (it_1 = wr.world_free_cells.cbegin();
+			 it_1 != wr.world_free_cells.cend(); it_1++)
+		{
+
+			point_node *agent_pos = agent->where();
+			point_node *cell = it_1->second.cell->centroid;
+			double distance = agent_pos->distance(cell);
+			cell_distance[distance] = it_1->first;
+		};
+
+		if (cell_distance.size() == 0)
+		{
+			cout << "This should never happen. No cells in arena?" << endl;
+		};
+
+		map<double, string>::iterator nearest_cell;
+		nearest_cell = cell_distance.upper_bound(0.0);
+        if (return_loc_id == false)
+        {
+		    found_pddl += "\t\t(is_in " + upperify(agent->ID) + " " +
+			      		  upperify(nearest_cell->second) + " )\n";
+        }
+        else
+        {
+            found_pddl = upperify(nearest_cell->second);
+        }
+
+		if (in_obstacle == true)
+		{
+			agent->inside_offset_obstacle = true;
+		}
+		else
+		{
+			agent->inside_offset_arena = true;
+		};
+    }
+    return  found_pddl;
+}
+
 string robot_fugitive::make_pddl_problem_file(World_representation wr)
 {
 	to_log("Writing problem file");
@@ -485,27 +577,6 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	// cells connected
 	to_log("Writing cells connections");
 	problem_file += wr.find_pddl_connections();
-
-	/*
-	for (it_1 = wr.world_free_cells.begin(); it_1 != wr.world_free_cells.end();
-		 ++it_1)
-	{
-		Polygon_boost p1 = it_1->second.cell->to_boost_polygon();
-		for (it_2 = wr.world_free_cells.begin(); it_2 != wr.world_free_cells.end();
-			 ++it_2)
-		{
-			if (it_1 != it_2)
-			{
-				Polygon_boost p2 = it_2->second.cell->to_boost_polygon();
-				if (boost::geometry::touches(p1, p2))
-				{
-					problem_file += "\t\t( connected " + it_1->first + " " +
-									it_2->first + " )\n";
-				};
-			};
-		};
-	};
-	*/
 
 	// gates in cells
 	to_log("Find and write in which cells the gates are");
@@ -563,190 +634,21 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	// agents location
 	// Fugitive
 	to_log("Find and write agents location");
-	pt fugitive_location = pt(self->location->x, self->location->y);
-	bool found_agent = false;
-	for (it_1 = wr.world_free_cells.cbegin();
-         it_1 != wr.world_free_cells.cend();
-		 it_1++)
-	{
-		Polygon_boost p1 = it_1->second.cell->to_boost_polygon();
-
-		if (boost::geometry::covered_by(fugitive_location, p1))
-		{
-			problem_file += "\t\t( is_in " + self->ID + " " +
-							it_1->first + " )\n";
-			found_agent = true;
-			break; // can only be in one position
-		};
-	};
-
-	if (found_agent == false) // agent is nowhere
-	{
-		bool in_obstacle = false;
-		bool outside_arena = false;
-		if (wr.obstacles.size() > 0)
-		{
-			int i = 0;
-			while (i < wr.obstacles.size() && in_obstacle == false)
-			{
-				Polygon_boost ob_boost = wr.obstacles[i].cell->to_boost_polygon();
-				if (boost::geometry::covered_by(fugitive_location, ob_boost))
-				{
-					in_obstacle = true;
-				}
-				i++;
-			}
-		}
-		if (in_obstacle == false)
-		{
-			outside_arena = true;
-		}
-
-		map<double, string> cell_distance;
-		for (it_1 = wr.world_free_cells.cbegin();
-			 it_1 != wr.world_free_cells.cend(); it_1++)
-		{
-
-			point_node *agent = self->where();
-			point_node *cell = it_1->second.cell->centroid;
-			double distance = agent->distance(cell);
-			cell_distance[distance] = it_1->first;
-		};
-
-		if (cell_distance.size() == 0)
-		{
-			cout << "This should never happen. No cells in arena?" << endl;
-		};
-
-		map<double, string>::iterator nearest_cell;
-		nearest_cell = cell_distance.upper_bound(0.0);
-		problem_file += "\t\t(is_in " + upperify(self->ID) + " " +
-						upperify(nearest_cell->second) + " )\n";
-		if (in_obstacle == true)
-		{
-			self->inside_offset_obstacle = true;
-		}
-		else
-		{
-			self->inside_offset_arena = true;
-		};
-	};
+    problem_file += find_agent_location_pddl(self, wr, false);
 
 	to_log("Ended fugitive search");
-	// Antagonists
-	/*
-	map<string, string> antagonist_pddl_location;
-	for (it_1 = wr.world_free_cells.begin(); it_1 != wr.world_free_cells.end();
-		 ++it_1)
-	{
-		Polygon_boost p1 = it_1->second.cell->to_boost_polygon();
-		for (int i = 0; i < antagonists.size(); i++)
-		{
-			pt antagonist_pos = pt(antagonists[i]->location->x,
-								   antagonists[i]->location->y);
-			if (boost::geometry::covered_by(antagonist_pos, p1))
-			{
-				// problem_file += "\t\t( is_in " + antagonists[i]->ID + " " +
-				// 				it_1->first + " )\n";
-				string up_ant_id = upperify(antagonists[i]->ID);
-				string up_ant_cell = upperify(it_1->first);
-				antagonist_pddl_location[up_ant_id] = up_ant_cell;
-			};
-		};
-	};
-	*/
+	
+    // Antagonists
 	problem_file += "\t)\n";
 
 	map<string, string> antagonist_pddl_location;
-	map<string, Robot *> missed_agents;
+	// map<string, Robot *> missed_agents;
 	for (int i = 0; i < antagonists.size(); i++)
 	{
-		missed_agents[antagonists[i]->ID] = antagonists[i];
-	};
-
-	map<string, World_node>::iterator it_node;
-	for (int i = 0; i < antagonists.size(); i++)
-	{
-		pt ant_location = pt(antagonists[i]->location->x,
-							 antagonists[i]->location->y);
-		for (it_node = wr.world_free_cells.begin();
-			 it_node != wr.world_free_cells.end(); it_node++)
-		{
-			Polygon_boost cell_p = it_node->second.cell->to_boost_polygon();
-			if (boost::geometry::covered_by(ant_location, cell_p))
-			{
-				string up_ant_id = upperify(antagonists[i]->ID);
-				string up_ant_cell = upperify(it_node->first);
-
-				antagonist_pddl_location[up_ant_id] = up_ant_cell;
-				missed_agents.erase(antagonists[i]->ID);
-				break;
-			};
-		};
-	};
-
-	if (missed_agents.size() > 0) // some antagonists are nowhere
-	{
-		map<string, Robot *>::iterator ant_it;
-		for (ant_it = missed_agents.begin(); ant_it != missed_agents.end();
-			 ++ant_it)
-		{
-			pt ant_location = pt(ant_it->second->location->x,
-								 ant_it->second->location->y);
-			bool in_obstacle = false;
-			bool outside_arena = false;
-
-			if (wr.obstacles.size() > 0)
-			{
-				int i = 0;
-				while (i < wr.obstacles.size() && in_obstacle == false)
-				{
-					Polygon_boost ob_boost = wr.obstacles[i].cell->to_boost_polygon();
-					if (boost::geometry::covered_by(ant_location, ob_boost))
-					{
-						in_obstacle = true;
-					}
-					i++;
-				}
-			}
-
-			if (in_obstacle == false)
-			{
-				outside_arena = true;
-			}
-
-			map<double, string> cell_distance;
-			for (it_node = wr.world_free_cells.begin();
-				 it_node != wr.world_free_cells.end(); it_node++)
-			{
-				point_node *agent = ant_it->second->where();
-				point_node *cell = it_node->second.cell->centroid;
-				double distance = agent->distance(cell);
-				cell_distance[distance] = it_node->first;
-			};
-
-			if (cell_distance.size() == 0)
-			{
-				cout << "This should never happen. No cells in arena?" << endl;
-			};
-
-			map<double, string>::iterator nearest_cell;
-			nearest_cell = cell_distance.upper_bound(0.0);
-
-			string up_ant_id = upperify(ant_it->second->ID);
-			string up_ant_cell = upperify(nearest_cell->second);
-
-			antagonist_pddl_location[up_ant_id] = up_ant_cell;
-
-			if (in_obstacle == true)
-			{
-				ant_it->second->inside_offset_obstacle = true;
-			}
-			else
-			{
-				ant_it->second->inside_offset_arena = true;
-			}
-		};
+		// missed_agents[antagonists[i]->ID] = antagonists[i];
+        Robot * ant = antagonists[i]->copy();
+        string loc = find_agent_location_pddl(ant, wr, true);
+        antagonist_pddl_location[ant->ID] = loc;
 	};
 
 	to_log("Ended antagonists search");
@@ -840,7 +742,6 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 		map<string, World_node>::const_iterator it_g;
 		map<string, World_node>::const_iterator it_c;
 
-		// vector<string> antagonists_locations;
 		vector<vector<string>> antagonists_distance;
 		vector<vector<string>> gates_distance;
 
@@ -849,7 +750,6 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 		int idx_min_dist = 0;
 		int prev_dist = 0;
 		vector<string> gates_id;
-		cout << "N gates: " << wr.world_gates.size() << endl;
 		for (it_g = wr.world_gates.cbegin(); it_g != wr.world_gates.cend();
 			 it_g++)
 		{
@@ -877,7 +777,6 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 				gates_id.push_back(it_g->first);
 				counter++;
 			}
-			// };
 		};
 
 		// compute distance from fugitive to antagonists
@@ -946,19 +845,8 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
         cout << gates_distance.size() << endl;
 
         self->set_plan(gates_distance[idx_gate]);
-		// cout << "Print plan chosen:" << endl;
-		// for(int i=0; i<gates_distance[idx_gate].size(); i++){
-		//     cout << gates_distance[idx_gate][i] << endl;
-		// };
-		// cout << endl;
-
-		// set desire
-		// it_g = wr.world_gates.begin();
-		// for (int i = 0; i < idx_gate; i++)
-		// {
-		// 	++it_g;
-		// };
-		self->set_desire("( is_in " + self->ID + " " + gates_id[idx_gate] + " )");
+		
+        self->set_desire("( is_in " + self->ID + " " + gates_id[idx_gate] + " )");
 		to_log("End aware behaviour");
 		return problem_name + "_" + gates_id[idx_gate];
 		break;
@@ -1099,7 +987,7 @@ string plan_in_pddl_conditional_effects(string id_agent,
 {
     if (threshold <= 0)
     {
-        cout << "Invalid threshold number provided, setting threshold to"
+        cout << "Invalid threshold number provided, setting threshold to "
                 "agent_plan.size() - 2" << endl;
         threshold = agent_plan.size() - 2;
     }
@@ -1185,13 +1073,10 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	{
 		robot_fugitive ghost_fugitive = robot_fugitive(antagonists[i]->copy(),
 													   ".tmp", b_ant);
-		// ghost_fugitive.self->ID = "ghost_" + to_string(i);
-
 		// Suppose that the catcher is the only threat
 		ghost_fugitive.add_antagonist(self);
 		string g_domain_name = ghost_fugitive.make_pddl_domain_file();
 		string g_problem_name = ghost_fugitive.make_pddl_problem_file(wr);
-		cout << "Hello" << endl;
 
 		string id_ghost = ghost_fugitive.self->ID;
 		vector<string> tmp = ghost_fugitive.make_plan(false,
@@ -1220,10 +1105,6 @@ void robot_catcher::make_pddl_files(World_representation wr,
 		// iterate until last step of plan to avoid to misclassify the gate
 		for (int i = 0; i < it->second.size() - 1; i++)
 		{
-			// string plan_step = remove_first_and_last_char(it->second[i]);
-
-			// vector<string> temp = string_to_vector(plan_step, " ");
-
 			vector<string> temp = string_to_vector(it->second[i], " ");
 			for (int j = temp.size() - 1; j > temp.size() - 3; j--)
 			{
@@ -1390,18 +1271,6 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	// Write end of pddl domain
 	string pddl_domain_end = "\n)";
 
-	// Write domain file to disk
-    /*
-    string domain_to_write = pddl_domain + action_move + move_action_effects
-                             + move_agents_plans + move_costs + action_move_end
-                             + action_capture + action_stay + pddl_domain_end;
-
-	int tmp_folder = mkdir(filesPath.c_str(), 0777);
-	write_file(domain_name, domain_to_write, ".pddl");
-    */
-
-	cout << "Ended domain file" << endl;
-
 	// Write problem file ----------------------------------------------------
 	to_log("Writing problem file");
 	string problem_name = "problem_" + self->ID;
@@ -1483,166 +1352,19 @@ void robot_catcher::make_pddl_files(World_representation wr,
 
 	// Write initial location of the agents
 	to_log("Writing initial location of the agents");
-
-	bool found_agent = false;
-
-	pt self_location = pt(self->location->x, self->location->y);
-	for (it_node = wr.world_free_cells.begin();
-		 it_node != wr.world_free_cells.end(); ++it_node)
-	{
-		Polygon_boost cell_p = it_node->second.cell->to_boost_polygon();
-		if (boost::geometry::covered_by(self_location, cell_p))
-		{
-			pddl_problem += "\t\t( is_in " + upperify(self->ID) + " " +
-							upperify(it_node->first) + ")\n";
-			found_agent = true;
-			break;
-		};
-	};
-
-	if (found_agent == false) // agent is nowhere
-	{
-		bool in_obstacle = false;
-		bool outside_arena = false;
-
-		if (wr.obstacles.size() > 0)
-		{
-			int i = 0;
-			while (i < wr.obstacles.size() && in_obstacle == false)
-			{
-				Polygon_boost ob_boost = wr.obstacles[i].cell->to_boost_polygon();
-				if (boost::geometry::covered_by(self_location, ob_boost))
-				{
-					in_obstacle = true;
-				}
-				i++;
-			}
-		}
-		if (in_obstacle == false)
-		{
-			outside_arena = true;
-		}
-
-		map<double, string> cell_distance;
-		for (it_node = wr.world_free_cells.begin();
-			 it_node != wr.world_free_cells.end(); it_node++)
-		{
-			point_node *agent = self->where();
-			point_node *cell = it_node->second.cell->centroid;
-			double distance = agent->distance(cell);
-			cell_distance[distance] = it_node->first;
-		};
-
-		if (cell_distance.size() == 0)
-		{
-			cout << "This should never happen. No cells in arena?" << endl;
-		};
-
-		map<double, string>::iterator nearest_cell;
-		nearest_cell = cell_distance.upper_bound(0.0);
-		pddl_problem += "\t\t(is_in " + upperify(self->ID) + " " +
-						upperify(nearest_cell->second) + " )\n";
-
-		if (in_obstacle == true)
-		{
-			self->inside_offset_obstacle = true;
-		}
-
-		if (outside_arena == true)
-		{
-			self->inside_offset_arena = true;
-		}
-	};
+    
+    pddl_problem += find_agent_location_pddl(self, wr);
 
 	to_log("Written location of catcher");
 
 	// Write antagonist location
-	found_agent = false;
-	map<string, Robot *> missed_agents;
-	for (int i = 0; i < antagonists.size(); i++)
+		
+    for (int i = 0; i < antagonists.size(); i++)
 	{
-		missed_agents[antagonists[i]->ID] = antagonists[i];
+        Robot *ant = antagonists[i]->copy();
+        pddl_problem += find_agent_location_pddl(ant, wr);
 	};
 
-	for (int i = 0; i < antagonists.size(); i++)
-	{
-		pt ant_location = pt(antagonists[i]->location->x,
-							 antagonists[i]->location->y);
-		for (it_node = wr.world_free_cells.begin();
-			 it_node != wr.world_free_cells.end(); ++it_node)
-		{
-			Polygon_boost cell_p = it_node->second.cell->to_boost_polygon();
-			if (boost::geometry::covered_by(ant_location, cell_p))
-			{
-				pddl_problem += "\t\t( is_in " +
-								upperify(antagonists[i]->ID) +
-								" " + upperify(it_node->first) +
-								")\n";
-				missed_agents.erase(antagonists[i]->ID);
-				found_agent = true;
-				break;
-			};
-		};
-	};
-
-	if (missed_agents.size() > 0) // some antagonists are nowhere
-	{
-		map<string, Robot *>::iterator ant_it;
-		for (ant_it = missed_agents.begin(); ant_it != missed_agents.end();
-			 ant_it++)
-		{
-			pt ant_location = pt(ant_it->second->location->x,
-								 ant_it->second->location->y);
-			bool in_obstacle = false;
-			bool outside_arena = false;
-
-			if (wr.obstacles.size() > 0)
-			{
-				int i = 0;
-				while (i < wr.obstacles.size() && in_obstacle == false)
-				{
-					Polygon_boost ob_boost = wr.obstacles[i].cell->to_boost_polygon();
-					if (boost::geometry::covered_by(ant_location, ob_boost))
-					{
-						in_obstacle = true;
-					}
-					i++;
-				}
-			}
-			if (in_obstacle == false)
-			{
-				outside_arena = true;
-			}
-
-			map<double, string> cell_distance;
-			for (it_node = wr.world_free_cells.begin();
-				 it_node != wr.world_free_cells.end(); it_node++)
-			{
-				point_node *agent = ant_it->second->where();
-				point_node *cell = it_node->second.cell->centroid;
-				double distance = agent->distance(cell);
-				cell_distance[distance] = it_node->first;
-			};
-
-			if (cell_distance.size() == 0)
-			{
-				cout << "This should never happen. No cells in arena?" << endl;
-			};
-
-			map<double, string>::iterator nearest_cell;
-			nearest_cell = cell_distance.upper_bound(0.0);
-			pddl_problem += "\t\t(is_in " + upperify(ant_it->second->ID) +
-							" " + upperify(nearest_cell->second) + " )\n";
-			if (in_obstacle == true)
-			{
-				ant_it->second->inside_offset_obstacle = true;
-			}
-			else
-			{
-				ant_it->second->inside_offset_arena = true;
-			}
-		};
-	};
 	to_log("Written location of antagonists");
 	pddl_problem += "\t)\n";
 
