@@ -654,15 +654,19 @@ void polygon::concatenate(polygon *p)
 
 int polygon::points_in_common(polygon *p)
 {
-    int points_in_common = 0;                               
+    int points_in_common = 0;
+    double epsilon = 1e-6;
     point_node *tmp_pol_1 = pl->head;    
-    while(tmp_pol_1 != NULL && points_in_common <= 1)       
+    while(tmp_pol_1 != NULL)       
         {                                                       
             point_node *tmp_pol_2 = p->pl->head;
-            while(tmp_pol_2 != NULL && points_in_common <= 1)   
-            {                                                   
-                if (tmp_pol_1->x == tmp_pol_2->x &&         
-                    tmp_pol_1->y == tmp_pol_2->y)           
+            while(tmp_pol_2 != NULL) // && points_in_common <= 1)   
+            {   
+                double eps_mod_x = max(fabs(tmp_pol_1->x), fabs(tmp_pol_2->x));
+                double eps_mod_y = max(fabs(tmp_pol_1->y), fabs(tmp_pol_2->y));
+
+                if (tmp_pol_1->x - tmp_pol_2->x <= epsilon * eps_mod_x &&         
+                    tmp_pol_1->y - tmp_pol_2->y <= epsilon * eps_mod_y)
                 {                                           
                     points_in_common += 1;                  
                 };                                          

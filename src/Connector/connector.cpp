@@ -43,27 +43,20 @@ void Connection_map::add_element(polygon *p)
         return;
     }
 
-    /*
-    unordered_map<string, polygon*> tmp_m;
-    tmp_m[p->id] = p;
-    connections[p->id] = make_pair(p->area, tmp_m);
-    */
     Master_node tmp;
     tmp.master = p;
     tmp.mean_area = p->area;
     connections[p->id] = tmp;
 
-    // cout << "Added polygon: " << p->id << endl;
-
     Polygon_boost p_in_boost = p->to_boost_polygon();
 
-    // map<string, pair<double, unordered_map<string, polygon*>>>::iterator c_it;
     map<string, Master_node>::iterator c_it;
     for (c_it = connections.begin(); c_it != connections.end(); c_it++)
     {
         // Take master
         Polygon_boost tmp_boost = c_it->second.master->to_boost_polygon();
-        if (boost::geometry::touches(p_in_boost, tmp_boost))
+        if (boost::geometry::touches(p_in_boost, tmp_boost) &&
+            c_it->first != p->id)
         {
             int common_points = p->points_in_common(c_it->second.master);
             // Only lateral connection allowed -> no diagonal
@@ -363,7 +356,7 @@ void Connection_map::aggregate()
         // double master_sector_area = connections[id].mean_area;
         double master_area = connections[id].master->area;
 
-        if (master_area < 0.6 * global_area) //*master_sector_area)
+        if (master_area < 0.5 * global_area) //*master_sector_area)
         {      
             string includer = "NaN";
 
@@ -402,8 +395,11 @@ double Connection_map::global_mean_area()
     {
         average += c_it->second.mean_area;
     };
-
-    average /= connections.size();
+    
+    if(connections.size() > 0)
+    {
+        average /= connections.size();
+    }
     return average;
 };
 
@@ -475,22 +471,22 @@ map<string, polygon *> Connection_map::elements()
 
 string Connection_map::find_pddl_connections()
 {
-    typedef map<string, polygon *>::iterator conn_it;
-    map<string, Master_node>::iterator c_it = connections.begin();
+    typedef map<string, polygon *>::const_iterator conn_it;
+    map<string, Master_node>::const_iterator c_it = connections.cbegin();
     string pddl_connections = "";
     while (c_it != connections.end())
     {
         // Write adjacent connections  first
-        conn_it tmp_it = c_it->second.adjacent_connections.begin();
-        while (tmp_it != c_it->second.adjacent_connections.end())
+        conn_it tmp_it = c_it->second.adjacent_connections.cbegin();
+        while (tmp_it != c_it->second.adjacent_connections.cend())
         {
             pddl_connections += "\t\t( connected " + c_it->first +
                                 " " + tmp_it->first + " )\n";
             tmp_it++;
         }
 
-        tmp_it = c_it->second.diagonal_connections.begin();
-        while (tmp_it != c_it->second.diagonal_connections.end())
+        tmp_it = c_it->second.diagonal_connections.cbegin();
+        while (tmp_it != c_it->second.diagonal_connections.cend())
         {
             pddl_connections += "\t\t( is_diagonal " + c_it->first +
                                 " " + tmp_it->first + " )\n";
@@ -498,5 +494,6 @@ string Connection_map::find_pddl_connections()
         }
         c_it++;
     }
+    cout << pddl_connections << endl;
     return pddl_connections;
 };

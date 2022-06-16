@@ -858,39 +858,16 @@ void points_map::make_free_space_cells_squares(int res)
 			}
 		}
 	};
-	connections.info();
 	connections.aggregate();
-	// connections.info();
+	connections.info();
 
 	// Populate free space
 	map<string, polygon *> els = connections.elements();
-	map<string, polygon *>::iterator new_it;
-	for (new_it = els.begin(); new_it != els.end(); new_it++)
+	map<string, polygon *>::const_iterator new_it;
+	for (new_it = els.cbegin(); new_it != els.cend(); new_it++)
 	{
 		free_space->add_polygon(new_it->second);
 	}
-	// free_space->add_polygon(connections.connections["CELL_0"].second.begin()->second);
-
-	/*
-	map<string, polygon*> new_cells;
-	new_cells = connections.elements();
-	map<string, polygon*>::iterator new_it;
-	for(new_it = new_cells.begin(); new_it != new_cells.end(); new_it++)
-	{
-		free_space->add_polygon(new_it->second);
-	};
-	*/
-
-	/*
-	tmp_list = new_cells;
-
-	polygon *pol_pointer = tmp_list->head;
-	while (pol_pointer != NULL)
-	{
-		free_space->add_polygon(pol_pointer);
-		pol_pointer = pol_pointer->pnext;
-	};
-	*/
 };
 
 /**

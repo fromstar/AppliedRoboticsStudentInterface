@@ -92,10 +92,17 @@ World_representation::World_representation(list_of_polygons *cells,
 	l->add_event("Adding free space cells to world representation");
 	polygon *pol_pointer = cells->head;
 	int cells_counter = 0;
+    World_node temp;
 	while (pol_pointer != NULL)
 	{
-		World_node temp = World_node("cell_" + to_string(cells_counter),
-									 pol_pointer);
+        if (pol_pointer->id == "NaN")
+        {
+		    temp = World_node("cell_" + to_string(cells_counter), pol_pointer);
+        }
+        else
+        {
+		    temp = World_node(pol_pointer->id, pol_pointer);
+        }
 		add_cell(temp);
 		pol_pointer = pol_pointer->pnext;
 		cells_counter += 1;
@@ -106,8 +113,14 @@ World_representation::World_representation(list_of_polygons *cells,
 	pol_pointer = gate_cells->head;
 	while (pol_pointer != NULL)
 	{
-		World_node temp = World_node("gate_" + to_string(cells_counter),
-									 pol_pointer);
+        if (pol_pointer->id == "NaN")
+        {
+		    temp = World_node("gate_" + to_string(cells_counter), pol_pointer);
+        }
+        else
+        {
+		    temp = World_node(pol_pointer->id, pol_pointer);
+        }
 		add_cell(temp, true);
 		pol_pointer = pol_pointer->pnext;
 		cells_counter += 1;

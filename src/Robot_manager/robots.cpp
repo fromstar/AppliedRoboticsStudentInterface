@@ -479,8 +479,8 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	problem_file += "\t(:init\n";
 	problem_file += "\t\t ( = (total-cost) 0)\n"; // Initial value of cost
 
-	map<string, World_node>::iterator it_1;
-	map<string, World_node>::iterator it_2;
+	map<string, World_node>::const_iterator it_1;
+	map<string, World_node>::const_iterator it_2;
 
 	// cells connected
 	to_log("Writing cells connections");
@@ -511,11 +511,12 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	to_log("Find and write in which cells the gates are");
 	map<string, World_node> missed_gates = wr.world_gates;
 
-	for (it_1 = wr.world_free_cells.begin(); it_1 != wr.world_free_cells.end();
+	for (it_1 = wr.world_free_cells.cbegin();
+         it_1 != wr.world_free_cells.cend();
 		 it_1++)
 	{
 		Polygon_boost p1 = it_1->second.cell->to_boost_polygon();
-		for (it_2 = wr.world_gates.begin(); it_2 != wr.world_gates.end();
+		for (it_2 = wr.world_gates.cbegin(); it_2 != wr.world_gates.cend();
 			 it_2++)
 		{
 			Polygon_boost p2 = it_2->second.cell->to_boost_polygon();
@@ -533,13 +534,13 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	{
 		// Associate gate to the nearest cell
 		// warning: association to just 1 cell
-		for (it_2 = missed_gates.begin(); it_2 != missed_gates.end(); it_2++)
+		for (it_2 = missed_gates.cbegin(); it_2 != missed_gates.cend(); it_2++)
 		{
 			// cout<<it_2->first<< endl;
 			map<double, string> cell_distance;
 
-			for (it_1 = wr.world_free_cells.begin();
-				 it_1 != wr.world_free_cells.end();
+			for (it_1 = wr.world_free_cells.cbegin();
+				 it_1 != wr.world_free_cells.cend();
 				 it_1++)
 			{
 				point_node *gate = it_2->second.cell->centroid;
@@ -564,8 +565,9 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	to_log("Find and write agents location");
 	pt fugitive_location = pt(self->location->x, self->location->y);
 	bool found_agent = false;
-	for (it_1 = wr.world_free_cells.begin(); it_1 != wr.world_free_cells.end();
-		 ++it_1)
+	for (it_1 = wr.world_free_cells.cbegin();
+         it_1 != wr.world_free_cells.cend();
+		 it_1++)
 	{
 		Polygon_boost p1 = it_1->second.cell->to_boost_polygon();
 
@@ -601,8 +603,8 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 		}
 
 		map<double, string> cell_distance;
-		for (it_1 = wr.world_free_cells.begin();
-			 it_1 != wr.world_free_cells.end(); it_1++)
+		for (it_1 = wr.world_free_cells.cbegin();
+			 it_1 != wr.world_free_cells.cend(); it_1++)
 		{
 
 			point_node *agent = self->where();
@@ -761,7 +763,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	case least_steps:
 	{
 		vector<vector<string>> all_plans;
-		for (it_1 = wr.world_gates.begin(); it_1 != wr.world_gates.end();
+		for (it_1 = wr.world_gates.cbegin(); it_1 != wr.world_gates.cend();
 			 ++it_1)
 		{
 			string tmp_out = problem_file + "\t\t( is_in " + self->ID +
@@ -785,7 +787,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 		};
 
 		// identify desire and write goal
-		it_1 = wr.world_gates.begin();
+		it_1 = wr.world_gates.cbegin();
 		for (int i = 0; i < idx_least; i++)
 		{
 			++it_1;
@@ -802,7 +804,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 		// chose gate randomly
 		srand(time(0));
 		int idx_gate = rand() % wr.world_gates.size();
-		map<string, World_node>::iterator it_g = wr.world_gates.begin();
+		map<string, World_node>::const_iterator it_g = wr.world_gates.cbegin();
 		for (int i = 0; i < idx_gate; i++)
 		{
 			++it_g;
@@ -835,8 +837,8 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 
 		// Chose the gate which distance is less or equal than the
 		// distance from the fugitive to its antagonists.
-		map<string, World_node>::iterator it_g;
-		map<string, World_node>::iterator it_c;
+		map<string, World_node>::const_iterator it_g;
+		map<string, World_node>::const_iterator it_c;
 
 		// vector<string> antagonists_locations;
 		vector<vector<string>> antagonists_distance;
@@ -848,7 +850,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 		int prev_dist = 0;
 		vector<string> gates_id;
 		cout << "N gates: " << wr.world_gates.size() << endl;
-		for (it_g = wr.world_gates.begin(); it_g != wr.world_gates.end();
+		for (it_g = wr.world_gates.cbegin(); it_g != wr.world_gates.cend();
 			 it_g++)
 		{
 			string tmp_out = problem_file + "\t\t( is_in " + self->ID +
@@ -865,7 +867,8 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 			{
 				cout << "plan size: " << plan.size() << endl;
 				
-				if (gates_distance.size() > 0 && plan.size() < gates_distance[idx_min_dist].size())
+				if (gates_distance.size() > 0 &&
+                    plan.size() < gates_distance[idx_min_dist].size())
 				{
 					cout << "plan size < gates distance\n";
 					idx_min_dist = counter;
@@ -929,7 +932,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 				}
 			};
 		};
-
+        
 		if (idx_gate == -1)
 		{
 			idx_gate = idx_near;
@@ -940,7 +943,9 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 
 		// set_plan
 		// cout << "Setting plan" << endl;
-		self->set_plan(gates_distance[idx_gate]);
+        cout << gates_distance.size() << endl;
+
+        self->set_plan(gates_distance[idx_gate]);
 		// cout << "Print plan chosen:" << endl;
 		// for(int i=0; i<gates_distance[idx_gate].size(); i++){
 		//     cout << gates_distance[idx_gate][i] << endl;

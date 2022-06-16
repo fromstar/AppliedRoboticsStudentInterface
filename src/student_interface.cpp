@@ -141,9 +141,8 @@ namespace student
         arena.free_space,
         arena.gates,
         log_test,
-        arena.obstacles);
-    // arena.connections.find_pddl_connections());
-    abstract_arena.find_pddl_connections();
+        arena.obstacles,
+        arena.connections.find_pddl_connections());
 
     robot_manager rm(log_test);
 
@@ -156,6 +155,8 @@ namespace student
 
     abstract_arena.info();
     Mat img_arena = arena.plot_arena(1080, 1080, true, true);
+    imshow("Arena", img_arena);
+    waitKey(0);
 
     /**********************************************
      * GENERATE PLANS AND MOVE ROBOTS
