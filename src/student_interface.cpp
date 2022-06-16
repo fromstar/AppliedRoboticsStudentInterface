@@ -75,7 +75,7 @@ namespace student
                 const std::vector<float> y, const std::vector<float> theta,
                 std::vector<Path> &path, const std::string &config_folder)
   {
-    bool push_first = true;
+    bool push_first = false;
     clock_t starting_clock = clock();
 
     logger *log_test = new logger("test_log.txt");

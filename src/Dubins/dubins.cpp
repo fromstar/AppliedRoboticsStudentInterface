@@ -553,25 +553,13 @@ tuple<curve, int> dubins_no_inter(double x0, double y0, double th0,
 
 	vector<double> angles = theta_discretization(initial_th, search_angle);
 
-	// cout << "angles to use: [";
-	// for (int i = 0; i < angles.size(); i++)
+	// cout <<"[";
+	// for(int i = 0;i<used_th.size();i++)
 	// {
-	// 	cout << angles[i] << ",";
+	// 	cout << used_th[i]<<",";
 	// }
-	// cout << "]" << endl;
-
-	// cout << "angles used: [";
-	// for (int i = 0; i < used_th.size(); i++)
-	// {
-	// 	cout << used_th[i] << ",";
-	// }
-	// cout << "]" << endl;
-	/*
-	 * Delete all already used thetas
-	 */
-
+	// cout <<"]\n\n";
 	int i = 0;
-
 	/* Compute dubins path for all the angles available*/
 	while (i < angles.size())
 	{
@@ -642,7 +630,7 @@ tuple<curve, int> dubins_no_inter(double x0, double y0, double th0,
 			/* If an intersection is not found the dubins curve is admitted*/
 			if (intersection == false && count(used_th.begin(),used_th.end(),angles[i]) == 0)
 			{
-				/* Store the first curve found or sobstitute it curve if it's length is less*/
+				/* Store the first curve found or sobstitute it if it's length is less*/
 				if (has_c_min == false || c.L < c_min.L)
 				{
 					c_min = c;
@@ -654,16 +642,17 @@ tuple<curve, int> dubins_no_inter(double x0, double y0, double th0,
 		}
 		i++;
 
-		/* If no curves is found I take the opposite searh area */
+		/* If no curves is found, take the opposite searh area */
 		if (i == angles.size() && min_pidx <= 0 && finished_angles == false)
 		{
 			finished_angles = true;
 			initial_th = initial_th + M_PI;
 			search_angle = (2 * M_PI) - search_angle;
+			angles.clear();
 			angles = theta_discretization(initial_th, search_angle);
 			i = 0;
 		}
-	}
+	}	
 	return make_tuple(c_min, min_pidx);
 }
 
@@ -815,7 +804,7 @@ vector<curve> get_dubins_path(points_map arena, World_representation abstract_ar
 	vector<double> used_theta[th_path.size()];
 
 	// double kmax = 27;
-	double kmax = 37;
+	double kmax = 32;
 	/* Space where to search a minimum dubins curve */
 	double search_angle = M_PI / 2;
 

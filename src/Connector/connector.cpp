@@ -8,7 +8,7 @@ void Connection_map::update_mean_area(string id)
     map<string, polygon *>::iterator upper_it = connection_subset.begin();
 
     double average_area = connections[id].master->area; // area of the master
-    int elements = 0;
+    int elements = 1;
     while (upper_it != connection_subset.end())
     {
         average_area += upper_it->second->area;
@@ -354,16 +354,17 @@ void Connection_map::aggregate()
     }
 
     int available_id = valid_id.size();
+    double global_area = global_mean_area();
+    
     // for(c_it = connections.begin(); c_it != connections.end(); c_it++)
     for (int i = 0; i < available_id; i++)
     {
         string id = valid_id[i];
         // double master_sector_area = connections[id].mean_area;
         double master_area = connections[id].master->area;
-        double global_area = global_mean_area();
 
-        if (master_area < 0.65 * global_area) //*master_sector_area)
-        {
+        if (master_area < 0.6 * global_area) //*master_sector_area)
+        {      
             string includer = "NaN";
 
             // Check over adjacent cells -> higher priority
@@ -401,6 +402,7 @@ double Connection_map::global_mean_area()
     {
         average += c_it->second.mean_area;
     };
+
     average /= connections.size();
     return average;
 };
