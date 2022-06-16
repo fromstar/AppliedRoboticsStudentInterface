@@ -6,9 +6,9 @@
 #include <cmath>
 #include <string>
 #include <assert.h>
-#include "../clipper/cpp/clipper.hpp"
 #include "../Utility/utility.h"
 #include "../Roadmap/roadmap.h"
+#include "../Robot_manager/robots.h"
 
 /*
  * Compile command:
@@ -57,11 +57,7 @@ bool find_intersection(arc, point_node *, point_node *);
 vector<double> opti_theta(vector<double> xpath, vector<double> ypath);
 Pose get_pose(arc);
 Path push_path(curve, Path);
-
+vector<curve> get_dubins_path(points_map, World_representation, Robot *);
 vector<double> theta_discretization(double, double);
 
-// Start new
-double f_func(double arc_length, double k, double theta);
-double g_func(double arc_length, double k, double theta);
-// End new
 #endif

@@ -1,0 +1,49 @@
+
+ff: parsing domain file
+domain 'DOMAIN_FUGITIVE_1' defined
+ ... done.
+ff: parsing problem file
+problem 'PROBLEM_FUGITIVE_1' defined
+ ... done.
+
+
+translating negated cond for predicate IS_DIAGONAL
+no metric specified.
+
+ff: search configuration is best-first search.
+Metric is plan length.
+NO COST MINIMIZATION (and no cost-minimizing relaxed plans).
+
+advancing to goal distance:   10
+                               9
+                               8
+                               7
+                               6
+                               5
+                               4
+                               3
+                               2
+                               1
+                               0
+
+ff: found legal plan as follows
+
+step    0: MOVE FUGITIVE_1 CELL_52 CELL_50
+        1: MOVE FUGITIVE_1 CELL_50 CELL_48
+        2: MOVE FUGITIVE_1 CELL_48 CELL_41
+        3: MOVE FUGITIVE_1 CELL_41 CELL_43
+        4: MOVE FUGITIVE_1 CELL_43 CELL_35
+        5: MOVE FUGITIVE_1 CELL_35 CELL_33
+        6: MOVE FUGITIVE_1 CELL_33 CELL_25
+        7: MOVE FUGITIVE_1 CELL_25 CELL_24
+        8: MOVE FUGITIVE_1 CELL_24 CELL_22
+        9: MOVE FUGITIVE_1 CELL_22 GATE_0
+
+time spent:    0.00 seconds instantiating 0 easy, 424 hard action templates
+               0.00 seconds reachability analysis, yielding 66 facts and 424 actions
+               0.00 seconds creating final representation with 65 relevant facts, 1 relevant fluents
+               0.00 seconds computing LNF
+               0.00 seconds building connectivity graph
+               0.00 seconds searching, evaluating 35 states, to a max depth of 0
+               0.00 seconds total time
+

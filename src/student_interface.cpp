@@ -75,7 +75,7 @@ namespace student
                 const std::vector<float> y, const std::vector<float> theta,
                 std::vector<Path> &path, const std::string &config_folder)
   {
-    bool push_first = false;
+    bool push_first = true;
     clock_t starting_clock = clock();
 
     logger *log_test = new logger("test_log.txt");
@@ -161,198 +161,20 @@ namespace student
      * GENERATE PLANS AND MOVE ROBOTS
      ***********************************************/
 
-    // FUGITIVE PLAN
-
     map<string, robot_fugitive *>::iterator f_it;
     f_it = rm.fugitives.begin();
-    // f_it->set_behaviour(aware);
+    f_it->second->set_behaviour(aware);
 
     map<string, robot_catcher *>::iterator c_it;
     c_it = rm.catchers.begin();
 
     // Show plans of the robots
-
     rm.run_agents_planners(abstract_arena, aware);
     rm.info(true);
 
-    /* Fugitive  path vectors */
-    vector<double> fx_path;
-    vector<double> fy_path;
-    vector<double> fth_path; // The angles are in radiants!
-
-    clock_t tStart = clock();
-
-    /* Get the cells centroids of the fugitive path */
-    tie(fx_path, fy_path) = abstract_arena.get_path(f_it->second->self->plan);
-
-    /*Get the starting angle for moving from a cell to another one */
-    fth_path = opti_theta(fx_path, fy_path);
-
-    /* Overwrite first cell centroid's coordinates with robot's coordinates */
-    if (fx_path.size() != 0)
-    {
-      fx_path[0] = f_it->second->self->location->x;
-      fy_path[0] = f_it->second->self->location->y;
-      fth_path[0] = f_1->theta;
-    }
-
-    curve c;
-    int pidx;
-
-    /* Copy of the fugitive theta's vector */
-    vector<double> original_theta = fth_path;
-
-    /* Vector that stores all the dubins path for the fugitive */
-    vector<curve> f_finded_curves;
-
-    /* Vector that stores the thetas used for all the dubins curve found */
-    vector<double> f_used_theta[fx_path.size()];
-
-    // double kmax = 27;
-    double kmax = 50;
-    /* Space where to search a minimum dubins curve */
-    double search_angle = M_PI / 2;
-
-    int i = 0;
-    int size = fx_path.size();
-
-    bool inside_offset_arena = f_1->inside_offset_arena;
-    bool inside_offset_obstacle = f_1->inside_offset_obstacle;
-    /* Calculate fugitive's dubin curves without intersection */
-    while (i < size - 1)
-    {
-      point_list *tmp_arena_limits = arena.shrinked_arena;
-      polygon *tmp_obstacle = arena.obstacles->offset_head;
-
-      if (f_1->inside_offset_arena)
-      {
-        tmp_arena_limits = arena.arena;
-        inside_offset_arena = false;
-      }
-      if (f_1->inside_offset_obstacle)
-      {
-        tmp_obstacle = arena.obstacles->head;
-        inside_offset_obstacle = false;
-      }
-
-      tie(c, pidx) = dubins_no_inter(fx_path[i], fy_path[i], fth_path[i], fx_path[i + 1],
-                                     fy_path[i + 1], &fth_path[i + 1], kmax, tmp_arena_limits,
-                                     tmp_obstacle, search_angle, f_used_theta[i]);
-
-      /* If pidx > 0 a curve is found */
-      if (pidx > 0)
-      {
-        /* Store the curve found and the arrival theta used for that */
-        f_finded_curves.push_back(c);
-        f_used_theta[i].push_back(fth_path[i + 1]);
-        i++;
-      }
-      else
-      {
-        if (i > 0)
-        {
-          /* If no curve is found the last curve is removed to compute
-           * another one with a different arrival angle. */
-          f_finded_curves.pop_back();
-
-          /* Restore the original theta. In this way we avoid to use
-           * different angles than the previous ones */
-          fth_path[i] = original_theta[i];
-          i--;
-
-          if (i == 0)
-          {
-            inside_offset_arena = f_1->inside_offset_arena;
-            inside_offset_obstacle = f_1->inside_offset_obstacle;
-          }
-        }
-        else
-        {
-          /*
-           * Aggiungere al report che se kmax è troppo piccolo rischiamo di avere curve troppo larghe
-           * e potrebbe capitare di non riuscire a trovare un percorso continuo per il robot. Se dovesse
-           * capitare un' idea potrebbe essere quella di incrementare kmax per permettere curve più strette
-           * (rischiando di farlo sterzare male) oppure di ridurre l'offset(rischiando schianti)...
-           *  O entrambi per un divertimento maggiore.
-           */
-          throw std::logic_error("NO DUBINS PATH AVAILABLE - kmax too small\n");
-        }
-      }
-    }
-
-    printf("Time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
-
-    // CATCHER PLAN
-
-    vector<double> cx_path;
-    vector<double> cy_path;
-    vector<double> cth_path;
-
-    tie(cx_path, cy_path) = abstract_arena.get_path(c_it->second->self->plan);
-
-    cth_path = opti_theta(cx_path, cy_path);
-
-    if (cx_path.size() > 0)
-    {
-      cx_path[0] = c_it->second->self->location->x;
-      cy_path[0] = c_it->second->self->location->y;
-      cth_path[0] = c_1->theta;
-    }
-
-    original_theta = cth_path;
-    vector<double> c_used_theta[cx_path.size()];
-    vector<curve> c_finded_curves;
-    bool no_moves = false;
-    size = cx_path.size();
-    i = 0;
-
-    inside_offset_arena = c_1->inside_offset_arena;
-    inside_offset_obstacle = c_1->inside_offset_obstacle;
-    while (i < size - 1)
-    {
-      point_list *tmp_arena_limits = arena.shrinked_arena;
-      polygon *tmp_obstacle = arena.obstacles->offset_head;
-
-      if (c_1->inside_offset_arena)
-      {
-        tmp_arena_limits = arena.arena;
-        inside_offset_arena = false;
-      }
-      if (c_1->inside_offset_obstacle)
-      {
-        tmp_obstacle = arena.obstacles->head;
-        inside_offset_obstacle = false;
-      }
-
-      tie(c, pidx) = dubins_no_inter(cx_path[i], cy_path[i], cth_path[i], cx_path[i + 1],
-                                     cy_path[i + 1], &cth_path[i + 1], kmax, arena.shrinked_arena,
-                                     arena.obstacles->offset_head, search_angle, c_used_theta[i]);
-
-      if (pidx > 0)
-      {
-        c_finded_curves.push_back(c);
-        c_used_theta[i].push_back(cth_path[i + 1]);
-        i++;
-      }
-      else
-      {
-        if (i > 0)
-        {
-          c_finded_curves.pop_back();
-          cth_path[i] = original_theta[i];
-          i--;
-          if (i == 0)
-          {
-            inside_offset_arena = c_1->inside_offset_arena;
-            inside_offset_obstacle = c_1->inside_offset_obstacle;
-          }
-        }
-        else
-        {
-          throw std::logic_error("NO DUBINS PATH AVAILABLE");
-        }
-      }
-    }
+    // Get the dubins path without intersection
+    vector<curve> f_path = get_dubins_path(arena, abstract_arena, f_1);
+    vector<curve> c_path = get_dubins_path(arena, abstract_arena, c_1);;
 
     /*
       Push only the first action move to the simulator.
@@ -361,23 +183,23 @@ namespace student
      */
     if (push_first)
     {
-      if (f_finded_curves.size() != 0)
-        path[0] = push_path(f_finded_curves[0], path[0]);
-      if (c_finded_curves.size() != 0)
-        path[1] = push_path(c_finded_curves[0], path[1]);
+      if (f_path.size() != 0)
+        path[0] = push_path(f_path[0], path[0]);
+      if (c_path.size() != 0)
+        path[1] = push_path(c_path[0], path[1]);
     }
     else
     {
 
-      for (int i = 0; i < f_finded_curves.size(); i++)
+      for (int i = 0; i < f_path.size(); i++)
       {
-        path[0] = push_path(f_finded_curves[i], path[0]);
-        img_arena = plotdubins(f_finded_curves[i], "r", "r", "r", img_arena);
+        path[0] = push_path(f_path[i], path[0]);
+        img_arena = plotdubins(f_path[i], "r", "r", "r", img_arena);
       }
-      for (int i = 0; i < c_finded_curves.size(); i++)
+      for (int i = 0; i < c_path.size(); i++)
       {
-        path[1] = push_path(c_finded_curves[i], path[1]);
-        img_arena = plotdubins(c_finded_curves[i], "b", "b", "b", img_arena);
+        path[1] = push_path(c_path[i], path[1]);
+        img_arena = plotdubins(c_path[i], "b", "b", "b", img_arena);
       }
     }
 
