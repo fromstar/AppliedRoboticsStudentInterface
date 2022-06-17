@@ -19,9 +19,9 @@ All the information about the environment are processed to code a pddl problem t
 
 ## Installation
 
-OS Required: Ubuntu 16.04
-C++ Required Version: C++11
-g++ Required Version: g++9
+* OS Required: Ubuntu 16.04
+* C++ Required Version: C++11
+* g++ Required Version: g++9
 
 ### Ros Installation
 
