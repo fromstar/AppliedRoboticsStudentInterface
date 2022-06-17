@@ -10,6 +10,8 @@ A pursuer robot and a fugitive robot are placed inside an arena characterized by
 
 All the information about the environment are processed to code a pddl problem that the Metric-FF planner uses to get the path that a robot must follow. Subsequently this path is processed to obtain a dubins path to be followed from point to point.
 
+![](https://github.com/fromstar/AppliedRoboticsStudentInterface/blob/master/Robot_scemo.gif)
+
 ## Project objectives
 
 * development and implementation of sensing algorithms to recognise objects and obstacles in the competition field
