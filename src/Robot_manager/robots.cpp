@@ -382,6 +382,7 @@ string robot_fugitive::make_pddl_domain_file()
 
 										   // Write predicates
 										   "\t(:predicates\n"
+                                           "\t\t(visited ?c - location)\n"
 										   "\t\t(is_in ?r - robot ?loc - location)\n"
 										   "\t\t(connected ?loc_start - location ?loc_end - location)\n"
 										   "\t\t(is_diagonal ?c1 - location ?c2 - location)"
@@ -393,6 +394,10 @@ string robot_fugitive::make_pddl_domain_file()
 										   "?loc_end - location)"
 										   "\n\t\t:precondition"
 										   "\n\t\t\t(and"
+                                           "\n\t\t\t\t(and"
+                                           "\n\t\t\t\t\t( not ( visited ?loc_end) )"
+                                           "\n\t\t\t\t\t( visited ?loc_start)"
+                                           "\n\t\t\t\t)"
 										   "\n\t\t\t\t( is_in ?r ?loc_start )"
 										   "\n\t\t\t\t( or"
 										   "\n\t\t\t\t\t( connected ?loc_start ?loc_end )"
@@ -401,6 +406,7 @@ string robot_fugitive::make_pddl_domain_file()
 										   "\n\t\t\t)"
 										   "\n\t\t:effect"
 										   "\n\t\t\t(and"
+                                           "\n\t\t\t\t( visited ?loc_end)"
 										   "\n\t\t\t\t( not ( is_in ?r ?loc_start ) )"
 										   "\n\t\t\t\t( is_in ?r ?loc_end)"
 										   "\n\t\t\t\t(when"
@@ -451,7 +457,9 @@ string find_agent_location_pddl(Robot* agent, World_representation wr,
             if (return_loc_id == false)
             {
                 found_pddl += "\t\t( is_in " + upperify(agent->ID) + " " +
-		      				  upperify(it_1->first) + " )\n";
+		      				  upperify(it_1->first) + " )\n"
+                              "\t\t( visited " + upperify(it_1->first) +
+                              " )\n";
             }
             else
             {
@@ -506,7 +514,9 @@ string find_agent_location_pddl(Robot* agent, World_representation wr,
         if (return_loc_id == false)
         {
 		    found_pddl += "\t\t(is_in " + upperify(agent->ID) + " " +
-			      		  upperify(nearest_cell->second) + " )\n";
+			      		  upperify(nearest_cell->second) + " )\n"
+                          "\t\t( visited " + upperify(nearest_cell->second) +
+                          " )\n";
         }
         else
         {
@@ -1135,6 +1145,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	// write predicates
 	to_log("Writing predicates");
 	pddl_domain += "\t(:predicates\n"
+                   "\t\t(visited ?c - location)"
 				   "\t\t(is_in ?r - robot ?loc - location)\n"
 				   "\t\t(connected ?loc_start - location ?loc_end - location)\n"
 				   "\t\t(captured ?r - fugitive)\n"
@@ -1178,6 +1189,10 @@ void robot_catcher::make_pddl_files(World_representation wr,
 				   "\t\t\t\t(or\n"
 				   "\t\t\t\t\t( connected ?loc_start ?loc_end )\n"
 				   "\t\t\t\t\t( connected ?loc_end ?loc_start )\n"
+                   "\t\t\t\t)\n"
+				   "\t\t\t\t(and\n"
+				   "\t\t\t\t\t( visited ?loc_start )\n"
+				   "\t\t\t\t\t( not ( visited ?loc_end ) )\n"
 				   "\t\t\t\t)\n";
 	// new
 	if (antagonists_pddl.size() == 1)
@@ -1202,6 +1217,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	// write effects
 	string move_action_effects = "\t\t:effect\n"
 				                 "\t\t\t(and\n"
+                                 "\t\t\t\t( visited ?loc_end )\n"
 				                 "\t\t\t\t( not ( is_in ?r_c ?loc_start ) )\n"
 				                 "\t\t\t\t( is_in ?r_c ?loc_end )\n";
 
