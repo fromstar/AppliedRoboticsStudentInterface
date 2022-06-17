@@ -1,5 +1,8 @@
-# Laboratory of Applied Robotics Student Interface
-Package used by student to complete the assignment of the course. 
+# Robot planning and Automated planning project
+
+### Teachers:
+* Luigi Palopoli
+* Marco Roveri
 
 ### Students:
 * Davide Bertelli
