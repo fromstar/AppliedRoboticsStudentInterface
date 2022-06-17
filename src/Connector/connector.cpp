@@ -280,18 +280,8 @@ void Connection_map::embed_connections(string to_update, string to_remove,
 
 void Connection_map::unify(string to_update, string to_remove)
 {
-    // map<string, pair<double, unordered_map<string, polygon*>>>::iterator c_it;
-    // unordered_map<string, polygon*> unified = connections[to_update].second;
-    // unordered_map<string, polygon*> to_unify = connections[to_remove].second;
-    // unordered_map<string, polygon*>::iterator unify_it = to_unify.begin();
-
-    // map<string, Master_node>::iterator c_it;
     Master_node *unified_node = &connections[to_update];
     Master_node *unify_node = &connections[to_remove];
-
-    // map<string, polygon*> *unified = &unified_node.adjacent_connections;
-    // map<string, polygon*> *to_unify = &unify_node.adjacent_connections;
-    // map<string, polygon*>::iterator unify_it = to_unify->begin();
 
     // Update resulting polygon
     // Unify the polygons
@@ -320,10 +310,8 @@ void Connection_map::unify(string to_update, string to_remove)
 
     result->id = to_update;
     // fixed in method boost_polygon_to_polygon
-    // result->area = boost::geometry::area(output[output.size()-1]);
 
     // Update union
-    // delete unified_node->master;  // free memory
     unified_node->master = result;
 
     // merge connections

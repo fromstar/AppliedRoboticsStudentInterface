@@ -80,9 +80,9 @@ void World_representation::add_cell(World_node cell, bool gate)
  * @param agents: map<string, Robot\*>. Are the agents available.
  * @param log: logger\*. Is the log class used to record the activity.
  */
-World_representation::World_representation(list_of_polygons *cells,
+World_representation::World_representation(logger *log,
+                                           list_of_polygons *cells,
 										   list_of_polygons *gate_cells,
-										   logger *log,
 										   list_of_obstacles *obs,
 										   string connections)
 {
@@ -155,9 +155,6 @@ World_representation::World_representation(list_of_polygons *cells,
  */
 tuple<vector<double>, vector<double>> World_representation::get_path(vector<string> plan)
 {
-
-	// double x_path[plan.size() + 1]; // Path size + 1 for the starting position
-	// double y_path[plan.size() + 1];
 
 	vector<double> x_path;
 	vector<double> y_path;
@@ -240,23 +237,6 @@ string World_representation::find_pddl_connections(){
                     polygon *temp_1 = it_1->second.cell;
                     polygon *temp_2 = it_2->second.cell;
 					int points_in_common = temp_1->points_in_common(temp_2);
-                    /*
-					point_node *tmp_pol_1 = it_1->second.cell->pl->head;
-					while(tmp_pol_1 != NULL && points_in_common <= 1)
-					{
-						point_node *tmp_pol_2 = it_2->second.cell->pl->head;
-						while(tmp_pol_2 != NULL && points_in_common <= 1)
-						{
-								if (tmp_pol_1->x == tmp_pol_2->x && 
-									tmp_pol_1->y == tmp_pol_2->y)
-								{
-									points_in_common += 1;
-								};
-							tmp_pol_2 = tmp_pol_2 -> pnext;
-						};
-						tmp_pol_1 = tmp_pol_1 -> pnext;
-					};
-                    */
 					if (points_in_common == 1)
 					{
 						pddl_connections += "\t\t( is_diagonal " + it_1->first +

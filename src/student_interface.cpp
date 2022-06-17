@@ -113,17 +113,10 @@ namespace student
       arena.add_gate(new polygon(pol));
     }
 
-    // Before merging obstacle they must be convexify to avoid boost:: error
-    arena.convexify_obstacles();
-
-    arena.merge_obstacles();
-    arena.convexify_obstacles();
-
+    // Before merging obstacle they must be convexify to avoid boost::error
     arena.make_free_space_cells_squares(3);
 
     cout << "Made free space" << endl;
-
-    // arena.make_free_space_cells_triangular();
 
     log_test->add_event("Created Roadmap");
 
@@ -138,9 +131,9 @@ namespace student
 
     // Create world representaion
     World_representation abstract_arena = World_representation(
+        log_test,
         arena.free_space,
         arena.gates,
-        log_test,
         arena.obstacles,
         arena.connections.find_pddl_connections());
 
@@ -155,8 +148,8 @@ namespace student
 
     abstract_arena.info();
     Mat img_arena = arena.plot_arena(1080, 1080, true, true);
-    imshow("Arena", img_arena);
-    waitKey(0);
+    // imshow("Arena", img_arena);
+    // waitKey(0);
 
     /**********************************************
      * GENERATE PLANS AND MOVE ROBOTS

@@ -357,29 +357,15 @@ void points_map::merge_obstacles()
 		bool lock = false;
 		while (j < psize && lock == false)
 		{
-			// cout << "Intersects? " <<
-			//    boost::geometry::intersects(polys[i], polys[j]) << endl;
-			// cout << "Within? " <<
-			//     boost::geometry::intersects(polys[i], polys[j]) << endl;
-
-			// if (boost::geometry::intersects(polys[i], polys[j]) == false)
-			// {
 			if (boost::geometry::intersects(polys[i], polys[j]))
 			{
 				// Update the polygon list
 				boost::geometry::union_(polys[i], polys[j], output);
-				// polys.erase(polys.begin() + i);
-				// polys.erase(polys.begin() + j);
-				// polys.push_back(output[output.size()-1]);
 				polys[i] = output[output.size() - 1];
 				polys.erase(polys.begin() + j);
 				psize--;
 				j--;
-				// psize = polys.size();
-				// i=0, j=1;
 			}
-
-			// }
 			j++;
 		}
 		i++;
@@ -759,9 +745,12 @@ vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
  */
 void points_map::make_free_space_cells_squares(int res)
 {
-	cout << "Good boy" << endl;
+    // Convexify and merge obstacles
+    convexify_obstacles();
+    merge_obstacles();
+    convexify_obstacles();
 
-	// generate arena subsetting
+	// Generate arena subsetting
 	list_of_polygons *tmp_list = new list_of_polygons();
 	tmp_list->add_polygon(new polygon(shrinked_arena));
 
@@ -803,10 +792,7 @@ void points_map::make_free_space_cells_squares(int res)
 		};
 		tmp_list = tmp_output;
 	};
-
 	polygon *tmp_pol;
-
-	cout << "Made FS cells" << endl;
 
 	// convert cells to boost polygons
 	vector<Polygon_boost> cells;
@@ -826,19 +812,8 @@ void points_map::make_free_space_cells_squares(int res)
 		tmp_pol = tmp_pol->pnext;
 	};
 
-	// add gates to list of obstacles
-	/*
-	tmp_pol = gates->head;
-	while(tmp_pol != NULL){
-		ob_boost.push_back(tmp_pol->to_boost_polygon());
-		tmp_pol = tmp_pol->pnext;
-	};
-	*/
-
-	cout << "Before difference" << endl;
 	// Remove obstacles from the cells
 	cells = difference_of_vectors(cells, ob_boost);
-	cout << "After difference" << endl;
 
 	// Populate free space cells list
 	// list_of_polygons *new_cells = new list_of_polygons();
@@ -965,9 +940,7 @@ void points_map::make_free_space_cells_triangular(int res)
 		};
 	};
 
-	// printf("Obstacles removed\n");
 	output = arena_polys;
-	// cout << "Found " << output.size() << " cells" << endl;
 
 	// convert boost polygons to polygons and update free space variable
 	for (int i = 0; i < output.size(); i++)

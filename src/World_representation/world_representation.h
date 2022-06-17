@@ -42,19 +42,13 @@ typedef struct World_representation
 
 	// map<string, Robot *> world_robots;
 
-	World_representation(list_of_polygons *cells,
-                         list_of_polygons *gate_cells,
-						 logger *log = new logger(),
+	World_representation(logger *log = new logger(),
+                         list_of_polygons *cells = NULL,
+                         list_of_polygons *gate_cells = NULL,
 						 list_of_obstacles *obs=NULL,
 						 string connections="NaN");
 	void add_cell(World_node cell, bool gate = false);
-	/*
-	void to_pddl(string path_pddl_problem_file = "problem.pddl",
-				 string problem_name = "fugitive_catcher",
-				 string domain_name = "fugitive_catcher",
-				 bool fugitive_agent = false);
-	*/
-	tuple< vector<double>, vector<double>> get_path(vector<string> plan);
+	tuple<vector<double>, vector<double>> get_path(vector<string> plan);
 	string find_pddl_connections();
 	void set_connections(string connections);
 	void info();

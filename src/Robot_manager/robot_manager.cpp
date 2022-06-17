@@ -74,11 +74,12 @@ void robot_manager::trade_fugitives()
 	if (fugitives.size() == catchers.size())
 	{
 		// One robot is the antagonist of the other
-		map<string, robot_fugitive *>::iterator it_f = fugitives.begin();
-		map<string, robot_catcher *>::iterator it_c = catchers.begin();
+		map<string, robot_fugitive *>::const_iterator it_f = fugitives.begin();
+		map<string, robot_catcher *>::const_iterator it_c = catchers.begin();
 
 		it_f->second->add_antagonist(it_c->second->self);
 		it_c->second->add_antagonist(it_f->second->self);
+        rm_logger->add_event("1 VS 1 agent");
 	}
 	else
 	{
@@ -117,8 +118,8 @@ void robot_manager::trade_fugitives()
 		map<double, Robot *>::iterator it_low;
 
 		// Assign antagonists to catchers
-		map<string, robot_catcher *>::iterator it_c;
-		map<string, robot_fugitive *>::iterator it_f;
+		map<string, robot_catcher *>::const_iterator it_c;
+		map<string, robot_fugitive *>::const_iterator it_f;
 
 		for (it_c = catchers.begin(); it_c != catchers.end(); ++it_c)
 		{
@@ -149,6 +150,9 @@ void robot_manager::trade_fugitives()
 				i++;
 			} while (i < num_antagonists_c);
 		};
+        string msg = to_string(fugitives.size()) + " Fugitives VS " +
+                     to_string(catchers.size()) + "Catchers";
+        rm_logger->add_event(msg);
 	};
 	// end options
 
@@ -195,9 +199,9 @@ void robot_manager::info(bool detailed)
 void robot_manager::run_agents_planners(World_representation wr,
 										behaviour_fugitive supposed_fugitive_behaviour)
 {
-	rm_logger->add_event("Started threads for the fugitives");
-	// Run fugitives threads
-	map<string, robot_fugitive *>::iterator f_it;
+	rm_logger->add_event("Make fugitive plans");
+
+	map<string, robot_fugitive *>::const_iterator f_it;
 
 	for (f_it = fugitives.begin(); f_it != fugitives.end(); f_it++)
 	{
@@ -205,9 +209,9 @@ void robot_manager::run_agents_planners(World_representation wr,
 		f_it->second->make_pddl_problem_file(wr);
 	};
 
-	rm_logger->add_event("Started threads for the catchers");
-	// Run catchers threads
-	map<string, robot_catcher *>::iterator c_it;
+	rm_logger->add_event("Make catchers plan");
+
+	map<string, robot_catcher *>::const_iterator c_it;
 
 	for (c_it = catchers.begin(); c_it != catchers.end(); c_it++)
 	{
