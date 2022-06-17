@@ -188,6 +188,12 @@ The offical download of this version of Metric_FF is: https://github.com/tatsubo
 
 It is reccomended to use the planner already included in the project folder of this work. It has been slightly modified to make the output compatible with other official versions of Metric.
 
+The planner is already compiled but if necessary recompile it then install the following packages before do that:
+'''
+sudo apt-get update 
+sudo apt-get install flex bison
+'''
+
 ## Run the project
 Open terminator and split it in 3 terminals. 
 In the terminals use these commands:\
