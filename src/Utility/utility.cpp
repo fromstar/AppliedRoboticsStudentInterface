@@ -1,5 +1,21 @@
 #include "utility.h"
 
+/**
+ * \fun double_node(double a)
+ * It is the constructor of the struct double_node.
+ * @param a: double. It is the value represented by the structure.
+ */
+double_node::double_node(double a)
+{
+    value = a;
+}
+
+/**
+ * \fun add_node(double_node *node)
+ * It is the method allowing the insertion of a new double_node inside
+ * the double_list structure.
+ * @param node: \*double_node. It is the pointer to a double_node instance.
+ */
 void double_list::add_node(double_node *node)
 {
 	size++;
@@ -13,6 +29,10 @@ void double_list::add_node(double_node *node)
 	tail = tail->pnext;
 }
 
+/**
+ * \fun print_list()
+ * This method it is used to print the content of a double_list.
+ */
 void double_list::print_list()
 {
 	double_node *tmp = head;
@@ -23,6 +43,11 @@ void double_list::print_list()
 	}
 }
 
+/**
+ * \fun delete_list()
+ * This method is used to remove all the elements from the double_list
+ * structure and also from the heap.
+ */
 void double_list::delete_list()
 {
 	double_node *tmp;
@@ -35,6 +60,49 @@ void double_list::delete_list()
 	size = 0;
 }
 
+
+/**
+ * \fun point_node(double a, double b)
+ * It is the constructor of the point_node struct.
+ * @param a: double. It is the point position wrt the abscissa axis.
+ * @param b: double. It is the point positizion wrt the ordinate axis.
+ */
+point_node::point_node(double a, double b)
+{
+    x = a;
+    y = b;
+}
+
+/**
+ * \fun copy()
+ * This method is used to return a copy instance of the struct.
+ * @return pointer of type point_node to the copy instance.
+ */
+point_node *point_node::copy()
+{
+	return new point_node(x, y);
+};
+
+/**
+ * \fun Print()
+ * This method is used to print the positio over the coordinates system
+ * of the point represented.
+ */
+void point_node::Print()
+{
+	printf("%0.4f,%0.4f\n", x, y);
+};
+
+/**
+ * \fun distance(point_node* p)
+ * This method is used to compute the distance between the point
+ * represented and another instance of type point_node*.
+ * 
+ * @param p: point_node\*. It is the instance of point_node to which compute
+ *                         the distance.
+ *
+ * @return double: It is the euclidean distance among the point_node instances.
+ */
 double point_node::distance(point_node* p)
 {
     if (p == NULL)
@@ -42,27 +110,6 @@ double point_node::distance(point_node* p)
         cout << "Given point is NULL" << endl;
     }
     return sqrt(pow(x - p->x, 2) + pow(y - p->y, 2));
-};
-
-point_node *point_node::copy()
-{
-	return new point_node(x, y);
-};
-
-bool point_node::operator == (const point_node* p){
-	if (x == p->x && y == p->y)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-};
-
-void point_node::Print()
-{
-	printf("%0.4f,%0.4f\n", x, y);
 };
 
 /**
@@ -98,23 +145,40 @@ void point_list::add_node(point_node *node, int iterations)
 	};
 }
 
-point_list* point_list::pop(){
+/**
+ * \fun pop()
+ * This method removes the last element from the list.
+ * @return point_list*: pointer to the istance of point_list without the last
+ *                      element.
+ */
+void point_list::pop(){
 	point_node *tmp = head;
-	point_list *new_list = new point_list;
-	while(tmp->pnext != NULL){
-		new_list->add_node(new point_node(tmp->x, tmp->y));
+	while(tmp->pnext->pnext != NULL){
 		tmp = tmp->pnext;
 	};
-	return new_list;
+    delete tmp->pnext;
+    tmp->pnext = NULL;
+    tail = tmp;
 };
 
-
+/**
+ * \fun append_list(point_list *e)
+ * This method allows to add another list of type point_list to the
+ * one represented by the structure.
+ *
+ * @param e: point_list\*. It is the pointer to the head of the point list
+ *           to append.
+ */
 void point_list::append_list(point_list *e)
 {
 	tail->pnext = e->head;
 	tail = e->tail;
 };
 
+/**
+ * \fun print_list()
+ * This method is used to print all the elements in the list.
+ */
 void point_list::print_list()
 {
 	point_node *tmp = head;
@@ -129,6 +193,11 @@ void point_list::print_list()
 	}
 }
 
+/**
+ * \fun delete_list()
+ * This method is used to remove all the elements from the list and also from
+ * the heap.
+ */
 void point_list::delete_list()
 {
 	point_node *tmp;
@@ -141,24 +210,37 @@ void point_list::delete_list()
 	size = 0;
 }
 
+/**
+ * \fun Edge(point_node* p_1, point_node* p_2)
+ * This is the constructor for the Edge struct.
+ * @param p_1: point_node\*. Pointer representing the first point of the edge.
+ * @param p_2: point_node\*. Pointer representing the end point of the edge.
+ */
 Edge::Edge(point_node *p_1, point_node *p_2)
 {
-	/**
-	 * @param p_1 : pointer of type point_node.
-	 * @param p_2 : pointer of type point_node.
-	 */
-
 	points = new point_list;
 	points->add_node(new point_node(p_1->x, p_1->y));
 	points->add_node(new point_node(p_2->x, p_2->y));
 	*slope = (p_2->y - p_1->y) / (p_2->x - p_1->x);
 };
 
+/**
+ * \fun
+ * This method implements the destructor of the struct.
+ */
 Edge::~Edge()
 {
 	points->delete_list();
 };
 
+/**
+ * \fun intersection(Edge* e)
+ * This method is used to compute the intersection with another edge.
+ * @param e: Edge*. It is the edge instance with which an intersection has
+ *                  to be found if any.
+ * @return point_node* the point_node representing the intersection. It returns
+ *         NULL if no intersection is found.
+ */
 point_node *Edge::intersection(Edge *e)
 {
 	// given the slope, the equation of a line is y-y1 = m(x-x1).
@@ -189,18 +271,35 @@ point_node *Edge::intersection(Edge *e)
 	return intersection;
 };
 
-void Edge::info()
-{
-	points->print_list();
-	printf("Slope: %f\n", *slope);
-};
-
+/**
+ * \fun middle_point()
+ * This method computes the middle point of an edge instance.
+ * @return point_node*: It is the pointer to the point_node instance
+ *                      representing the middle_point.
+ */
 point_node* Edge::middle_point(){
 	double mid_x = ((points->head->x + points->tail->x))/2;
 	double mid_y = ((points->head->y + points->tail->y))/2;
 	return new point_node(mid_x, mid_y);
 };
 
+
+/**
+ * \fun info()
+ * This method is used to print informations regarding the edge, like the
+ * positions of its points and its slope.
+ */
+void Edge::info()
+{
+	points->print_list();
+	printf("Slope: %f\n", *slope);
+};
+
+/**
+ * \fun add_edge(Edge* e)
+ * This method allows to add a new Edge instance to the list of edges.
+ * @param e: Edge\*. It is the pointer to the Edge instance to add to the list.
+ */
 void Edge_list::add_edge(Edge *e)
 {
 	if (head == NULL)
@@ -216,6 +315,10 @@ void Edge_list::add_edge(Edge *e)
 	size++;
 };
 
+/**
+ * \fun info()
+ * This method is used to print all the elements contained in the list.
+ */
 void Edge_list::info()
 {
 	Edge *tmp = head;
@@ -226,6 +329,10 @@ void Edge_list::info()
 	};
 };
 
+/**
+ * \un ~Edge_list()
+ * It is the struct destructor.
+ */
 Edge_list::~Edge_list()
 {
 	Edge *tmp = NULL;
@@ -237,6 +344,22 @@ Edge_list::~Edge_list()
 	};
 };
 
+/**
+ * \fun plot_points
+ * This function is used to plot a point list to a Mat object representing
+ * an image.
+ *
+ * @param pl: point_list*. It is the list of points to plot.
+ * @param arena: Mat. It is the Mat object in which the points will be plotted.
+ * @param colorline: cv::Scalar. It is the color in which the point list will
+ *                   be drown. It is expressed in RGB.
+ * @param isPolygon: bool. It is a flag telling whether or not the point list
+ *                   that is being plotted represents a polygon.
+ * @param thickness: int. It is an integer value representing how thick will
+ *                   be the line drown.
+ * @param show: bool. It is a flag telling whether or not to print details
+ *              of the line plotted.
+ */
 Mat plot_points(point_list *pl, Mat arena, Scalar colorline, bool isPolygon,
 				int thickness, bool show)
 {
@@ -257,9 +380,6 @@ Mat plot_points(point_list *pl, Mat arena, Scalar colorline, bool isPolygon,
 					 << "[" << (n2->x * SCALE_1) + SCALE_2 << ":"
 					 << ((n2->y * -SCALE_1) + SCALE_2) << "]" << endl;
 			};
-			/*cout<<"P1 x: " << n1->x<<" y: " <<n1->y <<endl;
-			cout<<"P2 x: " << n2->x<<" y: " <<n2->y <<endl;
-			cout<<"Line drawed\n";*/
 			n1 = n1->pnext;
 		}
 
@@ -771,8 +891,8 @@ point_list *boost_polygon_to_point_list(Polygon_boost p)
                                                                                
             pl->add_node(new point_node(x, y));                                
         }                                                                      
-    point_list *new_pol_list = pl->pop();
-    return new_pol_list;
+    pl->pop();
+    return pl;
 }
 
 polygon *boost_polygon_to_polygon(Polygon_boost p)                         
