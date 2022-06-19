@@ -344,28 +344,49 @@ Mat plot_points(point_list *, Mat, Scalar, bool, int thickness=1,
 
 /**
  * \fun sort(double_list*, point_list*)
- *
+ * This function sort a point list according to the order of its associated doublelist
+ * @param double_list *t
+ * @param point_list *pts
  */
 void sort(double_list *, point_list *);
 
 /**
- * \fun get_new_point
+ * \fun get_new_point(double m1, double m2, double q1, double q2)
+ * This function calculate the intersection point given the angular coifficents of two lines and their ordered at the origin-
+ * @param double m1: Angular coifficient of the first line
+ * @param double m2: Angular coifficient of the second line
+ * @param double q1: Ordered at the origin of the first line
+ * @param double q1: Ordered at the origin of the second line
+ * @returns <double,double>: x,y coordinates of the intersection point
  */
 tuple <double, double> get_new_point(double,double,double,double);
 
 /**
- * \fun exec
+ * \fun exec(const char *cmd)
+ * Execute command cmd with a pipe.
+ * @param const char *cmd: command to execute.
+ * @return string: result of the execution.
  */
 string exec(const char *cmd);
 
 /**
- * \fun get_angle
+ * \fun get_angle(double xc, double yx, double x, double y)
+ * This function return the angle formed by the center of a circonference and a point that is part of it.
+ * @param double xc: x-coordinate of the circonference's center
+ * @param double yc: y-coordinate of the circonference's center
+ * @param double x: x-coordinate of the circonference's point
+ * @param double y: y-coordinate of the circonference's point
+ * @return double: angle formed by the center and the point
  */
 double get_angle(double,double,double,double);
 
 /**
- * \fun is_in_arc
- *
+ * \fun is_in_arc(double start_angle, double end_angle, double angle)
+ * This function is used to check if an angle is between two other angles.
+ * @param double th0: Starting angle
+ * @param double thf: Ending angle
+ * @param double th: Angle to check
+ * @return bool: boolean that says if the angle is included.
  */
 bool is_in_arc(double,double,double);
 

@@ -237,16 +237,6 @@ tuple<double, double, double, double, double, double> circline(double s, double 
 	return make_tuple(x, y, th, xc, yc, r);
 }
 
-void python_plot(curve d, string c1, string c2, string c3)
-{
-	string a1_values = to_string(d.a1.x0) + " " + to_string(d.a1.y0) + " " + to_string(d.a1.th0) + " " + to_string(d.a1.k) + " " + to_string(d.a1.L) + " " + to_string(d.a1.xf) + " " + to_string(d.a1.yf) + " " + to_string(d.a1.thf);
-	string a2_values = to_string(d.a2.x0) + " " + to_string(d.a2.y0) + " " + to_string(d.a2.th0) + " " + to_string(d.a2.k) + " " + to_string(d.a2.L) + " " + to_string(d.a2.xf) + " " + to_string(d.a2.yf) + " " + to_string(d.a2.thf);
-	string a3_values = to_string(d.a3.x0) + " " + to_string(d.a3.y0) + " " + to_string(d.a3.th0) + " " + to_string(d.a3.k) + " " + to_string(d.a3.L) + " " + to_string(d.a3.xf) + " " + to_string(d.a3.yf) + " " + to_string(d.a3.thf);
-
-	string command = "python3 plot.py " + a1_values + " " + a2_values + " " + a3_values + " " + c1 + " " + c2 + " " + c3;
-	system((command).c_str());
-}
-
 Mat plotdubins(curve d, string c1, string c2, string c3, Mat arena)
 {
 	arena = plotarc(d.a1, c1, arena);
