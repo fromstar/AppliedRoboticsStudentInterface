@@ -63,6 +63,17 @@ tuple<int, curve> dubins(double x0, double y0, double th0, double xf, double yf,
 	return make_tuple(pidx, c);
 }
 
+/**
+ * \fun
+ * This method creates a dubins arc.
+ * 
+ * @param x0: double. x-coordinate of the starting point of the arc
+ * @param y0: double. y-coordinate of the starting point of the arc 
+ * @param th0: double. Starting angle
+ * @param k: double. Curvature angle
+ * @param L: Length of the arc
+ * @return arc 
+ */
 arc dubinsarc(double x0, double y0, double th0, double k, double L)
 {
 	arc c;
@@ -75,6 +86,21 @@ arc dubinsarc(double x0, double y0, double th0, double k, double L)
 	return c;
 }
 
+/**
+ * \fun 
+ * This function creates a dubins curve.
+ * 
+ * @param x0: double. x-coordinate of the starting point of the curve  
+ * @param y0: double. y-coordinate of the starting point of the curve 
+ * @param th0: double. Starting angle.
+ * @param s1: double. Lenght of the first arc.
+ * @param s2: double. Lenght of the second arc. 
+ * @param s3: double. Lenght of the third arc.
+ * @param k0: double. curvature angle of the first arc.
+ * @param k1: double. curvature angle of the second arc.
+ * @param k2: double. curvature angle of the third arc.
+ * @return curve 
+ */
 curve dubinscurve(double x0, double y0, double th0, double s1, double s2, double s3, double k0, double k1, double k2)
 {
 	curve d;
@@ -214,6 +240,18 @@ tuple<bool, double, double, double> LRL(double sc_th0, double sc_thf, double sc_
 	return make_tuple(ok, sc_s1, sc_s2, sc_s3);
 }
 
+/**
+ * \fun
+ * This function calculate the coordinates of a point in a circle and it's center's coordinates.
+ * 
+ * @param s: double. Distance between the point to calculate and the starting point of a circle.
+ * @param x0: double. x-coordinate of the starting point.
+ * @param y0: double. y-coordinate of the starting point of the angle.  
+ * @param k: double. Angle's curvature. 
+ * @param th0: double. Starting angle.
+ * @param get_center: bool. Bool to know if is necessary to calculate the center coordinates of the circle 
+ * @returns tuple<double x, double y, double th, double xc, double yc, double r>: Coordinates of the point and the center of the circle and it's radius.
+ */
 tuple<double, double, double, double, double, double> circline(double s, double x0, double y0, double k, double th0, bool get_center)
 {
 	double x, y, th, xc, yc, r;
@@ -228,7 +266,7 @@ tuple<double, double, double, double, double, double> circline(double s, double 
 	x1 = x0 + s1 * sinc(k * s1 / 2.0) * cos(th0 + k * s1 / 2);
 	y1 = y0 + s1 * sinc(k * s1 / 2.0) * sin(th0 + k * s1 / 2);
 
-	// aggiungere calcolo centro circonferenza
+	// calculation of the circle center
 	if (get_center)
 		tie(xc, yc, r) = get_circle_center(x0, y0, x1, y1, x, y);
 	else
@@ -237,6 +275,17 @@ tuple<double, double, double, double, double, double> circline(double s, double 
 	return make_tuple(x, y, th, xc, yc, r);
 }
 
+/**
+ * \fun
+ * This function plot a dubins curve in a given image
+ * 
+ * @param d: curve. Dubins curve to plot.
+ * @param c1: arc. Color of the first arc.
+ * @param c2: arc. Color of the second arc. 
+ * @param c3: arc. Color of the third arc. 
+ * @param arena: Mat. Img where to plot the curve. 
+ * @return Mat: Plotted img 
+ */
 Mat plotdubins(curve d, string c1, string c2, string c3, Mat arena)
 {
 	arena = plotarc(d.a1, c1, arena);
@@ -246,6 +295,15 @@ Mat plotdubins(curve d, string c1, string c2, string c3, Mat arena)
 	return arena;
 }
 
+/**
+ * \fun
+ * This function plot a given arc in the given img. To plot the arc, it is sectioned into 100 smaller arcs.
+ * 
+ * @param a: arc. Arc to plot.
+ * @param c: string. Color to use for the plot. 
+ * @param img: Mat. Img where to plot. 
+ * @return Mat: plotted img. 
+ */
 Mat plotarc(arc a, string c, Mat img)
 {
 	int npts = 100;
@@ -285,6 +343,20 @@ Mat plotarc(arc a, string c, Mat img)
 	return img;
 }
 
+/**
+ * \fun
+ * This function calculate the intersection points between two lines.
+ * 
+ * @param x1: double: x-coordinate of the first point of the first line
+ * @param y1: double: y-coordinate of the first point of the first line
+ * @param x2: double: x-coordinate of the second point of the first line
+ * @param y2: double: y-coordinate of the seconf point of the first line
+ * @param x3: double: x-coordinate of the first point of the second line
+ * @param y3: double: y-coordinate of the first point of the second line
+ * @param x4: double: x-coordinate of the second point of the second line
+ * @param y4: double: y-coordinate of the second point of the second line
+ * @return tuple<point_list *, double_list *> 
+ */
 tuple<point_list *, double_list *> intersLineLine(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
 {
 	point_list *pts = new point_list;
@@ -384,7 +456,19 @@ double dot2D(double *v1, double *v2)
 	return v1[0] * v2[0] + v1[1] * v2[1];
 }
 
-/*a,b = coordinate centro circonferenza arco.*/
+/**
+ * \fun
+ * This function return the intersection points between a circle and a line.
+ * 
+ * @param a: double. x-coordinate of the center of the circle
+ * @param b: double. y-coordinate of the center of the circle
+ * @param r: double. radius of the circle
+ * @param x1: double. x-coordinate of the first point of the line
+ * @param y1: double. y-coordinate of the first point of the line
+ * @param x2: double. x-coordinate of the second point of the line
+ * @param y2: double. y-coordinate of the second point of the line
+ * @return tuple<point_list *, double_list *> 
+ */
 tuple<point_list *, double_list *> intersCircleLine(double a, double b, double r, double x1, double y1, double x2, double y2)
 {
 	double p1, p2, p3, p4, p5, p6;
@@ -450,6 +534,15 @@ tuple<point_list *, double_list *> intersCircleLine(double a, double b, double r
 	return make_tuple(pts, t);
 }
 
+/**
+ * \fun
+ * This function calculate the optimized arriving angle for the dubins curves for all the path to follow.
+ * The opti theta is calculated as the angle formed by the line that joins two points.
+ * 
+ * @param xpath: vector<double>. x-coordinates of the centroids of the free space cells of the path to follow  
+ * @param ypath: vector<double>. y-coordinates of the centroids of the free space cells of the path to follow 
+ * @return vector<double> 
+ */
 vector<double> opti_theta(vector<double> xpath, vector<double> ypath)
 {
 	vector<double> thpath;
@@ -465,10 +558,19 @@ vector<double> opti_theta(vector<double> xpath, vector<double> ypath)
 	return thpath;
 }
 
-/*
-	Source of this function:
-	https://www.geeksforgeeks.org/equation-of-circle-when-three-points-on-the-circle-are-given/
-*/
+/**
+ * \fun
+ * This function return the center of a circle given three points of it. The source of the code is taken from:
+ * https://www.geeksforgeeks.org/equation-of-circle-when-three-points-on-the-circle-are-given/
+ * 
+ * @param x1: double. x-coordinate of the first point of the circonference
+ * @param y1: double. y-coordinate of the first point of the circonference
+ * @param x2: double. x-coordinate of the second point of the circonference
+ * @param y2: double. y-coordinate of the second point of the circonference
+ * @param x3: double. x-coordinate of the third point of the circonference
+ * @param y3: double. y-coordinate of the third point of the circonference
+ * @return tuple<double, double, double> 
+ */
 tuple<double, double, double> get_circle_center(double x1, double y1, double x2, double y2, double x3, double y3)
 {
 	double x12 = x1 - x2;
@@ -511,6 +613,14 @@ tuple<double, double, double> get_circle_center(double x1, double y1, double x2,
 	return make_tuple(h, k, r);
 }
 
+/**
+ * \fun
+ * This function discretize a range of angles around a given angle. The angles are taken each 1°.
+ * 
+ * @param starting_angle: double. Angle where to discretize around. 
+ * @param search_angle: Range where to discretize. 
+ * @return vector<double> 
+ */
 vector<double> theta_discretization(double starting_angle, double search_angle)
 {
 
@@ -528,6 +638,28 @@ vector<double> theta_discretization(double starting_angle, double search_angle)
 	return plausible_theta;
 }
 
+/**
+ * \fun
+ * This function return a dubins curve that doesn't intersect with any corner and it's pidx.
+ * This function calculates the dubins curve for each angle discretized in a given range. Each dubins curve is checked that it does not intersect
+ * with any corner of the arena and any corner of any obstacle. If an intersection the curve is discarded otherwise its length is checked to see 
+ * if it is the shortest of all the curves found so far. If yes it is saved with its pidx. Before store the curve, it's arriving angle is checked 
+ * that it is not present in a list of angles that cannot be used. a If any curve is founded the searching angle become the opposite of the area used. 
+ * If again no curve is founded then the pidx <= 0 is returned as information about it.
+ * 
+ * @param x0: double. x-coordinate of the starting point. 
+ * @param y0: double. y-coordinate of the starting point.
+ * @param th0: double. Initial angle.
+ * @param xf: double. x-coordinate of the final point.
+ * @param yf: double. y-coordinate of the final point.
+ * @param thf: double. Arriving angle.
+ * @param Kmax: double. Curvature angle.
+ * @param arena_limits: List of the points of the arena's limits.
+ * @param obstacle: polygon. First element of the polygon list in the arena. 
+ * @param search_angle: double. Area where discretize the angles. 
+ * @param used_th: List of the already used final angle that must not to be re-used
+ * @return tuple<curve, int> 
+ */
 tuple<curve, int> dubins_no_inter(double x0, double y0, double th0,
 								  double xf, double yf, double *thf,
 								  double Kmax, point_list *arena_limits, polygon *obstacle,
@@ -543,12 +675,6 @@ tuple<curve, int> dubins_no_inter(double x0, double y0, double th0,
 
 	vector<double> angles = theta_discretization(initial_th, search_angle);
 
-	// cout <<"[";
-	// for(int i = 0;i<used_th.size();i++)
-	// {
-	// 	cout << used_th[i]<<",";
-	// }
-	// cout <<"]\n\n";
 	int i = 0;
 	/* Compute dubins path for all the angles available*/
 	while (i < angles.size())
@@ -646,6 +772,15 @@ tuple<curve, int> dubins_no_inter(double x0, double y0, double th0,
 	return make_tuple(c_min, min_pidx);
 }
 
+/**
+ * \fun
+ * This function search the intersection points between an arc and a line.
+ * 
+ * @param a: arc.
+ * @param pnt: point_node*. First point of the line. 
+ * @param pnt_next: point_node*. Second point of the line.
+ * @return bool. True if intersection is found, False otherwise.
+ */
 bool find_intersection(arc a, point_node *pnt, point_node *pnt_next)
 {
 	/*
@@ -673,7 +808,17 @@ bool find_intersection(arc a, point_node *pnt, point_node *pnt_next)
 
 	return true;
 }
-
+/**
+ * \fun
+ * This function check if a point is part of a given arc.
+ * To do this, the angle formed in the circumference by the starting point is taken, 
+ * that formed by the end point and that formed by the point to be checked. If this 
+ * angle is included between the starting and ending angle then it is part of the arc.
+ * 
+ * @param ptso: point_node *. Point to check.
+ * @param a: arc.
+ * @return bool. True if the point is in the arc. False otherwise.
+ */
 bool pt_in_arc(point_node *ptso, arc a)
 {
 	/*
@@ -714,6 +859,13 @@ bool pt_in_arc(point_node *ptso, arc a)
 	return false;
 }
 
+/**
+ * \fun
+ * This function convert the given arc in a Pose object for the simulator.
+ * 
+ * @param a: arc. Given arc 
+ * @return Pose 
+ */
 Pose get_pose(arc a)
 {
 	Pose p;
@@ -727,6 +879,15 @@ Pose get_pose(arc a)
 	return p;
 }
 
+/**
+ * \fun
+ * This function push the Pose in a Path vector that the simulator will use to move the robots.
+ * For a better movement of the robors the dubins curve is sampled in n_samples subarc.
+ * 
+ * @param c: curve. Given dubins curve.
+ * @param p: Path. Path where to push the curve.
+ * @return Path 
+ */
 Path push_path(curve c, Path p)
 {
 	/*
@@ -761,6 +922,24 @@ Path push_path(curve c, Path p)
 	return p;
 }
 
+/**
+ * \fun
+ * This function return the dubins path formed by all the dubins curve that a robot must follow.
+ * Everytime a dubins curve is computed a copy of the arriving theta is stored in a vector.
+ * This is useful in the case that if during the process no dubins curve is founded the function delete
+ * the last curve computed and search another way to arrive to the next point. To do that is important
+ * to avoid reusing arriving theta that we already know lead to dead ends.
+ * In the case no dubins path is founded one possibly way to solve the problem is to increase the kmax value.
+ * In this way a robot can perform tighter curves and it is easier to find a way forward but of course there 
+ * are physical limits to the robot on how tight it can turn.
+ * Another way could be to reduce the offset of the arena and obstacles to make the passages wider. 
+ * In doing so, however, there is a risk that the robot could suffer a collision 
+ * 
+ * @param arena: points_map. Representation of the arena.
+ * @param abstract_arena: Wordl_representation. Abstract representation of the arena. 
+ * @param r: Robot *. Robot for which we need to calculate the dubins path 
+ * @return vector<curve>: Dubins path. 
+ */
 vector<curve> get_dubins_path(points_map arena, World_representation abstract_arena, Robot *r)
 {
 	vector<curve> path;
@@ -854,13 +1033,6 @@ vector<curve> get_dubins_path(points_map arena, World_representation abstract_ar
 			}
 			else
 			{
-				/*
-				 * Aggiungere al report che se kmax è troppo piccolo rischiamo di avere curve troppo larghe
-				 * e potrebbe capitare di non riuscire a trovare un percorso continuo per il robot. Se dovesse
-				 * capitare un' idea potrebbe essere quella di incrementare kmax per permettere curve più strette
-				 * (rischiando di farlo sterzare male) oppure di ridurre l'offset(rischiando schianti)...
-				 *  O entrambi per un divertimento maggiore.
-				 */
 				throw std::logic_error("NO DUBINS PATH AVAILABLE - kmax too small\n");
 				return path;
 			}

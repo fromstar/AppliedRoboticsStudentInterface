@@ -402,6 +402,13 @@ Mat plot_points(point_list *pl, Mat arena, Scalar colorline, bool isPolygon,
 	return arena;
 }
 
+/**
+ * \fun
+ * This function implements the sinc operator.
+ * 
+ * @param t 
+ * @return double 
+ */
 double sinc(double t)
 {
 	if (abs(t) < 0.002)
@@ -410,6 +417,13 @@ double sinc(double t)
 		return sin(t) / t;
 }
 
+/**
+ * \fun
+ * This function implements the mod2pi operator.
+ * 
+ * @param ang 
+ * @return double 
+ */
 double mod2pi(double ang)
 {
 	double out = ang;
@@ -445,6 +459,15 @@ bool check(double s1, double k0, double s2, double k1, double s3, double k2, dou
 	return (sqrt(eq1 * eq1 + eq2 * eq2 + eq3 * eq3) < 1.e-10) && Lpos;
 }
 
+
+/**
+ * \fun
+ * This function sort a point list according to the order of its associated doublelist
+ * 
+ * @param t double_list *.
+ * @param pts point_list *.
+ * 
+ */
 void sort(double_list *t, point_list *pts)
 {
 	double_node *dbfst = t->head;
@@ -479,19 +502,36 @@ void sort(double_list *t, point_list *pts)
 	}
 }
 
+/**
+ * \fun
+ * This function calculate the intersection point given the angular coifficents of two lines and their ordered at the origin.
+ * Every possible case has been considered. That is, if a line is horizontal, vertical or perpendicular etc.
+ * 
+ * @param m1: double. Angular coifficient of the first line
+ * @param m2: double. Angular coifficient of the second line
+ * @param q1: double. Ordered at the origin of the first line
+ * @param q2: double. Ordered at the origin of the second line
+ * @return tuple<double, double>: Coordinates of the intersection point. 
+ */
 tuple<double, double> get_new_point(double m1, double m2, double q1, double q2)
 {
 	double x, y;
+
+	/* First line horizontal, second line vertical.*/
 	if (m1 == 0 && m2 == std::numeric_limits<double>::infinity())
 	{
 		x = q2;
 		y = q1;
 	}
+
+	/* Second line horizontal, second line vertical*/
 	else if (m2 == 0 && m1 == std::numeric_limits<double>::infinity())
 	{
 		x = q1;
 		y = q2;
 	}
+	
+	/* Just the first line horizontal*/
 	else if (m1 == 0)
 	{
 		// y = q1
@@ -499,21 +539,29 @@ tuple<double, double> get_new_point(double m1, double m2, double q1, double q2)
 		y = q1;
 		x = (y - q2) / m2;
 	}
+
+	/* Just the second line horizontal*/
 	else if (m2 == 0)
 	{
 		y = q2;
 		x = (y - q1) / m1;
 	}
+
+	/* Just the first line vertical*/
 	else if (m1 == std::numeric_limits<double>::infinity())
 	{
 		x = q1;
 		y = m2 * x + q2;
 	}
+
+	/* Just the second line vertical*/
 	else if (m2 == std::numeric_limits<double>::infinity())
 	{
 		x = q2;
 		y = m1 * x + q1;
 	}
+
+	/* No lines horizontal or vertical*/
 	else
 	{
 		x = (q1 - q2) / (m2 - m1);
@@ -523,24 +571,17 @@ tuple<double, double> get_new_point(double m1, double m2, double q1, double q2)
 	return make_tuple(x, y);
 }
 
+/**
+ * \fun
+ * Constructor of a new polygon::polygon object
+ * 
+ * @param pls: point_list *. Point's list of the polygon
+ */
 polygon::polygon(point_list *pls)
 {
 	if (pls->size >= 3)
 	{
 		pl = pls;
-		/*
-        point_node *tmp = pl->head;
-		double x_sum = 0;
-		double y_sum = 0;
-		while (tmp != NULL)
-		{
-			x_sum += tmp->x;
-			y_sum += tmp->y;
-			tmp = tmp->pnext;
-		};
-		centroid = new point_node(x_sum / pl->size, y_sum / pl->size);
-        */
-
         pt new_centroid;
         boost::geometry::centroid(pls->to_boost_polygon(), new_centroid);
         centroid = new point_node(new_centroid.x(), new_centroid.y());
@@ -566,6 +607,10 @@ void polygon::recompute_centroid(){
 	centroid =  new point_node(x_sum/pl->size, y_sum/pl->size);
 };
 
+/**
+ * \fun
+ * Destructor of the polygon
+ */
 polygon::~polygon()
 {
 	pl->delete_list();
@@ -587,6 +632,16 @@ Edge_list *polygon::edgify()
 	return edges;
 };
 
+/**
+ * \fun.
+ * This function turn a polygon into an enlarged version of itself.
+ * To do this a parallel line at distant offset is computed for each edge of a polygon.
+ * Then the vertices are obtained by looking for the intersection point of the two lines 
+ * associated with consecutive edges
+ * 
+ * @param offset: Distance of the lines. 
+ * @return polygon* 
+ */
 polygon *polygon::add_offset(double offset)
 {
 
@@ -710,7 +765,12 @@ polygon *polygon::add_offset(double offset)
 	return new polygon(new_pol);
 };
 
-
+/**
+ * \fun
+ * This function create a boost::polygon with a point_list.
+ * 
+ * @return Polygon_boost 
+ */
 Polygon_boost point_list::to_boost_polygon()
 {
 	point_node *pn = head;
@@ -735,6 +795,12 @@ Polygon_boost point_list::to_boost_polygon()
     return p;
 }
 
+/**
+ * \fun
+ * This function converts a polygon into a boost::polygon
+ * 
+ * @return Polygon_boost 
+ */
 Polygon_boost polygon::to_boost_polygon()
 {
 	return pl->to_boost_polygon();
@@ -784,6 +850,12 @@ void polygon::info()
 	centroid->Print();
 };
 
+/**
+ * \fun
+ * This function add a polygon in the list of polygons of an arena.
+ * 
+ * @param p 
+ */
 void list_of_polygons::add_polygon(polygon *p)
 {
 	if (head == NULL)
@@ -812,6 +884,11 @@ void list_of_polygons::append_other_list(list_of_polygons *p)
 	size += p->size;
 };
 
+/**
+ * \fun
+ * Destroy the list of obstacles::list of obstacles object
+ * 
+ */
 list_of_obstacles::~list_of_obstacles()
 {
 	polygon *tmp = head;
@@ -830,6 +907,11 @@ list_of_obstacles::~list_of_obstacles()
 	}
 };
 
+/**
+ * \fun
+ * Delete all the offsetted polygons.
+ * 
+ */
 void list_of_obstacles::delete_offsetted_list()
 {
 	polygon *tmp;
@@ -858,11 +940,30 @@ string exec(const char *cmd)
 	return result;
 }
 
+/**
+ * \fun 
+ * This function return the angle formed by a point into a circonference.
+ * 
+ * @param xc: double. x-coordinate of the circle's center.
+ * @param yc: double. y-coordinate of the circle's center.
+ * @param x: double. x-coordinate of the point.
+ * @param y: double. y-coordinate of the point.
+ * @return double 
+ */
 double get_angle(double xc, double yc, double x, double y)
 {
 	return atan2(y-yc, x-xc);
 }
 
+/**
+ * \fun
+ * This function check if angle is between a starting angle and a final angle
+ * 
+ * @param th0: double. Starting angle
+ * @param thf: double. Finale angle
+ * @param th: double. Angle to check
+ * @return bool. True if angle is included. False otherwise
+ */
 bool is_in_arc(double th0, double thf, double th)
 {
 	if(th < th0 && th > thf)
@@ -895,6 +996,13 @@ point_list *boost_polygon_to_point_list(Polygon_boost p)
     return pl;
 }
 
+/**
+ * \fun
+ * This function is used to convert a boost::polygon into a polygon.
+ * 
+ * @param p: Polygon_boost.
+ * @return polygon* 
+ */
 polygon *boost_polygon_to_polygon(Polygon_boost p)                         
 {   
     point_list * new_pol_list = boost_polygon_to_point_list(p);

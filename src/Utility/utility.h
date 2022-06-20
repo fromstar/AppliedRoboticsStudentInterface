@@ -352,7 +352,7 @@ void sort(double_list *, point_list *);
 
 /**
  * \fun get_new_point(double m1, double m2, double q1, double q2)
- * This function calculate the intersection point given the angular coifficents of two lines and their ordered at the origin-
+ * This function calculate the intersection point given the angular coifficents of two lines and their ordered at the origin.
  * @param double m1: Angular coifficient of the first line
  * @param double m2: Angular coifficient of the second line
  * @param double q1: Ordered at the origin of the first line

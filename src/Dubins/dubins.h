@@ -217,6 +217,7 @@ Path push_path(curve, Path);
 
 /**
  * \fun vector<curve> get_dubins_path(points_map arena, World_representation abstract_arena, Robot *r)
+ * This function return the dubins path formed by all the dubins curve that a robot must follow.
  * @param points_map arena: Given arena
  * @param World_representation abstract_arena: Abstract representation of the arena
  * @param Robot *r: Robot for which the dubins path must be obtained
