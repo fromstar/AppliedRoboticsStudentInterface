@@ -1,9 +1,14 @@
 #include "connector.h"
 
+/**
+ * \fun update_mean_area(string id)
+ * This method will force the re-computation of the mean area in the master
+ * node sector.
+ * @param id: string. It is the identifier of the Master_node instance which
+ *            area has to be re-computed.
+ */
 void Connection_map::update_mean_area(string id)
 {
-    // unordered_map<string, polygon*> connections_subset = connections[id].second;
-    // unordered_map<string, polygon*>::iterator upper_it = connections_subset.begin();
     map<string, polygon *> connection_subset = connections[id].adjacent_connections;
     map<string, polygon *>::iterator upper_it = connection_subset.begin();
 
@@ -30,6 +35,22 @@ void Connection_map::update_mean_area(string id)
     connections[id].mean_area = average_area;
 };
 
+/**
+ * \fun add_element(polygon\* p)
+ * This method allows to add an istance of type polygon\* to the list of
+ * elements in connections with the Master_node. By default this element
+ * will became a Master_node itself and will have a sector associated.
+ * The sector is defined by the cells connected to the element.
+ * Available connections are:
+ *  - adjacent -> 2 or more points in common.
+ *  - diagonal -> 1 point in common.
+ * Master_node with no connections can exist.
+ * When a new element is added the code will search its connections with all
+ * the other elements in the structure and if a connection is found both
+ * elements connections list will be updated.
+ *
+ * @param p: polygon\*. It is the addres of the element to add to the struct.
+ */
 void Connection_map::add_element(polygon *p)
 {
     if (p == NULL)
@@ -79,9 +100,24 @@ void Connection_map::add_element(polygon *p)
     };
 };
 
+/**
+ * \fun min_max_element_area(string id, bool diagonal, bool min)
+ * This method returns the element in the connection lists of the Master_node,
+ * addressed by the id, having the minimum/maximum area of the list.
+ *
+ * @param id: string. It is the string identifier of the Master_node.
+ * @param diagonal: bool. It is a flag telling whether or not to consider the
+ *                  cells in diagonal connection with the Master_node.
+ *                  Default set to false.
+ * @param min: bool. It is the flag telling whether or not to return the
+ *             element which area is the minimum in the list. Default set to
+ *             true.
+ *
+ * @return string: It is the identifier of the element satisying the
+ *         requirements. If no element has been found the method returns "NaN".
+ */
 string Connection_map::min_max_element_area(string id, bool diagonal, bool min)
 {
-    // string id = "NaN";
     string chosen = "NaN";
     Master_node node = connections[id];
     map<string, polygon *> connections_subset;
@@ -138,22 +174,19 @@ string Connection_map::min_max_element_area(string id, bool diagonal, bool min)
             if (min == true)
             {
                 if (area_min_max == 0 ||
-                    // supp_it->second->area < area_min_max
                     nearest_pol->area < area_min_max)
                 {
-                    chosen = nearest->second; // supp_it->first;
-                    // area_min_max = supp_it->second->area;
+                    chosen = nearest->second;
                     area_min_max = nearest_pol->area;
                 }
             }
             else
             {
                 if (area_min_max == 0 ||
-                    // supp_it->second->area > area_min_max
                     nearest_pol->area > area_min_max)
                 {
-                    chosen = nearest->second;         // supp_it->first;
-                    area_min_max = nearest_pol->area; // supp_it->second->area;
+                    chosen = nearest->second;
+                    area_min_max = nearest_pol->area;
                 }
             }
             supp_it++;
@@ -163,8 +196,17 @@ string Connection_map::min_max_element_area(string id, bool diagonal, bool min)
     return chosen;
 }
 
-void Connection_map::embed_connections(string to_update, string to_remove,
-                                       bool use_diagonal)
+/**
+ * \fun embed_connections(string to_update, string to_remove)
+ * This method is used to merge the connections among two Master_nodes which
+ * will be merged together.
+ *
+ * @param to_update: string. It is the identifier of the element which will
+ *        inherit the connections.
+ * @param to_remove: string. It is the identifier of the element which will
+ *        give the connections and will be merged.
+ */
+void Connection_map::embed_connections(string to_update, string to_remove)
 {
     Master_node unified_node = connections[to_update]; // will include unify
     Master_node unify_node = connections[to_remove];   // included by unified
@@ -278,6 +320,16 @@ void Connection_map::embed_connections(string to_update, string to_remove,
     }
 }
 
+/**
+ * \fun unify(string to_update, string to_remove)
+ * This method will phisically merge two Master_nodes and also handles their
+ * connections.
+ *
+ * @param to_update: string. It is the identifier of the element which will
+ *        inherit everything from the second argument.
+ * @param to_remove: string. It is the identifier of the element which will
+ *        give all the connections and that willbe merged.
+ */
 void Connection_map::unify(string to_update, string to_remove)
 {
     Master_node *unified_node = &connections[to_update];
@@ -324,6 +376,11 @@ void Connection_map::unify(string to_update, string to_remove)
     connections.erase(to_remove);
 };
 
+/**
+ * \fun aggregate()
+ * This method will process the entire connections attribute and merge
+ * together all the Master_nodes which area is small than half the global area.
+ */
 void Connection_map::aggregate()
 {
     map<string, Master_node>::iterator c_it;
@@ -337,11 +394,9 @@ void Connection_map::aggregate()
     int available_id = valid_id.size();
     double global_area = global_mean_area();
     
-    // for(c_it = connections.begin(); c_it != connections.end(); c_it++)
     for (int i = 0; i < available_id; i++)
     {
         string id = valid_id[i];
-        // double master_sector_area = connections[id].mean_area;
         double master_area = connections[id].master->area;
 
         if (master_area < 0.5 * global_area) //*master_sector_area)
@@ -349,8 +404,6 @@ void Connection_map::aggregate()
             string includer = "NaN";
 
             // Check over adjacent cells -> higher priority
-            // includer = min_max_element_area(connections[id].adjacent_connections,
-            //                                 false);
             includer = min_max_element_area(id, false, true);
 
             if (includer == "NaN") // if doesn't work rely on diagonals
@@ -374,10 +427,16 @@ void Connection_map::aggregate()
     }
 };
 
+/**
+ * \fun global_mean_area()
+ * This method will compute the mean area over the Master_node instances
+ * added to the structure.
+ *
+ * @return mean: The global mean area.
+ */
 double Connection_map::global_mean_area()
 {
     double average = 0;
-    // map<string, pair<double, unordered_map<string, polygon*>>>::iterator c_it;
     map<string, Master_node>::iterator c_it;
     for (c_it = connections.begin(); c_it != connections.end(); c_it++)
     {
@@ -391,10 +450,16 @@ double Connection_map::global_mean_area()
     return average;
 };
 
+
+/**
+ * \fun info()
+ * This method will print the connection lists of each Master_node and also
+ * their identifier and area.
+ * The global mean_area will be also shown.
+ */
 void Connection_map::info()
 {
     cout << "Elements in connection_map: " << connections.size() << endl;
-    // map<string, pair<double, unordered_map<string, polygon*>>>::iterator c_it;
     map<string, Master_node>::iterator c_it;
     for (c_it = connections.begin(); c_it != connections.end(); c_it++)
     {
@@ -403,8 +468,6 @@ void Connection_map::info()
         cout << "\t- Sector Area: " << c_it->second.mean_area << endl;
         cout << "\t- Adjacent: ";
 
-        // unordered_map<string, polygon*> connections_subset = c_it->second.second;
-        // unordered_map<string, polygon*>::iterator in_it = connections_subset.begin();
         map<string, polygon *> subset = c_it->second.adjacent_connections;
         map<string, polygon *>::iterator conn_iter = subset.begin();
         while (conn_iter != subset.end())
@@ -441,22 +504,35 @@ void Connection_map::info()
     cout << endl;
 };
 
+/**
+ * \fun elements()
+ * This method is used to return a reference to all the elements existing
+ * int the struct.
+ *
+ * @return map<string, polygon\*>: The reference of the elements addressed by
+ *                                 their identifiers.
+ */
 map<string, polygon *> Connection_map::elements()
 {
     map<string, polygon *> elements;
-    // map<string, pair<double, unordered_map<string, polygon*>>>::iterator c_it;
     map<string, Master_node>::iterator c_it;
     for (c_it = connections.begin(); c_it != connections.end(); c_it++)
     {
-        // string tmp_string = c_it->first;
-        // polygon* tmp_pol = c_it->second.second.begin()->second;
-        // elements[tmp_string] = tmp_pol;
-
         elements[c_it->first] = c_it->second.master;
     };
     return elements;
 };
 
+/**
+ * \fun find_pddl_conenctions()
+ * This method will transform the existing connections and Master_node instance
+ * into a PDDL code suitable for the task.
+ * The PDDL code will just express which Master_node instances are connected
+ * together and the kind of connection.
+ *
+ * @return string: It is the PDDL piece of code resulting from the
+ *                 transformation.
+ */
 string Connection_map::find_pddl_connections()
 {
     typedef map<string, polygon *>::const_iterator conn_it;
