@@ -447,8 +447,8 @@ string find_agent_location_pddl(Robot* agent, World_representation wr,
 	bool found_agent = false;
     map<string, World_node>::const_iterator it_1 = wr.world_free_cells.cbegin();
 	pt agent_location = pt(agent->location->x, agent->location->y);
-
-    while(it_1 != wr.world_free_cells.cend() || found_agent == true)
+	
+    while(it_1 != wr.world_free_cells.cend() && found_agent == false)
 	{
 		Polygon_boost p1 = it_1->second.cell->to_boost_polygon();
 
@@ -584,10 +584,10 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	map<string, World_node>::const_iterator it_1;
 	map<string, World_node>::const_iterator it_2;
 
-	// cells connected
+	// cells connected	
 	to_log("Writing cells connections");
 	problem_file += wr.find_pddl_connections();
-
+	
 	// gates in cells
 	to_log("Find and write in which cells the gates are");
 	map<string, World_node> missed_gates = wr.world_gates;
@@ -640,10 +640,11 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 							nearest_cell->second + " )\n";
 		};
 	};
-
+	
 	// agents location
 	// Fugitive
 	to_log("Find and write agents location");
+	
     problem_file += find_agent_location_pddl(self, wr, false);
 
 	to_log("Ended fugitive search");
@@ -660,7 +661,6 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
         string loc = find_agent_location_pddl(ant, wr, true);
         antagonist_pddl_location[ant->ID] = loc;
 	};
-
 	to_log("Ended antagonists search");
 
 	// write metrics

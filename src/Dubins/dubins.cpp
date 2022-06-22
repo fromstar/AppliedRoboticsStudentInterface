@@ -894,8 +894,58 @@ Path push_path(curve c, Path p)
 	 * We sample each arc of the curve so as to have many smaller
 	 * arcs and have more points of the path to pass to the simulator.
 	 */
+	/*
+		arc a;
+		int n_samples = 1000;
+		a.x0 = c.a1.x0;
+		a.y0 = c.a1.y0;
+		a.th0 = c.a1.th0;
+		a.k = c.a1.k;
+		c.L = c.a1.L / n_samples;
+		tie(a.xf, a.yf, a.thf, a.xc, a.yc, a.r) = circline(a.L, a.x0, a.y0, a.k, a.th0, false);
+
+		for (int i = 0; i < n_samples; i++)
+		{
+			p.points.push_back(get_pose(a));
+			a.x0 = a.xf;
+			a.y0 = a.yf;
+			a.th0 = a.thf;
+			tie(a.xf, a.yf, a.thf, a.xc, a.yc, a.r) = circline(a.L, a.x0, a.y0, a.k, a.th0, false);
+		}
+		//p.points.push_back(get_pose(a));
+		
+		a.x0 = c.a2.x0;
+		a.y0 = c.a2.y0;
+		a.th0 = c.a2.th0;
+		a.k = c.a2.k;
+		c.L = c.a2.L / n_samples;
+		for (int i = 0; i < n_samples; i++)
+		{
+			p.points.push_back(get_pose(a));
+			a.x0 = a.xf;
+			a.y0 = a.yf;
+			a.th0 = a.thf;
+			tie(a.xf, a.yf, a.thf, a.xc, a.yc, a.r) = circline(a.L, a.x0, a.y0, a.k, a.th0, false);
+		}
+		//p.points.push_back(get_pose(a));
+
+		a.x0 = c.a3.x0;
+		a.y0 = c.a3.y0;
+		a.th0 = c.a3.th0;
+		a.k = c.a3.k;
+		c.L = c.a3.L / n_samples;
+		for (int i = 0; i < n_samples; i++)
+		{
+			p.points.push_back(get_pose(a));
+			a.x0 = a.xf;
+			a.y0 = a.yf;
+			a.th0 = a.thf;
+			tie(a.xf, a.yf, a.thf, a.xc, a.yc, a.r) = circline(a.L, a.x0, a.y0, a.k, a.th0, false);
+		}
+		p.points.push_back(get_pose(a));
+	*/
 	arc a;
-	int n_samples = 1000;
+	int n_samples = 10000;
 
 	a = dubinsarc(c.a1.x0, c.a1.y0, c.a1.th0, c.a1.k, c.a1.L / n_samples);
 	for (int i = 0; i < n_samples; i++)
@@ -973,7 +1023,7 @@ vector<curve> get_dubins_path(points_map arena, World_representation abstract_ar
 	vector<double> used_theta[th_path.size()];
 
 	// double kmax = 27;
-	double kmax = 600;
+	double kmax = 60;
 	/* Space where to search a minimum dubins curve */
 	double search_angle = M_PI / 2;
 
