@@ -114,7 +114,7 @@ namespace student
     }
 
     // Before merging obstacle they must be convexify to avoid boost::error
-    arena.make_free_space_cells_squares(2);
+    arena.make_free_space_cells_squares(RES);
 
     cout << "Made free space" << endl;
 
@@ -147,7 +147,7 @@ namespace student
     // rm.info(true);
 
     abstract_arena.info();
-    Mat img_arena = arena.plot_arena(1080, 1080, true, true);
+    Mat img_arena = arena.plot_arena(1080, 1080, true, PLOT_CELL_ID);
     imshow("Arena", img_arena);
     waitKey(0);
 

@@ -5,6 +5,7 @@
 #include "../Log/logger.h"
 #include "../Robot_manager/robot_manager.h"
 #include "../Connector/connector.h"
+#include "../config.hpp"
 
 #include <iostream>
 #include <stdio.h>

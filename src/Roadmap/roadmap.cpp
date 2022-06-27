@@ -22,38 +22,6 @@ using pt = bgm::d2::point_xy<double>;
 using Polygon_boost = bgm::polygon<pt>;
 using Multi_Polygon_boost = bgm::multi_polygon<Polygon_boost>;
 
-/*
-list_of_obstacles::~list_of_obstacles()
-{
-	polygon *tmp = head;
-	polygon *otmp = offset_head;
-	while (head != NULL)
-	{
-		tmp = head;
-		head = head->pnext;
-		delete tmp;
-	}
-	while (offset_head != NULL)
-	{
-		tmp = offset_head;
-		offset_head = offset_head->pnext;
-		delete tmp;
-	}
-};
-
-void list_of_obstacles::delete_offsetted_list()
-{
-	polygon *tmp;
-	while (offset_head != NULL)
-	{
-		tmp = offset_head;
-		offset_head = offset_head->pnext;
-		delete tmp;
-	}
-	offset_size = 0;
-};
-*/
-
 void points_map::add_arena_points(point_list *ArenaPoints, double offset)
 {
 	arena = ArenaPoints;
@@ -297,50 +265,6 @@ Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons,
 	return img_arena;
 }
 
-/**
- * This function is used to convert a boost polygon object into a list of
- * points ready to be interpreted by others functions in the framework.
- * The only purpose of this function is to reduce the amount of code written.
- * @param[in] p: boost::geometry::model::Polygon_boost. Is the polygon to convert.
- * @parma[out] pl: point_list pointer. Is the resulting point list of the
- * polygon.
- */
-/*
-point_list *boost_polygon_to_point_list(Polygon_boost p)
-{
-	point_list *pl = new point_list();
-	for (auto it = boost::begin(boost::geometry::exterior_ring(p));
-		 it != boost::end(boost::geometry::exterior_ring(p)); ++it)
-	{
-		double x = bg::get<0>(*it);
-		double y = bg::get<1>(*it);
-
-		pl->add_node(new point_node(x, y));
-	}
-	point_list *new_pol_list = pl->pop();
-	return new_pol_list;
-};
-*/
-/*
-polygon *boost_polygon_to_polygon(Polygon_boost p)
-{
-	point_list *pl = new point_list();
-	pt new_centroid;
-	boost::geometry::centroid(p, new_centroid);
-	for (auto it = boost::begin(boost::geometry::exterior_ring(p));
-		 it != boost::end(boost::geometry::exterior_ring(p)); ++it)
-	{
-		double x = bg::get<0>(*it);
-		double y = bg::get<1>(*it);
-
-		pl->add_node(new point_node(x, y));
-	}
-	point_list *new_pol_list = pl->pop();
-	polygon *new_pol = new polygon(new_pol_list);
-	new_pol->centroid = new point_node(new_centroid.x(), new_centroid.y());
-	return new_pol;
-};
-*/
 /**
  * This function is used to merge the obstacles that touch each others in the
  * arena space.

@@ -11,9 +11,7 @@
 #include <boost/geometry/geometries/polygon.hpp>
 #include <string.h>
 #include "../../../simulator/src/9_project_interface/include/utils.hpp"
-
-#define DIM_X_PLOT 600
-#define DIM_Y_PLOT 900
+#include "../config.hpp"
 
 #define SCALE_1 DIM_X_PLOT / 2
 #define SCALE_2 DIM_Y_PLOT / 2
@@ -327,7 +325,7 @@ typedef struct list_of_obstacles
 	polygon *tail = NULL;
 	polygon *offset_head = NULL;
 	polygon *offset_tail = NULL;
-	double offset = 105e-3; //101e-3
+	double offset = 101e-3; //101e-3
 	int size = 0;
 	int offset_size = 0;
 

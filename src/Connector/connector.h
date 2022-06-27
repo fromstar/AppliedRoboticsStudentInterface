@@ -2,6 +2,7 @@
 #define __CONNECTOR_H__
 
 #include "../Utility/utility.h"
+#include "../config.hpp"
 
 /**
  * \struct Master_node

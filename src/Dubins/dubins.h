@@ -9,6 +9,7 @@
 #include "../Utility/utility.h"
 #include "../Roadmap/roadmap.h"
 #include "../Robot_manager/robots.h"
+#include "../config.hpp"
 
 /*
  * Compile command:

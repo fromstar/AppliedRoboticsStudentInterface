@@ -6,9 +6,6 @@
 #include <filesystem>
 #include <algorithm>
 
-#define DIAGONAL_MOVE_COST 3
-#define PERPENDICULAR_MOVE_COST 2
-
 using pt = boost::geometry::model::d2::point_xy<double>;
 using Polygon_boost = boost::geometry::model::polygon<pt>;
 
