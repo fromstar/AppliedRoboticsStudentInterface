@@ -48,7 +48,7 @@ typedef struct World_representation
 						 list_of_obstacles *obs=NULL,
 						 string connections="NaN");
 	void add_cell(World_node cell, bool gate = false);
-	tuple<vector<double>, vector<double>> get_path(vector<string> plan);
+	tuple<vector<double>, vector<double>> get_path(vector<string> plan, polygon *pol);
 	string find_pddl_connections();
 	void set_connections(string connections);
 	void info();

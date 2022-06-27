@@ -396,7 +396,7 @@ string robot_fugitive::make_pddl_domain_file()
 										   "\n\t\t\t(and"
                                            "\n\t\t\t\t(and"
                                            "\n\t\t\t\t\t( not ( visited ?loc_end) )"
-                                           "\n\t\t\t\t\t( visited ?loc_start)"
+                                           "\n\t\t\t\t\t( visited ?loc_start )"
                                            "\n\t\t\t\t)"
 										   "\n\t\t\t\t( is_in ?r ?loc_start )"
 										   "\n\t\t\t\t( or"
@@ -406,7 +406,7 @@ string robot_fugitive::make_pddl_domain_file()
 										   "\n\t\t\t)"
 										   "\n\t\t:effect"
 										   "\n\t\t\t(and"
-                                           "\n\t\t\t\t( visited ?loc_end)"
+                                           "\n\t\t\t\t( visited ?loc_end )"
 										   "\n\t\t\t\t( not ( is_in ?r ?loc_start ) )"
 										   "\n\t\t\t\t( is_in ?r ?loc_end)"
 										   "\n\t\t\t\t(when"
@@ -513,7 +513,7 @@ string find_agent_location_pddl(Robot* agent, World_representation wr,
 		nearest_cell = cell_distance.upper_bound(0.0);
         if (return_loc_id == false)
         {
-		    found_pddl += "\t\t(is_in " + upperify(agent->ID) + " " +
+		    found_pddl += "\t\t( is_in " + upperify(agent->ID) + " " +
 			      		  upperify(nearest_cell->second) + " )\n"
                           "\t\t( visited " + upperify(nearest_cell->second) +
                           " )\n";
@@ -636,7 +636,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 
 			map<double, string>::iterator nearest_cell;
 			nearest_cell = cell_distance.upper_bound(0.0);
-			problem_file += "\t\t(connected " + it_2->first + " " +
+			problem_file += "\t\t( connected " + it_2->first + " " +
 							nearest_cell->second + " )\n";
 		};
 	};
@@ -702,7 +702,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 		it_1 = wr.world_gates.cbegin();
 		for (int i = 0; i < idx_least; i++)
 		{
-			++it_1;
+			it_1++;
 		};
 		self->set_plan(all_plans[idx_least]);
 		self->set_desire("( is_in " + self->ID + " " + it_1->first + " )");
@@ -760,9 +760,12 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 		int idx_min_dist = 0;
 		int prev_dist = 0;
 		vector<string> gates_id;
+        cout << "Gates inside: " << wr.world_gates.size() << endl;
 		for (it_g = wr.world_gates.cbegin(); it_g != wr.world_gates.cend();
 			 it_g++)
 		{
+            cout << "Gating: " << it_g ->first << endl;
+
 			string tmp_out = problem_file + "\t\t( is_in " + self->ID +
 							 " " + it_g->first + " )\n\t)\n\n)";
 			string tmp_name = problem_name + "_" + it_g->first;
@@ -772,7 +775,8 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 
 			// Remove useless files
 			remove((filesPath + "/" + tmp_name + ".plan").c_str());
-
+            
+            cout << "Plan size for " << it_g->first << " : " <<  plan.size() << endl;
 			if (plan.size() > 0)
 			{
 				cout << "plan size: " << plan.size() << endl;
@@ -1443,7 +1447,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 
     // If plan size == 0 no plan found to catch the fugitive.
     // Go to the gate in which the fugitives may go
-    cout << found_plan.size() << endl;
+    cout << "Catcher Found plan size: " << found_plan.size() << endl;
     if (found_plan.size() == 0)
     {
         string arrival_gate = "";

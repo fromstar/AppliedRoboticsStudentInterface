@@ -12,16 +12,14 @@
 #include <string.h>
 #include "../../../simulator/src/9_project_interface/include/utils.hpp"
 
-
 #define DIM_X_PLOT 600
 #define DIM_Y_PLOT 900
 
-#define SCALE_1 DIM_X_PLOT/2
-#define SCALE_2 DIM_Y_PLOT/2
+#define SCALE_1 DIM_X_PLOT / 2
+#define SCALE_2 DIM_Y_PLOT / 2
 
 using pt = boost::geometry::model::d2::point_xy<double>;
 using Polygon_boost = boost::geometry::model::polygon<pt>;
-
 
 using namespace cv;
 using namespace std;
@@ -35,13 +33,13 @@ using namespace std;
  *                              structure. Necessary for a list.
  * The constructor takes as input a double value, default set to 0.
  */
-struct double_node{
+struct double_node
+{
 	double value = 0;
 	double_node *pnext = NULL;
-	
-	double_node(double a=0);
-}typedef double_node;
 
+	double_node(double a = 0);
+} typedef double_node;
 
 /**
  * \struct
@@ -61,16 +59,17 @@ struct double_node{
  * @see print_list: It is the method allowing to print all the elemnts
  *                  contained in the list.
  */
-struct double_list{
+struct double_list
+{
 	double_node *head = NULL;
 	double_node *tail = NULL;
 	int size = 0;
-	
+
 	void add_node(double_node *);
 	void delete_list();
 	void print_list();
-	
-}typedef double_list;
+
+} typedef double_list;
 
 /**
  * \struct
@@ -84,7 +83,7 @@ struct double_list{
  *           ordinate axis.
  * @param pnext: \*point_node. It is the pointer to another instance of type
  *               point_node necessary to build a list if needed.
- * 
+ *
  * Available methods are:
  * @see point_node(double a, double b): It is the constructor of the struct.
  * @see copy(): It is the method used to return a copy of the struct.
@@ -93,21 +92,23 @@ struct double_list{
  *                               distance between the struct and another
  *                               point_node instance.
  */
-struct point_node{
+struct point_node
+{
 	double x = 0;
 	double y = 0;
 	point_node *pnext = NULL;
-	
-	point_node(double a=0, double b=0);
-	point_node* copy();
+
+	point_node(double a = 0, double b = 0);
+	point_node *copy();
 	void Print();
-	double distance(point_node* p=NULL);
-}typedef point_node;
+	double distance(point_node *p = NULL);
+    // ~point_node();
+} typedef point_node;
 
 /**
  * \struct
  *  This struct represents a list of points made of point_node instances.
- *  
+ *
  *  Available attributes are:
  *  @param head: point_node*. It is the pointer to the head of the list.
  *  @param tail: point_node*. It is the pointer to the tail of the list.
@@ -131,20 +132,23 @@ struct point_node{
  *  @see to_boost_polygon(): This method allows to convert the point_list
  *                           to a boost::geometry::model::polygon object.
  */
-struct point_list{
+struct point_list
+{
 	point_node *head = NULL;
 	point_node *tail = NULL;
-	double x_min, y_min;
-	double x_max, y_max;
+	double x_min, y_min = 0;
+	double x_max, y_max = 0;
 	int size = 0;
-	
-	void add_node(point_node *, int iterations=1);
+
+	void add_node(point_node *, int iterations = 1);
 	void append_list(point_list *e);
 	void print_list();
 	void delete_list();
 	void pop();
-    Polygon_boost to_boost_polygon();
-}typedef point_list;
+	Polygon_boost to_boost_polygon();
+    point_list * copy();
+    // ~point_list();
+} typedef point_list;
 
 /**
  * \struct
@@ -163,8 +167,9 @@ struct point_list{
  * @see intersection(Edge e): It checks whether the edge intersects with another.
  * @see ~Edge(): It is the struct destructor.
  */
-typedef struct Edge{
-	point_list* points;
+typedef struct Edge
+{
+	point_list *points;
 	double *slope = new double;
 	Edge *next = NULL;
 
@@ -172,13 +177,13 @@ typedef struct Edge{
 	Edge(point_node *p_1, point_node *p_2);
 
 	// Destructor
-    ~Edge();
+	~Edge();
 
 	// Methods
-	point_node* intersection(Edge *e);
-	point_node* middle_point();
+	point_node *intersection(Edge *e);
+	point_node *middle_point();
 	void info();
-}Edge;
+} Edge;
 
 /**
  * \struct
@@ -186,14 +191,15 @@ typedef struct Edge{
  * It is constituted by:
  * @param head: Edge*. It is the head of the list.
  * @param tail: Edge*. It is the tail of the list.
- * 
+ *
  * The methods available are:
  * @see add_edge(Edge): allows to add an edge to the list.
  * @see info(): Calls the info function of each Edge in the list.
- * @see ~Edge_list(): It is the struct destructor. 
+ * @see ~Edge_list(): It is the struct destructor.
  */
-typedef struct Edge_list{
-	//Edge *edge = NULL;
+typedef struct Edge_list
+{
+	// Edge *edge = NULL;
 	Edge *head = NULL;
 	Edge *tail = NULL;
 	int size = 0;
@@ -201,12 +207,12 @@ typedef struct Edge_list{
 	void add_edge(Edge *e);
 	void info();
 	~Edge_list();
-}Edge_list;
+} Edge_list;
 
 /**
  * \struct
  * This struct represents a polygon in the environment.
- * 
+ *
  * Its parameters are:
  * @param id: string. It is the string representing the id of the polygon.
  *            Default to "NaN".
@@ -235,36 +241,40 @@ typedef struct Edge_list{
  * @see points_in_common(polygon *p): It is the method used to check the number
  *                                    of points in common with another polygon.
  * @see info(): It is the function responsible to print all the information
- * representing a polygon and calls the info() functions of the point_node 
+ * representing a polygon and calls the info() functions of the point_node
  * elements.
  * @see ~polygon(): It is the class destructor.
  */
-typedef struct polygon{
-    string id = "NaN";
+typedef struct polygon
+{
+	string id = "NaN";
 	point_list *pl = NULL;
 	point_node *centroid = NULL;
 	polygon *pnext = NULL;
-    double area = 0.0;  // It is setted only if is a free space cells,
-                        // look at roadmap.cpp -> \fun make_free_space_cells_squares
+	double area = 0.0; // It is setted only if is a free space cells,
+					   // look at roadmap.cpp -> \fun make_free_space_cells_squares
+	map<string, Edge_list *> common_edges;
 
 	// constructor
-	polygon(point_list* pls);
+	polygon(point_list *pls, string _id="NaN");
 	~polygon();
 
 	// Methods
-	Edge_list* edgify();
-  	polygon* add_offset(double offset);  // Our polygon class
-  	void concatenate(polygon *p);
+	Edge_list *edgify();
+	polygon *add_offset(double offset); // Our polygon class
+	void concatenate(polygon *p);
 	void recompute_centroid();
-	Polygon_boost to_boost_polygon();  // Polygon_boost of boost library
-    int points_in_common(polygon *p);
-  	void info();
-}polygon;
+	Polygon_boost to_boost_polygon(); // Polygon_boost of boost library
+	int points_in_common(polygon *p=NULL);
+	void info();
+    polygon* copy();
+    void add_common_edge(string s="NaN", Edge* e=NULL);
+} polygon;
 
 /**
  * \struct list_of_polygons
  * It is the struct representing a list of polygon instances.
- * 
+ *
  * Available attributes are:
  * @param head: polygon\*. It is the pointer to the head of the list.
  * @param tail: polygon\*. It is the pointer to the tail of the list.
@@ -283,7 +293,7 @@ typedef struct list_of_polygons
 	int size = 0;
 
 	void add_polygon(polygon *p);
-	void append_other_list(list_of_polygons *p);
+	void append_other_list(list_of_polygons *p=NULL);
 } list_of_polygons;
 
 /**
@@ -317,7 +327,7 @@ typedef struct list_of_obstacles
 	polygon *tail = NULL;
 	polygon *offset_head = NULL;
 	polygon *offset_tail = NULL;
-	double offset = 101e-3;
+	double offset = 105e-3; //101e-3
 	int size = 0;
 	int offset_size = 0;
 
@@ -339,8 +349,8 @@ bool check(double, double, double, double, double, double, double, double);
  * This function is used to plot a point list into a Mat object representing an
  * image.
  */
-Mat plot_points(point_list *, Mat, Scalar, bool, int thickness=1,
-				bool show=false);
+Mat plot_points(point_list *, Mat, Scalar, bool, int thickness = 1,
+				bool show = false);
 
 /**
  * \fun sort(double_list*, point_list*)
@@ -359,7 +369,7 @@ void sort(double_list *, point_list *);
  * @param double q1: Ordered at the origin of the second line
  * @returns <double,double>: x,y coordinates of the intersection point
  */
-tuple <double, double> get_new_point(double,double,double,double);
+tuple<double, double> get_new_point(double, double, double, double);
 
 /**
  * \fun exec(const char *cmd)
@@ -378,7 +388,7 @@ string exec(const char *cmd);
  * @param double y: y-coordinate of the circonference's point
  * @return double: angle formed by the center and the point
  */
-double get_angle(double,double,double,double);
+double get_angle(double, double, double, double);
 
 /**
  * \fun is_in_arc(double start_angle, double end_angle, double angle)
@@ -388,7 +398,7 @@ double get_angle(double,double,double,double);
  * @param double th: Angle to check
  * @return bool: boolean that says if the angle is included.
  */
-bool is_in_arc(double,double,double);
+bool is_in_arc(double, double, double);
 
 /**
  * \fun boost_polygon_to_polygon(Polygo_boost p)
@@ -396,7 +406,7 @@ bool is_in_arc(double,double,double);
  * @param Polygon_boost p: It is the boost polygon to transform.
  * @return polygon: the polygon instance representing the boost one.
  */
-polygon *boost_polygon_to_polygon(Polygon_boost p);
+polygon *boost_polygon_to_polygon(Polygon_boost p, string _id="NaN");
 
 /**
  * \fun boost_polygon_to_point_list(Polygon_boost p)
@@ -405,4 +415,59 @@ polygon *boost_polygon_to_polygon(Polygon_boost p);
  * @return point_list: It is the point_list representing the Boost polygon.
  */
 point_list *boost_polygon_to_point_list(Polygon_boost p);
+
+/**
+ * \fun cross2D(double *v1, double *v2)
+ *
+ * @return double
+ */
+double cross2D(double *, double *);
+
+/**
+ * \fun dot2D(double *v1, double *v2)
+ *
+ * @return double
+ */
+double dot2D(double *, double *);
+
+/**
+ * \fun tuple<point_list *, double_list *> intersLineLine(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
+ * This function return the intersection point's list of two lines.
+ * @param double x1: x-coordinate of the first point of the first line
+ * @param double y1: y-coordinate of the first point of the first line
+ * @param double x2: x-coordinate of the second point of the first line
+ * @param double y2: y-coordinate of the seconf point of the first line
+ * @param double x3: x-coordinate of the first point of the second line
+ * @param double y3: y-coordinate of the first point of the second line
+ * @param double x4: x-coordinate of the second point of the second line
+ * @param double y4: y-coordinate of the second point of the second line
+ * @return tuple<point_list *, double_list *>
+ */
+// tuple<point_list *, double_list *> intersLineLine(double, double, double, double, double, double, double, double);
+
+bool intersLineLine(point_node*,point_node*,point_node*,point_node*);
+
+/**
+ * \fun tuple<point_list *, double_list *> intersCircleLine(double a, double b, double r, double x1, double y1, double x2, double y2)
+ * This function return the intersection points between a circle and a line.
+ * @param double a: x-coordinate of the center of the circle
+ * @param double b: y-coordinate of the center of the circle
+ * @param double r: radius of the circle
+ * @param double x1: x-coordinate of the first point of the line
+ * @param double y1: y-coordinate of the first point of the line
+ * @param double x2: x-coordinate of the second point of the line
+ * @param double y2: y-coordinate of the second point of the line
+ * @returns tuple<point_list *, double_list *>
+ */
+tuple<point_list *, double_list *> intersCircleLine(double, double, double, double, double, double, double);
+
+point_node* los(point_node *p1 = NULL, point_node *p2 = NULL, polygon *pol = NULL, Edge *common_edge = NULL);
+
+polygon* merge(polygon* p1, polygon* p2);
+
+Edge* find_common_edge(polygon* p1=NULL, polygon* p2=NULL);
+list_of_polygons * subset_over_middle_point(polygon * p = NULL);
+
+vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
+                                            vector<Polygon_boost> obstacles);
 #endif

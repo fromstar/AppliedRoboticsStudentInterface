@@ -114,7 +114,7 @@ namespace student
     }
 
     // Before merging obstacle they must be convexify to avoid boost::error
-    arena.make_free_space_cells_squares(3);
+    arena.make_free_space_cells_squares(2);
 
     cout << "Made free space" << endl;
 
@@ -128,7 +128,7 @@ namespace student
 
     arena.set_robot_position(f_1->ID, x[0], y[0], theta[0]);
     arena.set_robot_position(c_1->ID, x[1], y[1], theta[1]);
-
+    
     // Create world representaion
     World_representation abstract_arena = World_representation(
         log_test,
@@ -136,7 +136,7 @@ namespace student
         arena.gates,
         arena.obstacles,
         arena.connections.find_pddl_connections());
-
+    
     robot_manager rm(log_test);
 
     rm.add_robot(f_1);
@@ -148,13 +148,13 @@ namespace student
 
     abstract_arena.info();
     Mat img_arena = arena.plot_arena(1080, 1080, true, true);
-    // imshow("Arena", img_arena);
-    // waitKey(0);
+    imshow("Arena", img_arena);
+    waitKey(0);
 
     /**********************************************
      * GENERATE PLANS AND MOVE ROBOTS
      ***********************************************/
-
+    
     map<string, robot_fugitive *>::iterator f_it;
     f_it = rm.fugitives.begin();
     f_it->second->set_behaviour(aware);
@@ -169,12 +169,13 @@ namespace student
     // Get the dubins path without intersection
     vector<curve> f_path = get_dubins_path(arena, abstract_arena, f_1);
     vector<curve> c_path = get_dubins_path(arena, abstract_arena, c_1);;
-
+   
     /*
       Push only the first action move to the simulator.
       In this way I have to run the simulation multiple times
       and make a plan every time.
      */
+   
     if (push_first)
     {
       if (f_path.size() != 0)
@@ -199,6 +200,7 @@ namespace student
 
     float elapsed_time = (float(clock() - starting_clock)) / CLOCKS_PER_SEC;
     log_test->add_event("Code ended in " + to_string(elapsed_time) + "s\n");
+    
 
     if (!push_first)
     {

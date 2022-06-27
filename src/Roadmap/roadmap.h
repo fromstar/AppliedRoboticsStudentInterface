@@ -74,7 +74,7 @@ typedef struct points_map
 	map<string, Robot *> robot;
 	logger *log;
 
-	points_map(logger *l) { log = l; };
+	points_map(logger *l = new logger) { log = l; };
 
 	void add_arena_points(point_list *ArenaPoints, double offset = 101e-3);
 	void add_robot(Robot *r);

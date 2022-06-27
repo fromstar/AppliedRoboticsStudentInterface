@@ -90,48 +90,6 @@ Mat plotarc(arc, string, Mat);
  */
 Mat plotdubins(curve, string, string, string, Mat);
 
-/**
- * \fun tuple<point_list *, double_list *> intersLineLine(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
- * This function return the intersection point's list of two lines.
- * @param double x1: x-coordinate of the first point of the first line
- * @param double y1: y-coordinate of the first point of the first line
- * @param double x2: x-coordinate of the second point of the first line
- * @param double y2: y-coordinate of the seconf point of the first line
- * @param double x3: x-coordinate of the first point of the second line
- * @param double y3: y-coordinate of the first point of the second line
- * @param double x4: x-coordinate of the second point of the second line
- * @param double y4: y-coordinate of the second point of the second line
- * @return tuple<point_list *, double_list *> 
- */
-tuple<point_list *, double_list *> intersLineLine(double, double, double, double, double, double, double, double);
-
-/**
- * \fun cross2D(double *v1, double *v2)
- *  
- * @return double 
- */
-double cross2D(double *, double *);
-
-/**
- * \fun dot2D(double *v1, double *v2)
- *  
- * @return double 
- */
-double dot2D(double *, double *);
-
-/**
- * \fun tuple<point_list *, double_list *> intersCircleLine(double a, double b, double r, double x1, double y1, double x2, double y2)
- * This function return the intersection points between a circle and a line.
- * @param double a: x-coordinate of the center of the circle
- * @param double b: y-coordinate of the center of the circle
- * @param double r: radius of the circle
- * @param double x1: x-coordinate of the first point of the line
- * @param double y1: y-coordinate of the first point of the line
- * @param double x2: x-coordinate of the second point of the line
- * @param double y2: y-coordinate of the second point of the line
- * @returns tuple<point_list *, double_list *> 
- */
-tuple<point_list *, double_list *> intersCircleLine(double, double, double, double, double, double, double);
 
 /**
  * \fun tuple<double, double, double> get_circle_center(double x1, double y1, double x2, double y2, double x3, double y3)

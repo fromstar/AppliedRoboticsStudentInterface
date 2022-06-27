@@ -29,6 +29,9 @@ typedef struct Master_node
     double mean_area = 0.0;
     map<string, polygon*> adjacent_connections;
     map<string, polygon*> diagonal_connections;
+    
+    vector<string> connection_ids(bool diagonal=false);
+    // ~Master_node();
 }Master_node;
 
 /**
@@ -83,10 +86,14 @@ typedef struct Connection_map
         void embed_connections(string to_update, string to_remove);
         double global_mean_area();
         void info();
+        void erase_MasterNode(string id="NaN");
+        void ensure_LOS(list_of_obstacles * obl=NULL);
         string min_max_element_area(string id, bool diagonal=false,
                                     bool min=true);
         string find_pddl_connections();
         map<string, polygon*> elements();
+        vector<string> ids();
+        void empty();
 } Connection_map;
 
 #endif

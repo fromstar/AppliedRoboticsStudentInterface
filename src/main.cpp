@@ -12,19 +12,23 @@ void test2();
 int main()
 {
 	// test();
-	logger *log_test = new logger("test_log.txt");
 
-	for(int i=0; i<5; i++){
-		log_test->add_event("Hello");
-	};
-	log_test -> info();
-
-	log_test->clear();
-	log_test -> info();
+    point_node * a = new point_node(5, 2);
+    point_node * b = new point_node(8, 2);
+    point_node * c = new point_node(7, 5);
+ 
+    point_list * h = new point_list;
+    h->add_node(a);
+    h->add_node(b);
+    h->add_node(c);
+    
+    polygon * p = new polygon(h);
+    p->info();
 
 	return 0;
 };
 
+/*
 void test()
 {
 	logger *log_test = new logger;
@@ -159,7 +163,7 @@ void test()
 	pol->add_node(new point_node(1.4001, 0.9516));
 	test_map.add_gate(new polygon(pol));
 
-	/*
+	
 	polygon *gate_pol = new polygon(pol);
 	Polygon_boost gate_ob = gate_pol->to_boost_polygon();
 
@@ -169,16 +173,15 @@ void test()
 	if(boost::geometry::covered_by(gate_ob, boost_arena)){
 		cout << "Gate inside arena" << endl;
 	};
-	*/
+	
 
-	/*
 	pol = new point_list;
 	pol->add_node(new point_node(-1, -1));
 	pol->add_node(new point_node(-1, 0));
 	pol->add_node(new point_node(-0.5, 0));
 	pol->add_node(new point_node(-0.5, -1));
 	test_map.add_gate(new polygon(pol));
-	*/
+	
 	test_map.merge_obstacles();
 
 	test_map.make_free_space_cells_squares(3);
@@ -216,22 +219,22 @@ void test()
 	// it->second -> make_pddl_files(abstract_arena);
 	// rm.info(true);
 
-	/*
+	
 	abstract_arena.to_pddl("Pddl/problem_catcher.pddl");
 	abstract_arena.to_pddl("Pddl/problem_fugitive.pddl", "fugitive_catcher",
 						   "fugitive_catcher", true);
-	*/
+	
 
 	// test_map.reduce_arena();
 
 	Mat img_arena = test_map.plot_arena(800, 800, true);
 
-	/*Draw dubins path*/
+	//Draw dubins path//
 	// vector<string> f_path = abstract_arena.world_robots["Fugitive_1"]->plan;
 
 	// cout << abstract_arena.world_free_cells["Cell_1"].cell->centroid->y<<endl;
 	
-	/*
+	
 	double fx_path[f_path.size()+1];
 	double fy_path[f_path.size()+1];
 	double fth_path[f_path.size()+1];
@@ -266,9 +269,9 @@ void test()
 		if(pidx > 0)
 			img_arena = plotdubins(c, "r","g","b", img_arena);
 	}
-	*/
+	
 
-	/*End draw dubins path*/
+	//End draw dubins path//
 
 	imshow("Arena", img_arena);
 	imwrite("Arena.png", img_arena);
@@ -276,3 +279,4 @@ void test()
 
 	// test_map.print_info();
 }
+*/

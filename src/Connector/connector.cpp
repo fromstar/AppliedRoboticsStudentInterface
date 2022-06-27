@@ -1,5 +1,43 @@
 #include "connector.h"
 
+vector<string> Master_node::connection_ids(bool diagonal)
+{
+    map<string, polygon*>::const_iterator it_s;
+    map<string, polygon*>::const_iterator it_e;
+    vector<string> ids;
+
+    if(diagonal == false)
+    {
+        it_s = adjacent_connections.cbegin();
+        it_e = adjacent_connections.cend();
+    }
+    else
+    {
+        it_s = diagonal_connections.cend();
+        it_e = diagonal_connections.cend();
+    }
+
+    while(it_s != it_e)
+    {
+        ids.push_back(it_s->first);
+        it_s++;
+    }
+    return ids;
+}
+
+vector<string> Connection_map::ids()
+{
+    map<string, Master_node>::const_iterator it = connections.cbegin();
+    vector<string> ids;
+
+    while(it != connections.cend())
+    {
+        ids.push_back(it->first);
+        it++;
+    }
+    return ids;
+}
+
 /**
  * \fun update_mean_area(string id)
  * This method will force the re-computation of the mean area in the master
@@ -63,6 +101,11 @@ void Connection_map::add_element(polygon *p)
         cout << "Label ID already inside" << endl;
         return;
     }
+    
+    // if (p->pnext != NULL)
+    // {
+    //     p->pnext = NULL;  // Ensure avoidance of cyclical references
+    // }
 
     Master_node tmp;
     tmp.master = p;
@@ -70,16 +113,35 @@ void Connection_map::add_element(polygon *p)
     connections[p->id] = tmp;
 
     Polygon_boost p_in_boost = p->to_boost_polygon();
-
+    
+    // cout << "Converted " << p->id << " to boost" << endl;
+    
     map<string, Master_node>::iterator c_it;
     for (c_it = connections.begin(); c_it != connections.end(); c_it++)
     {
         // Take master
+        // cout << "Evaluating " << c_it->first << endl;
+        if (c_it->second.master == NULL)
+        {
+            cout << c_it -> first << " Is NULL" << endl;
+        }
         Polygon_boost tmp_boost = c_it->second.master->to_boost_polygon();
+        
+        // cout << "Converted " << c_it->second.master->id << " to boost" << endl;
+        
         if (boost::geometry::touches(p_in_boost, tmp_boost) &&
             c_it->first != p->id)
         {
             int common_points = p->points_in_common(c_it->second.master);
+            
+            // cout << p->id << " and " << c_it->first << " have " << common_points
+            //      << " points in common." << endl;
+            /*
+            cout << "Size of " << p->id << ": " << p->pl->size << endl;
+            cout << "Size of " << c_it->second.master->id << ": " <<
+                    c_it->second.master->pl->size << endl << endl;
+            */
+
             // Only lateral connection allowed -> no diagonal
             if (common_points > 1)
             {
@@ -337,7 +399,7 @@ void Connection_map::unify(string to_update, string to_remove)
 
     // Update resulting polygon
     // Unify the polygons
-    vector<Polygon_boost> output;
+    // vector<Polygon_boost> output;
     if (unified_node->master == NULL)
     {
         cout << "Polygon: " << to_update << " is null" << endl;
@@ -348,32 +410,55 @@ void Connection_map::unify(string to_update, string to_remove)
         cout << "Polygon: " << to_remove << " is null" << endl;
     }
 
-    Polygon_boost unified_boost = unified_node->master->to_boost_polygon();
+    // Polygon_boost unified_boost = unified_node->master->to_boost_polygon();
 
-    Polygon_boost to_unify_boost = unify_node->master->to_boost_polygon();
+    // Polygon_boost to_unify_boost = unify_node->master->to_boost_polygon();
 
-    boost::geometry::union_(unified_boost, to_unify_boost, output);
-    polygon *result = boost_polygon_to_polygon(output[output.size() - 1]);
+    // boost::geometry::union_(unified_boost, to_unify_boost, output);
+    // polygon *result = boost_polygon_to_polygon(output[output.size() - 1]);
+    
+    polygon* result = merge(unified_node->master, unify_node->master);
 
     if (result == NULL)
     {
         cout << to_update << " is NULL" << endl;
+        return;
     }
 
-    result->id = to_update;
+    // result->id = to_update;
     // fixed in method boost_polygon_to_polygon
 
     // Update union
     unified_node->master = result;
-
+    /*
+    cout << "A" << endl;
+    map<string, polygon*>::iterator it = connections[to_remove].adjacent_connections.begin();
+    while(it != connections[to_remove].adjacent_connections.end())
+    {
+        connections[to_update].master->points_in_common(it->second);
+        it++;
+    }
+    
+    cout << "B" << endl;
+    it = connections[to_remove].diagonal_connections.begin();
+    while(it != connections[to_remove].diagonal_connections.end())
+    {
+        connections[to_update].master->points_in_common(it->second);
+        it++;
+    }
+    */
+    cout << "Before embedding" << endl;
     // merge connections
     embed_connections(to_update, to_remove);
 
+    cout << "Before mean area" << endl;
     // Update average area
     update_mean_area(to_update);
 
+    cout << "Before deleting" << endl;
     // Delete entry from map
     connections.erase(to_remove);
+    cout << "After deleting" << endl;
 };
 
 /**
@@ -399,7 +484,7 @@ void Connection_map::aggregate()
         string id = valid_id[i];
         double master_area = connections[id].master->area;
 
-        if (master_area < 0.5 * global_area) //*master_sector_area)
+        if (master_area < 0.1 * global_area) //*master_sector_area)
         {      
             string includer = "NaN";
 
@@ -418,6 +503,7 @@ void Connection_map::aggregate()
             }
             else
             {
+                cout << "Merging: " << includer << " <- " << id << endl;
                 unify(includer, id);
                 available_id--;
                 valid_id.erase(valid_id.begin() + i);
@@ -538,6 +624,7 @@ string Connection_map::find_pddl_connections()
     typedef map<string, polygon *>::const_iterator conn_it;
     map<string, Master_node>::const_iterator c_it = connections.cbegin();
     string pddl_connections = "";
+    cout << "Started Finding PDDL connections" << endl;
     while (c_it != connections.end())
     {
         // Write adjacent connections  first
@@ -548,16 +635,216 @@ string Connection_map::find_pddl_connections()
                                 " " + tmp_it->first + " )\n";
             tmp_it++;
         }
-
         tmp_it = c_it->second.diagonal_connections.cbegin();
         while (tmp_it != c_it->second.diagonal_connections.cend())
         {
-            pddl_connections += "\t\t( is_diagonal " + c_it->first +
+            pddl_connections += "\t\t( connected " + c_it->first +
+                                " " + tmp_it->first + " )\n"
+                                "\t\t( is_diagonal " + c_it->first +
                                 " " + tmp_it->first + " )\n";
             tmp_it++;
         }
         c_it++;
     }
-    cout << pddl_connections << endl;
+    cout << "Ended Finding PDDL connections" << endl;
     return pddl_connections;
 };
+
+void Connection_map::erase_MasterNode(string id)
+{
+    if( connections.count(id) == 0)
+    {
+        cout << "No Master Node " << id << " found. Nothing to remove.\n";
+        return;
+    }
+
+    map<string, polygon*>::iterator it;
+    if(connections[id].adjacent_connections.size() > 0)
+    {
+        it = connections[id].adjacent_connections.begin();
+        while(it != connections[id].adjacent_connections.end())
+        {
+            connections[it->first].adjacent_connections.erase(id);
+            connections[it->first].diagonal_connections.erase(id);
+            it++;
+        }
+    }
+    
+    if(connections[id].diagonal_connections.size() > 0)
+    {
+        it = connections[id].diagonal_connections.begin();
+        while(it != connections[id].diagonal_connections.end())
+        {
+            connections[it->first].adjacent_connections.erase(id);
+            connections[it->first].diagonal_connections.erase(id);
+            it++;
+        }
+    }
+    connections.erase(id);
+    cout << "* Removed " << id << " from connections" << endl;
+}
+
+void Connection_map::ensure_LOS(list_of_obstacles *ob_l)
+{
+    cout << "Evaluating LOS" << endl;
+    if (ob_l == NULL)
+    {
+        cout << "Obstacle list provided is NULL." << endl;
+        return;
+    }
+    
+    vector<string> available_id = ids();
+    
+    int i = 0;
+    int id_size = available_id.size();
+    while(i < id_size)
+    {
+        Master_node * node = &connections[available_id[i]];
+        vector<string> conn_id = node->connection_ids();
+
+        point_node * LOS_point = NULL;
+        int j=0;
+        while(j < conn_id.size() && LOS_point == NULL)
+        {
+            polygon * second_cell = node->adjacent_connections[conn_id[j]];
+            Edge * comm_edge = find_common_edge(node->master,
+                                                second_cell);
+            /*
+            if (comm_edge == NULL)
+            {
+                cout << "Common edge for " << available_id[i] << " and "
+                     << conn_id[j] << " is NULL" << endl;
+            }
+            */
+    
+            polygon * ob = ob_l->offset_head;
+            while(ob != NULL && LOS_point == NULL)
+            {
+                LOS_point = los(node->master->centroid,
+                                second_cell->centroid,
+                                ob,
+                                comm_edge);
+                ob = ob->pnext;
+            }
+            if (LOS_point != NULL)
+            {
+                cout << "Not in LOS: " << available_id[i] << " " << conn_id[j]
+                     << " LOS_point: ";
+                LOS_point->Print();
+                cout << endl;
+
+                list_of_polygons * pl = new list_of_polygons;
+                // cout << "Initial size of list: " << pl->size << endl;
+                pl->append_other_list(subset_over_middle_point(node->master));
+                
+                /*
+                cout << "Subsetted " << node->master->id << " size: "
+                     << pl->size << endl;
+                int a = pl->size;
+                */
+
+                pl->append_other_list(subset_over_middle_point(second_cell));
+                
+                // cout <<  "Subsetted " << second_cell->id << " size: "
+                //      << pl->size - a << endl;
+
+                int new_master_nodes = pl->size;
+                
+                // cout << "Result size of subsetting: " << pl->size << endl;
+                /*
+                cout << "Elements in list: " << endl;
+                polygon * el = pl->head;
+                int tot_el = 0;
+                while(el != NULL)
+                {
+                    cout << el->id << endl;
+                    el = el->pnext;
+                    tot_el +=1;
+                }
+                cout << "Total el in list " << tot_el << endl;
+                cout << endl;
+                */
+
+                erase_MasterNode(available_id[i]);
+                erase_MasterNode(conn_id[j]);
+                
+                available_id.erase(available_id.begin() + i);
+                i -=1;
+
+                int del_idx=-1;
+                int k = 0;
+                while(k < available_id.size() && del_idx==-1)
+                {
+                    if (available_id[k] == conn_id[j])
+                    {
+                        del_idx = k;
+                    }
+                    k++;
+                }
+
+                if(del_idx != -1)
+                {
+                    available_id.erase(available_id.begin() + del_idx);
+                    i-=1;
+                }
+
+                polygon * tmp = pl->head;
+                while(tmp != NULL)
+                {
+                    add_element(tmp->copy());
+                    tmp = tmp->pnext;
+                }
+                id_size = available_id.size();
+            }
+            j++;
+        } 
+        i++;       
+    }
+
+    // Inefficient code
+    
+    vector<Polygon_boost> ob;
+    vector<Polygon_boost> pols;
+
+    polygon * ob_temp = ob_l->offset_head;
+    while(ob_temp != NULL)
+    {
+        ob.push_back(ob_temp->to_boost_polygon());
+        ob_temp = ob_temp->pnext;
+    }
+
+    map<string, polygon*> els = elements();
+    map<string, polygon*>::const_iterator el_it = els.cbegin();
+    while(el_it != els.cend())
+    {
+        Polygon_boost cell = el_it->second->to_boost_polygon();
+        Polygon_boost output;
+        boost::geometry::convex_hull(cell, output);
+        pols.push_back(output);
+        el_it++;
+    }
+
+    pols = difference_of_vectors(pols, ob);
+    empty();
+    string base_id = "CELL_";
+    for(int i=0; i < pols.size(); i++)
+    {
+        add_element(boost_polygon_to_polygon(pols[i], base_id + to_string(i)));
+    }
+    
+}
+
+/*
+Master_node::~Master_node()
+{
+    delete master;
+    mean_area = 0;
+    adjacent_connections.clear();
+    diagonal_connections.clear();
+}
+*/
+
+void Connection_map::empty()
+{
+    connections.clear();    
+}

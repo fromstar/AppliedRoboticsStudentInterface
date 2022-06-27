@@ -1,5 +1,24 @@
 #include "utility.h"
+/*
+point_node::~point_node()
+{
+    x = 0;
+    y = 0;
 
+    if(pnext != NULL)
+    {
+        delete pnext;
+    }
+}
+
+point_list::~point_list()
+{
+    x_min = 0; y_min = 0;
+    x_max = 0; y_max = 0;
+    size = 0;
+    delete_list();
+}
+*/
 /**
  * \fun double_node(double a)
  * It is the constructor of the struct double_node.
@@ -7,7 +26,7 @@
  */
 double_node::double_node(double a)
 {
-    value = a;
+	value = a;
 }
 
 /**
@@ -60,7 +79,6 @@ void double_list::delete_list()
 	size = 0;
 }
 
-
 /**
  * \fun point_node(double a, double b)
  * It is the constructor of the point_node struct.
@@ -69,8 +87,8 @@ void double_list::delete_list()
  */
 point_node::point_node(double a, double b)
 {
-    x = a;
-    y = b;
+	x = a;
+	y = b;
 }
 
 /**
@@ -97,19 +115,19 @@ void point_node::Print()
  * \fun distance(point_node* p)
  * This method is used to compute the distance between the point
  * represented and another instance of type point_node*.
- * 
+ *
  * @param p: point_node\*. It is the instance of point_node to which compute
  *                         the distance.
  *
  * @return double: It is the euclidean distance among the point_node instances.
  */
-double point_node::distance(point_node* p)
+double point_node::distance(point_node *p)
 {
-    if (p == NULL)
-    {
-        cout << "Given point is NULL" << endl;
-    }
-    return sqrt(pow(x - p->x, 2) + pow(y - p->y, 2));
+	if (p == NULL)
+	{
+		cout << "Given point is NULL" << endl;
+	}
+	return sqrt(pow(x - p->x, 2) + pow(y - p->y, 2));
 };
 
 /**
@@ -151,14 +169,25 @@ void point_list::add_node(point_node *node, int iterations)
  * @return point_list*: pointer to the istance of point_list without the last
  *                      element.
  */
-void point_list::pop(){
+void point_list::pop()
+{
 	point_node *tmp = head;
-	while(tmp->pnext->pnext != NULL){
+	while (tmp->pnext->pnext != NULL)
+	{
 		tmp = tmp->pnext;
 	};
-    delete tmp->pnext;
-    tmp->pnext = NULL;
-    tail = tmp;
+	delete tmp->pnext;
+	tmp->pnext = NULL;
+	tail = tmp;
+
+    point_node * tl = head;
+    int count = 0;
+    while(tl != NULL)
+    {
+        count++;
+        tl = tl->pnext;
+    }
+    size--;
 };
 
 /**
@@ -207,6 +236,8 @@ void point_list::delete_list()
 		head = head->pnext;
 		delete tmp;
 	}
+    head = NULL;
+    tail = NULL;
 	size = 0;
 }
 
@@ -244,7 +275,7 @@ Edge::~Edge()
 point_node *Edge::intersection(Edge *e)
 {
 	// given the slope, the equation of a line is y-y1 = m(x-x1).
-	if (*slope == *e->slope)
+	if (*slope - *e->slope < 1e-6 * max(*slope, *e->slope))
 	{
 		return NULL;
 	};
@@ -259,16 +290,15 @@ point_node *Edge::intersection(Edge *e)
 	double y_int = (*slope * (x_int - start->x) + start->y);
 
 	// Check intersection point to avoid that relies over the segments
-	if (x_int < min(points->x_min, e->points->x_min) ||
-		x_int > max(points->x_max, e->points->x_max) ||
-		y_int < min(points->y_min, e->points->y_min) ||
-		y_int > max(points->y_max, e->points->y_max))
+	if (x_int > min(points->x_min, e->points->x_min) &&
+		x_int < max(points->x_max, e->points->x_max) &&
+		y_int > min(points->y_min, e->points->y_min) &&
+		y_int < max(points->y_max, e->points->y_max))
 	{
-		return NULL;
+		point_node *intersection = new point_node(x_int, y_int);
+		return intersection;
 	};
-
-	point_node *intersection = new point_node(x_int, y_int);
-	return intersection;
+	return NULL;
 };
 
 /**
@@ -277,12 +307,12 @@ point_node *Edge::intersection(Edge *e)
  * @return point_node*: It is the pointer to the point_node instance
  *                      representing the middle_point.
  */
-point_node* Edge::middle_point(){
-	double mid_x = ((points->head->x + points->tail->x))/2;
-	double mid_y = ((points->head->y + points->tail->y))/2;
+point_node *Edge::middle_point()
+{
+	double mid_x = ((points->head->x + points->tail->x)) / 2;
+	double mid_y = ((points->head->y + points->tail->y)) / 2;
 	return new point_node(mid_x, mid_y);
 };
-
 
 /**
  * \fun info()
@@ -373,7 +403,8 @@ Mat plot_points(point_list *pl, Mat arena, Scalar colorline, bool isPolygon,
 			cv::Point pt1((n1->x * SCALE_1) + SCALE_2, (n1->y * -SCALE_1) + SCALE_2);
 			cv::Point pt2((n2->x * SCALE_1) + SCALE_2, (n2->y * -SCALE_1) + SCALE_2);
 			line(arena, pt1, pt2, colorline, thickness);
-			if (show){
+			if (show)
+			{
 				cout << "Plotting Line: "
 					 << "[" << (n1->x * SCALE_1) + SCALE_2 << ":"
 					 << (n1->y * -SCALE_1) + SCALE_2 << "]\t"
@@ -383,13 +414,14 @@ Mat plot_points(point_list *pl, Mat arena, Scalar colorline, bool isPolygon,
 			n1 = n1->pnext;
 		}
 
-		if (isPolygon){ // close the polygon connecting the last point with the firts one
-			line(arena, cv::Point((pl->tail->x * SCALE_1) + SCALE_2,
-							  (pl->tail->y * -SCALE_1) + SCALE_2),
+		if (isPolygon)
+		{ // close the polygon connecting the last point with the firts one
+			line(arena, cv::Point((pl->tail->x * SCALE_1) + SCALE_2, (pl->tail->y * -SCALE_1) + SCALE_2),
 				 cv::Point((pl->head->x * SCALE_1) + SCALE_2,
-					   (pl->head->y * -SCALE_1) + SCALE_2),
+						   (pl->head->y * -SCALE_1) + SCALE_2),
 				 colorline, thickness);
-			if (show){
+			if (show)
+			{
 				cout << "Plotting Line: "
 					 << "[" << (n1->x * SCALE_1) + SCALE_2 << ":"
 					 << (n1->y * -SCALE_1) + SCALE_2 << "]\t"
@@ -397,7 +429,6 @@ Mat plot_points(point_list *pl, Mat arena, Scalar colorline, bool isPolygon,
 					 << ((pl->head->y * -SCALE_1) + SCALE_2) << "]" << endl;
 			};
 		};
-				
 	}
 	return arena;
 }
@@ -405,9 +436,9 @@ Mat plot_points(point_list *pl, Mat arena, Scalar colorline, bool isPolygon,
 /**
  * \fun
  * This function implements the sinc operator.
- * 
- * @param t 
- * @return double 
+ *
+ * @param t
+ * @return double
  */
 double sinc(double t)
 {
@@ -420,9 +451,9 @@ double sinc(double t)
 /**
  * \fun
  * This function implements the mod2pi operator.
- * 
- * @param ang 
- * @return double 
+ *
+ * @param ang
+ * @return double
  */
 double mod2pi(double ang)
 {
@@ -459,14 +490,13 @@ bool check(double s1, double k0, double s2, double k1, double s3, double k2, dou
 	return (sqrt(eq1 * eq1 + eq2 * eq2 + eq3 * eq3) < 1.e-10) && Lpos;
 }
 
-
 /**
  * \fun
  * This function sort a point list according to the order of its associated doublelist
- * 
+ *
  * @param t double_list *.
  * @param pts point_list *.
- * 
+ *
  */
 void sort(double_list *t, point_list *pts)
 {
@@ -506,12 +536,12 @@ void sort(double_list *t, point_list *pts)
  * \fun
  * This function calculate the intersection point given the angular coifficents of two lines and their ordered at the origin.
  * Every possible case has been considered. That is, if a line is horizontal, vertical or perpendicular etc.
- * 
+ *
  * @param m1: double. Angular coifficient of the first line
  * @param m2: double. Angular coifficient of the second line
  * @param q1: double. Ordered at the origin of the first line
  * @param q2: double. Ordered at the origin of the second line
- * @return tuple<double, double>: Coordinates of the intersection point. 
+ * @return tuple<double, double>: Coordinates of the intersection point.
  */
 tuple<double, double> get_new_point(double m1, double m2, double q1, double q2)
 {
@@ -530,7 +560,7 @@ tuple<double, double> get_new_point(double m1, double m2, double q1, double q2)
 		x = q1;
 		y = q2;
 	}
-	
+
 	/* Just the first line horizontal*/
 	else if (m1 == 0)
 	{
@@ -574,18 +604,19 @@ tuple<double, double> get_new_point(double m1, double m2, double q1, double q2)
 /**
  * \fun
  * Constructor of a new polygon::polygon object
- * 
+ *
  * @param pls: point_list *. Point's list of the polygon
  */
-polygon::polygon(point_list *pls)
+polygon::polygon(point_list *pls, string _id)
 {
 	if (pls->size >= 3)
 	{
 		pl = pls;
-        pt new_centroid;
-        boost::geometry::centroid(pls->to_boost_polygon(), new_centroid);
-        centroid = new point_node(new_centroid.x(), new_centroid.y());
-        area = boost::geometry::area(pls->to_boost_polygon());
+		pt new_centroid;
+		boost::geometry::centroid(pls->to_boost_polygon(), new_centroid);
+		centroid = new point_node(new_centroid.x(), new_centroid.y());
+		area = boost::geometry::area(pls->to_boost_polygon());
+        id = _id;
 	}
 	else
 	{
@@ -595,17 +626,77 @@ polygon::polygon(point_list *pls)
 	}
 };
 
-void polygon::recompute_centroid(){
+void polygon::recompute_centroid()
+{
 	point_node *tmp = pl->head;
-	double x_sum=0;
-	double y_sum=0;
-	while(tmp != NULL){
+	double x_sum = 0;
+	double y_sum = 0;
+	while (tmp != NULL)
+	{
 		x_sum += tmp->x;
 		y_sum += tmp->y;
 		tmp = tmp->pnext;
 	};
-	centroid =  new point_node(x_sum/pl->size, y_sum/pl->size);
+	centroid = new point_node(x_sum / pl->size, y_sum / pl->size);
 };
+
+
+void polygon::add_common_edge(string s, Edge* e)
+{
+    if(common_edges.count(s) == 0)
+    {
+        common_edges[s] = new Edge_list;
+    }
+    common_edges[s]->add_edge(e);
+}
+
+polygon* merge(polygon* p1, polygon* p2)
+{
+    if(p1 == NULL)
+    {
+        cout << "First polygon in merge is NULL" << endl;
+    }
+    if(p2 == NULL)
+    {
+        cout << "Second polygon in merge is NULL" << endl;
+    }
+
+    cout << "Merging: " << p1->id << " " << p2->id << endl;
+    cout << "Edges sizes: " << p1->common_edges.size() << " "
+         << p2->common_edges.size() << endl;
+    vector<Polygon_boost> merge_out;
+    Polygon_boost P1 = p1->to_boost_polygon();
+    Polygon_boost P2 = p2->to_boost_polygon();
+    boost::geometry::union_(P1, P2, merge_out);
+    polygon *result = boost_polygon_to_polygon(merge_out[merge_out.size() - 1]);
+
+    map<string, Edge_list*>::const_iterator it = p1->common_edges.cbegin();
+    while(it != p1->common_edges.cend())
+    {
+        Edge* tmp = it->second->head;
+        while(tmp != NULL)
+        {
+            result->add_common_edge(it->first, tmp);
+            tmp = tmp->next;
+        }
+        it++;
+    }
+
+    it = p2->common_edges.cbegin();
+    while(it != p2->common_edges.cend())
+    {
+        Edge* tmp = it->second->head;
+        while(tmp != NULL)
+        {
+            result->add_common_edge(it->first, tmp);
+            tmp = tmp->next;
+        }
+        it++;
+    }
+   result->id = p1->id;
+   cout << "Result sizes: " << result->common_edges.size() << endl;
+   return result;
+}
 
 /**
  * \fun
@@ -613,8 +704,12 @@ void polygon::recompute_centroid(){
  */
 polygon::~polygon()
 {
+    id = "NaN";
 	pl->delete_list();
-	delete(centroid);
+    pnext = NULL;
+    area = 0.0;
+	delete (centroid);
+    common_edges.clear();
 };
 
 Edge_list *polygon::edgify()
@@ -636,11 +731,11 @@ Edge_list *polygon::edgify()
  * \fun.
  * This function turn a polygon into an enlarged version of itself.
  * To do this a parallel line at distant offset is computed for each edge of a polygon.
- * Then the vertices are obtained by looking for the intersection point of the two lines 
+ * Then the vertices are obtained by looking for the intersection point of the two lines
  * associated with consecutive edges
- * 
- * @param offset: Distance of the lines. 
- * @return polygon* 
+ *
+ * @param offset: Distance of the lines.
+ * @return polygon*
  */
 polygon *polygon::add_offset(double offset)
 {
@@ -768,8 +863,8 @@ polygon *polygon::add_offset(double offset)
 /**
  * \fun
  * This function create a boost::polygon with a point_list.
- * 
- * @return Polygon_boost 
+ *
+ * @return Polygon_boost
  */
 Polygon_boost point_list::to_boost_polygon()
 {
@@ -792,14 +887,14 @@ Polygon_boost point_list::to_boost_polygon()
 	{
 		boost::geometry::correct(p); // Fixes edge order -> e.g. clockwise
 	};
-    return p;
+	return p;
 }
 
 /**
  * \fun
  * This function converts a polygon into a boost::polygon
- * 
- * @return Polygon_boost 
+ *
+ * @return Polygon_boost
  */
 Polygon_boost polygon::to_boost_polygon()
 {
@@ -820,27 +915,46 @@ void polygon::concatenate(polygon *p)
 
 int polygon::points_in_common(polygon *p)
 {
-    int points_in_common = 0;
-    double epsilon = 1e-6;
-    point_node *tmp_pol_1 = pl->head;    
-    while(tmp_pol_1 != NULL)       
-        {                                                       
-            point_node *tmp_pol_2 = p->pl->head;
-            while(tmp_pol_2 != NULL) // && points_in_common <= 1)   
-            {   
-                double eps_mod_x = max(fabs(tmp_pol_1->x), fabs(tmp_pol_2->x));
-                double eps_mod_y = max(fabs(tmp_pol_1->y), fabs(tmp_pol_2->y));
+	int points_in_common = 0;
+	double epsilon = 1e-6;
+	point_node *tmp_pol_1 = pl->head;
+    bool found_local_point = false;
+	while (tmp_pol_1 != NULL)
+	{
+        found_local_point = false;
+		point_node *tmp_pol_2 = p->pl->head;
+		while (tmp_pol_2 != NULL && found_local_point==false)
+		{
+			double eps_mod_x = max(fabs(tmp_pol_1->x), fabs(tmp_pol_2->x));
+			double eps_mod_y = max(fabs(tmp_pol_1->y), fabs(tmp_pol_2->y));
+            
+            /*
+            cout << "X: " << tmp_pol_1->x << " - " << tmp_pol_2->x
+                 << " = " << tmp_pol_1->x - tmp_pol_2->x << " <= "
+                 << epsilon*eps_mod_x << endl;
+            cout << "Y: " << tmp_pol_1->y << " - " << tmp_pol_2->y
+                 << " = " << tmp_pol_1->y - tmp_pol_2->y << " <= "
+                 << epsilon*eps_mod_y << " ";
+            */
 
-                if (tmp_pol_1->x - tmp_pol_2->x <= epsilon * eps_mod_x &&         
-                    tmp_pol_1->y - tmp_pol_2->y <= epsilon * eps_mod_y)
-                {                                           
-                    points_in_common += 1;                  
-                };                                          
-                tmp_pol_2 = tmp_pol_2 -> pnext;                 
-             };                                                  
-             tmp_pol_1 = tmp_pol_1 -> pnext;                     
-         };                                                      
-    return points_in_common;                             
+			if (fabs(tmp_pol_1->x - tmp_pol_2->x) <= epsilon * eps_mod_x &&
+				fabs(tmp_pol_1->y - tmp_pol_2->y) <= epsilon * eps_mod_y)
+			{
+				points_in_common += 1;
+                found_local_point = true;
+				if (common_edges.count(p->id) == 0)
+				{
+					common_edges[p->id] = new Edge_list;
+				}
+				point_node *p1 = new point_node(tmp_pol_1->x, tmp_pol_1->y);
+				point_node *p2 = new point_node(tmp_pol_2->x, tmp_pol_2->y);
+				common_edges[p->id]->add_edge(new Edge(p1, p2));
+			};
+			tmp_pol_2 = tmp_pol_2->pnext;
+		};
+		tmp_pol_1 = tmp_pol_1->pnext;
+	};
+	return points_in_common;
 }
 
 void polygon::info()
@@ -853,8 +967,8 @@ void polygon::info()
 /**
  * \fun
  * This function add a polygon in the list of polygons of an arena.
- * 
- * @param p 
+ *
+ * @param p
  */
 void list_of_polygons::add_polygon(polygon *p)
 {
@@ -862,10 +976,12 @@ void list_of_polygons::add_polygon(polygon *p)
 	{
 		head = p;
 		tail = head;
-		return;
 	}
-	tail->pnext = p;
-	tail = tail->pnext;
+    else
+    {
+	    tail->pnext = p;
+	    tail = tail->pnext;
+    }
 	size += 1;
 };
 
@@ -887,7 +1003,7 @@ void list_of_polygons::append_other_list(list_of_polygons *p)
 /**
  * \fun
  * Destroy the list of obstacles::list of obstacles object
- * 
+ *
  */
 list_of_obstacles::~list_of_obstacles()
 {
@@ -910,7 +1026,7 @@ list_of_obstacles::~list_of_obstacles()
 /**
  * \fun
  * Delete all the offsetted polygons.
- * 
+ *
  */
 void list_of_obstacles::delete_offsetted_list()
 {
@@ -941,24 +1057,24 @@ string exec(const char *cmd)
 }
 
 /**
- * \fun 
+ * \fun
  * This function return the angle formed by a point into a circonference.
- * 
+ *
  * @param xc: double. x-coordinate of the circle's center.
  * @param yc: double. y-coordinate of the circle's center.
  * @param x: double. x-coordinate of the point.
  * @param y: double. y-coordinate of the point.
- * @return double 
+ * @return double
  */
 double get_angle(double xc, double yc, double x, double y)
 {
-	return atan2(y-yc, x-xc);
+	return atan2(y - yc, x - xc);
 }
 
 /**
  * \fun
  * This function check if angle is between a starting angle and a final angle
- * 
+ *
  * @param th0: double. Starting angle
  * @param thf: double. Finale angle
  * @param th: double. Angle to check
@@ -966,12 +1082,26 @@ double get_angle(double xc, double yc, double x, double y)
  */
 bool is_in_arc(double th0, double thf, double th)
 {
-	if(th < th0 && th > thf)
+	if (th < th0 && th > thf)
 	{
 		return false;
 	}
 	return true;
 }
+
+point_list* point_list::copy()
+{
+    point_list * copy = new point_list;
+    copy->head = head;
+    copy->tail = tail;
+    copy->x_min = x_min;
+    copy->x_max = x_max;
+    copy->y_min = y_min;
+    copy->y_max = y_max;
+    copy->size = size;
+    return copy;
+}
+
 /**
  * \fun
  * This function is used to convert a boost polygon object into a list of
@@ -980,39 +1110,536 @@ bool is_in_arc(double th0, double thf, double th)
  * @param[in] p: boost::geometry::model::Polygon_boost. Is the polygon to convert.
  * @parma[out] pl: point_list pointer. Is the resulting point list of the
  * polygon.
-*/
+ */
 point_list *boost_polygon_to_point_list(Polygon_boost p)
 {
-    point_list *pl = new point_list();                                     
-    for (auto it = boost::begin(boost::geometry::exterior_ring(p));        
-         it != boost::end(boost::geometry::exterior_ring(p)); ++it)        
-    {                                                                      
-            double x = boost::geometry::get<0>(*it);                                        
-            double y = boost::geometry::get<1>(*it);                                        
-                                                                               
-            pl->add_node(new point_node(x, y));                                
-        }                                                                      
-    pl->pop();
-    return pl;
+	point_list *pl = new point_list();
+	for (auto it = boost::begin(boost::geometry::exterior_ring(p));
+		 it != boost::end(boost::geometry::exterior_ring(p)); ++it)
+	{
+		double x = boost::geometry::get<0>(*it);
+		double y = boost::geometry::get<1>(*it);
+
+		pl->add_node(new point_node(x, y));
+	}
+	pl->pop();
+	return pl;
 }
 
 /**
  * \fun
  * This function is used to convert a boost::polygon into a polygon.
- * 
+ *
  * @param p: Polygon_boost.
- * @return polygon* 
+ * @return polygon*
  */
-polygon *boost_polygon_to_polygon(Polygon_boost p)                         
-{   
-    point_list * new_pol_list = boost_polygon_to_point_list(p);
-    
-    pt new_centroid;
-    boost::geometry::centroid(p, new_centroid);
+polygon *boost_polygon_to_polygon(Polygon_boost p, string _id)
+{
+	point_list *new_pol_list = boost_polygon_to_point_list(p);
+	pt new_centroid;
+	boost::geometry::centroid(p, new_centroid);
 
-    polygon *new_pol = new polygon(new_pol_list); 
-    new_pol->centroid = new point_node(new_centroid.x(), new_centroid.y());
-    new_pol->area = boost::geometry::area(p);
-    return new_pol;                                                        
-};                                                                         
+	polygon *new_pol = new polygon(new_pol_list);
+	new_pol->centroid = new point_node(new_centroid.x(), new_centroid.y());
+	new_pol->area = boost::geometry::area(p);
+    new_pol->id = _id;
+	return new_pol;
+};
 
+polygon* polygon::copy()
+{
+    polygon* copy = new polygon(pl->copy(), id);
+    copy->centroid = centroid->copy();
+    copy->pnext = pnext;
+    copy->area = area;
+    copy->common_edges = common_edges;
+    return copy;
+}
+
+double cross2D(double *v1, double *v2)
+{
+	return v1[0] * v2[1] - v1[1] * v2[0];
+}
+
+double dot2D(double *v1, double *v2)
+{
+	return v1[0] * v2[0] + v1[1] * v2[1];
+}
+
+bool onSegment(point_node *p1, point_node *p2, point_node *p3)
+{
+	if (p2->x <= max(p1->x, p3->x) && p2->x >= min(p1->x, p3->x) &&
+		p2->y <= max(p1->y, p3->y) && p2->y >= min(p1->y, p3->y))
+		return true;
+
+	return false;
+}
+
+// To find orientation of ordered triplet (p, q, r).
+// The function returns following values
+// 0 --> p, q and r are collinear
+// 1 --> Clockwise
+// 2 --> Counterclockwise
+int orientation(point_node *p1, point_node *p2, point_node *p3)
+{
+	// See https://www.geeksforgeeks.org/orientation-3-ordered-points/
+	// for details of below formula.
+	int val = (p2->y - p1->y) * (p3->x - p2->x) -
+			  (p2->x - p1->x) * (p3->y - p2->y);
+
+	if (val == 0)
+		return 0; // collinear
+
+	return (val > 0) ? 1 : 2; // clock or counterclock wise
+}
+
+/**
+ * \fun
+ * This function calculate the intersection points between two lines.
+ *
+ */
+bool intersLineLine(point_node *p1, point_node *p2, point_node *p3, point_node *p4)
+{
+	// Find the four orientations needed for general and
+	// special cases
+	int o1 = orientation(p1, p2, p2);
+	int o2 = orientation(p1, p2, p4);
+	int o3 = orientation(p3, p4, p1);
+	int o4 = orientation(p3, p4, p2);
+
+	// General case
+	if (o1 != o2 && o3 != o4)
+		return true;
+
+	// Special Cases
+	// p1, q1 and p2 are collinear and p2 lies on segment p1q1
+	if (o1 == 0 && onSegment(p1, p3, p2))
+		return true;
+
+	// p1, q1 and q2 are collinear and q2 lies on segment p1q1
+	if (o2 == 0 && onSegment(p1, p4, p2))
+		return true;
+
+	// p2, q2 and p1 are collinear and p1 lies on segment p2q2
+	if (o3 == 0 && onSegment(p3, p1, p4))
+		return true;
+
+	// p2, q2 and q1 are collinear and q1 lies on segment p2q2
+	if (o4 == 0 && onSegment(p3, p2, p4))
+		return true;
+
+	return false; // Doesn't fall in any of the above cases
+}
+
+/**
+ * \fun
+ * This function calculate the intersection points between two lines.
+ *
+ * @param x1: double: x-coordinate of the first point of the first line
+ * @param y1: double: y-coordinate of the first point of the first line
+ * @param x2: double: x-coordinate of the second point of the first line
+ * @param y2: double: y-coordinate of the seconf point of the first line
+ * @param x3: double: x-coordinate of the first point of the second line
+ * @param y3: double: y-coordinate of the first point of the second line
+ * @param x4: double: x-coordinate of the second point of the second line
+ * @param y4: double: y-coordinate of the second point of the second line
+ * @return tuple<point_list *, double_list *>
+ */
+// tuple<point_list *, double_list *> intersLineLine(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
+// {
+// 	point_list *pts = new point_list;
+// 	double_list *ts = new double_list;
+// 	double minX1, minY1, maxX1, maxY1, minX2, minY2, maxX2, maxY2;
+// 	double t;
+
+// 	minX1 = min(x1, x2);
+// 	minY1 = min(y1, y2);
+// 	maxX1 = max(x1, x2);
+// 	maxY1 = max(y1, y2);
+
+// 	minX2 = min(x3, x4);
+// 	minY2 = min(y3, y4);
+// 	maxX2 = max(x3, x4);
+// 	maxY2 = max(y3, y4);
+
+// 	if (maxX2 < minX1 || minX2 > maxX1 || maxY2 < minY1 || minY2 > maxY1)
+// 	{
+// 		double_list *dnull = NULL;
+// 		point_list *pnull = NULL;
+// 		return make_tuple(pnull, dnull);
+// 	}
+
+// 	double q[] = {x1, y1};
+// 	double s[] = {x2, y2};
+// 	for (int i = 0; i < 2; i++)
+// 		s[i] -= q[i];
+
+// 	double p[] = {x3, y3};
+// 	double r[] = {x2, y2};
+// 	for (int i = 0; i < 2; i++)
+// 		r[i] -= p[i];
+
+// 	double diffPQ[2];
+// 	for (int i = 0; i < 2; i++)
+// 		diffPQ[i] = q[i] - p[i];
+
+// 	double crossRS = cross2D(r, s);
+// 	double crossDiffR = cross2D(diffPQ, r);
+// 	double crossDiffS = cross2D(diffPQ, s);
+
+// 	if (crossRS == 0)
+// 	{
+// 		double dotRR = dot2D(r, r);
+// 		double dotSR = dot2D(s, r);
+// 		double t0 = dot2D(diffPQ, r) / dotRR;
+// 		double t1 = t0 + dotSR / dotRR;
+// 		if (dotSR < 0)
+// 		{
+// 			if (t0 >= 0 && t1 <= 1)
+// 			{
+// 				ts->add_node(new double_node(max(t1, 0.0)));
+// 				ts->add_node(new double_node(min(t0, 1.0)));
+// 			}
+// 		}
+// 		else
+// 		{
+// 			if (t1 >= 0 && t0 <= 1)
+// 			{
+// 				ts->add_node(new double_node(max(t0, 0.0)));
+// 				ts->add_node(new double_node(min(t1, 1.0)));
+// 			}
+// 		}
+// 	}
+// 	else
+// 	{
+// 		if (crossRS == 0 && crossDiffR != 0)
+// 		{
+// 			double_list *dnull = NULL;
+// 			point_list *pnull = NULL;
+// 			return make_tuple(pnull, dnull);
+// 		}
+// 		else
+// 			t = crossDiffS / crossRS;
+// 		double u = crossDiffR / crossRS;
+// 		if (t >= 0 && t <= 1 && u >= 0 && u <= 1)
+// 			ts->add_node(new double_node(t));
+// 	}
+// 	double_node *tmp = ts->head;
+// 	while (tmp != NULL)
+// 	{
+// 		pts->add_node(new point_node(p[0] + tmp->value * r[0], p[1] + tmp->value * r[1]));
+// 		tmp = tmp->pnext;
+// 	}
+
+// 	return make_tuple(pts, ts);
+// }
+
+/**
+ * \fun
+ * This function return the intersection points between a circle and a line.
+ *
+ * @param a: double. x-coordinate of the center of the circle
+ * @param b: double. y-coordinate of the center of the circle
+ * @param r: double. radius of the circle
+ * @param x1: double. x-coordinate of the first point of the line
+ * @param y1: double. y-coordinate of the first point of the line
+ * @param x2: double. x-coordinate of the second point of the line
+ * @param y2: double. y-coordinate of the second point of the line
+ * @return tuple<point_list *, double_list *>
+ */
+tuple<point_list *, double_list *> intersCircleLine(double a, double b, double r, double x1, double y1, double x2, double y2)
+{
+	double p1, p2, p3, p4, p5, p6;
+	p1 = 2 * x1 * x2;
+	p2 = 2 * y1 * y2;
+	p3 = 2 * a * x1;
+	p4 = 2 * a * x2;
+	p5 = 2 * b * y1;
+	p6 = 2 * b * y2;
+
+	double c1, c2, c3;
+	c1 = pow(x1, 2) + pow(x2, 2) - p1 + pow(y1, 2) + pow(y2, 2) - p2;
+	c2 = -2 * pow(x2, 2) + p1 - p3 + p4 - 2 * pow(y2, 2) + p2 - p5 + p6;
+	c3 = pow(x2, 2) - p4 + pow(a, 2) + pow(y2, 2) - p6 + pow(b, 2) - pow(r, 2);
+
+	double delta = pow(c2, 2) - 4 * c1 * c3;
+	point_list *pts = new point_list;
+	double_list *t = new double_list;
+
+	double t1, t2, x, y;
+	double deltaSq;
+	if (delta < 0)
+	{
+		double_list *dnull = NULL;
+		point_list *pnull = NULL;
+		// cout << "DELTA: " << delta << endl;
+		return make_tuple(pnull, dnull);
+	}
+	else
+	{
+		if (delta > 0)
+		{
+			deltaSq = sqrt(delta);
+			t1 = (-c2 + deltaSq) / (2 * c1);
+			t2 = (-c2 - deltaSq) / (2 * c1);
+		}
+		else
+		{
+			t1 = -c2 / (2 * c1);
+			t2 = t1;
+		}
+	}
+	if (t1 >= 0 && t1 <= 1)
+	{
+		x = x1 * t1 + x2 * (1 - t1);
+		y = y1 * t1 + y2 * (1 - t1);
+		pts->add_node(new point_node(x, y));
+		t->add_node(new double_node(t1));
+		// cout << "NODO AGGIUNTO\n";
+	}
+	if (t2 >= 0 && t2 <= 1 && t2 != t1)
+	{
+		x = x1 * t2 + x2 * (1 - t2);
+		y = y1 * t2 + y2 * (1 - t2);
+		cv::Point pt(x, y);
+		// cout << typeid(pt.x).name() << endl;
+		pts->add_node(new point_node(x, y));
+
+		t->add_node(new double_node(t2));
+		// cout << "NODO AGGIUNTO\n";
+	}
+	sort(t, pts);
+	return make_tuple(pts, t);
+}
+
+point_node *los(point_node *p1, point_node *p2, polygon *pol, Edge *common_edge)
+{
+	if(common_edge == NULL)
+	{
+		return NULL;
+	}
+	polygon *tmp = pol;
+	bool los = true;
+
+	while (tmp != NULL && los == true)
+	{
+		point_list *pts;
+		double_list *p;
+
+		point_node *pt1 = tmp->pl->head;
+		while (pt1 != NULL && los == true)
+		{
+			point_node *pt2;
+			if (pt1->pnext == NULL)
+			{
+				pt2 = tmp->pl->head;
+			}
+			else
+			{
+				pt2 = pt1->pnext;
+			}
+
+			// tie(pts, p) = intersLineLine(x_path[i], y_path[i],
+            //                              x_path[i + 1], y_path[i + 1],
+            //                              pt1->x, pt1->y, pt2->x, pt2->y);
+			if (intersLineLine(p1, p2, pt1, pt2))
+			{
+				// cout << "p1: " << p1->x << ":" << p1->y << endl;
+				// cout << "p2: " << p2->x << ":" << p2->y << endl;
+				// cout << "p3: " << p3->x << ":" << p3->y << endl;
+				// cout << "p4: " << p4->x << ":" << p4->y << endl;
+				los = false;
+			}
+
+			pt1 = pt1->pnext;
+		}
+		tmp = tmp->pnext;
+	}
+
+	if (los == false)
+	{	
+		cout << "NO LOS " << endl;
+ 		return common_edge->middle_point();
+	}
+	return NULL;
+}
+
+Edge* find_common_edge(polygon* p1, polygon* p2)
+{
+    Edge_list *e1 = p1->edgify();
+    Edge_list *e2 = p2->edgify();
+
+    Edge* tmp = e1->head;
+    Edge* tmp_2 = e2->head;
+
+    while(tmp != NULL)
+    {
+        while(tmp_2 != NULL)
+        {
+            double eps = 1e-6;
+
+            double x_s_1 = tmp->points->head->x;
+            double x_s_2 = tmp_2->points->tail->x;
+            double max_x_s = max(x_s_1, x_s_2);
+
+            double y_s_1 = tmp->points->head->y;
+            double y_s_2 = tmp_2->points->tail->y;
+            double max_y_s = max(y_s_1, y_s_2);
+
+            double x_e_1 = tmp->points->head->x;
+            double x_e_2 = tmp_2->points->tail->x;
+            double max_x_e = max(x_e_1, x_e_2);
+
+            double y_e_1 = tmp->points->head->y;
+            double y_e_2 = tmp_2->points->tail->y;
+            double max_y_e = max(y_e_1, y_e_2);
+
+            if (fabs(x_s_1 - x_s_2) < eps*max_x_s &&
+                fabs(y_s_1 - y_s_2) < eps*max_y_s &&
+                fabs(x_e_1 - x_e_2) < eps*max_x_e && 
+                fabs(y_e_1 - y_e_2) < eps*max_y_e)
+            {
+                cout << "Found common edge between " << p1->id << " and "
+                     << p2->id << endl;
+                return new Edge( new point_node(x_s_1, y_s_1),
+                                 new point_node(x_e_1, y_e_1));
+            }
+            tmp_2 = tmp_2 -> next;
+        }
+        tmp = tmp->next;
+    }
+    return NULL;
+}
+
+list_of_polygons * subset_over_middle_point(polygon * p)                   
+{                                                                          
+    list_of_polygons *tmp_output = new list_of_polygons();                 
+                                                                         
+    Edge_list *e_list = p->edgify();
+ 
+    cout << "Polygon " << p->id << " has " << p->pl->size << " points" << endl;  
+    cout << "Polygon " << p->id << " has " << e_list->size << " edges" << endl;
+
+    Edge *tmp = e_list->head;                                              
+                                                                         
+    Edge *start = e_list->head;
+    int num = 0;    
+    while (start != NULL)                                                  
+    {                                                                      
+        Edge *end = NULL;                                                         
+        if (start->next == NULL)                                           
+        {                                                                  
+            end = e_list->head;                                            
+        }                                                                  
+        else                                                               
+        {                                                                  
+            end = start->next;                                             
+        };                                                                 
+                                                                              
+        point_list *pl_temp = new point_list();                            
+        pl_temp->add_node(new point_node(p->centroid->x, p->centroid->y)); 
+        pl_temp->add_node(start->middle_point());                          
+        pl_temp->add_node(start->points->tail);                            
+        pl_temp->add_node(end->middle_point());                            
+                                                                              
+        polygon *cell = new polygon(pl_temp, p->id + "_" + to_string(num));
+ 
+        /*
+        cout << "Cell id: " << cell->id << " -> ";
+        cell->id += "_" + to_string(num);
+        cout << cell->id << endl;
+        */
+        // cell->id += "_" + to_string(num);
+
+        tmp_output->add_polygon(cell);                                     
+                                                                              
+        start = start->next;                                               
+        num++;
+    }; 
+    // cout << "Subset size: " << tmp_output->size << endl; 
+    return tmp_output;                                                     
+}                                                                          
+
+/**
+ * Subtract a vector of polygons from another one.
+ * @param arena: vector<Polygon_boost>. Is the vector of polygons from which
+ * the other polygons will be subtracted.
+ * @param obstacles: vector<Polygon_boost>. Is the vector of polygons that will
+ * be subtracted.
+ */
+vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
+											vector<Polygon_boost> obstacles)
+{
+
+	if (arena.size() == 0)
+	{
+		cout << "Arena vector is empty." << endl;
+	};
+	if (obstacles.size() == 0)
+	{
+		cout << "Obstacle vector is empty." << endl;
+	};
+
+	vector<Polygon_boost> output;
+	vector<Polygon_boost> tmp_output;
+
+	int prev_output = 0;
+	int arena_size = arena.size();
+	int arena_ob_size = obstacles.size();
+
+	for (int i = 0; i < arena_size; i++) // i is the index of the cell
+	{
+		int j = 0; // Index of the obstacle
+		bool interrupt_ob = false;
+		while (j < arena_ob_size && interrupt_ob == false)
+		{
+			// Apply only if cells are outside the obstacles
+			if (boost::geometry::covered_by(arena[i], obstacles[j]) == false)
+			{
+				if (boost::geometry::intersects(arena[i], obstacles[j]))
+				{
+					// cout << "Intersects" << endl;
+                    boost::geometry::difference(arena[i], obstacles[j], output);
+					int diff = output.size() - prev_output;
+					prev_output = output.size();
+
+					// cout << "Output size: " << output.size() << endl;
+					// cout << "Difference: " << diff << " Size output: "
+					// 	 << prev_output << endl;
+
+					arena[i] = output[output.size() - 1];
+
+					if (diff > 1)
+					{
+						cout << "In diff > 1" << endl;
+						// tmp_output = arena;
+						for (int k = 1; k < diff; k++)
+						{
+							int output_idx = output.size() - 1 - k;
+							vector<Polygon_boost>::iterator it;
+							// it = tmp_output.begin();
+							it = arena.begin();
+							// tmp_output
+							// arena.insert(it + i + k, output[output_idx]);
+							arena.push_back(output[output_idx]);
+							arena_size++;
+						};
+						// arena = tmp_output;
+					};
+
+				};
+			}
+			else
+			{
+				// Delete cells covered by obstacles;
+				// cout << "Covered" << endl;
+				arena.erase(arena.begin() + i);
+				i--;
+				arena_size--;
+				interrupt_ob = true;
+			};
+			j++;
+		};
+	};
+	return arena;
+};

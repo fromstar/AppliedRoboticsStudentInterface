@@ -240,6 +240,17 @@ Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons,
 	while (tmp != NULL)
 	{
 		img_arena = plot_points(tmp->pl, img_arena, Scalar(0, 255, 0), true);
+		
+        if (show_cells_id)
+		{
+			// Write ID of cell
+			double x = ((tmp->centroid->x - 0.05) * SCALE_1) + SCALE_2;
+			double y = (tmp->centroid->y * -SCALE_1) + SCALE_2;
+			cv::putText(img_arena, tmp->id,
+						cv::Point(x, y),
+						cv::FONT_HERSHEY_DUPLEX, 0.3, Scalar(0, 0, 0));
+		}
+
 		tmp = tmp->pnext;
 	}
 
@@ -265,8 +276,8 @@ Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons,
 			cv::putText(img_arena, tmp->id,
 						cv::Point(x, y),
 						cv::FONT_HERSHEY_DUPLEX, 0.3, Scalar(0, 0, 0));
-			tmp = tmp->pnext;
 		}
+	    tmp = tmp->pnext;
 	};
 
 	// plot robots
@@ -652,14 +663,16 @@ list_of_polygons *subset_polygon(polygon *p, int levels)
 };
 
 /**
- * Subtract a vector o polygons from another one.
+ * Subtract a vector of polygons from another one.
  * @param arena: vector<Polygon_boost>. Is the vector of polygons from which
  * the other polygons will be subtracted.
  * @param obstacles: vector<Polygon_boost>. Is the vector of polygons that will
  * be subtracted.
  */
+
+/*
 vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
-											vector<Polygon_boost> obstacles)
+  vector<Polygon_boost> obstacles)
 {
 
 	if (arena.size() == 0)
@@ -689,14 +702,14 @@ vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
 			{
 				if (bg::intersects(arena[i], obstacles[j]))
 				{
-					cout << "Intersects" << endl;
+					// cout << "Intersects" << endl;
 					bg::difference(arena[i], obstacles[j], output);
 					int diff = output.size() - prev_output;
 					prev_output = output.size();
 
-					cout << "Output size: " << output.size() << endl;
-					cout << "Difference: " << diff << " Size output: "
-						 << prev_output << endl;
+					// cout << "Output size: " << output.size() << endl;
+					// cout << "Difference: " << diff << " Size output: "
+					// 	 << prev_output << endl;
 
 					arena[i] = output[output.size() - 1];
 
@@ -718,13 +731,12 @@ vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
 						// arena = tmp_output;
 					};
 
-					cout << "In " << i << "/" << arena_size << " - " << j << "/" << arena_ob_size << endl;
 				};
 			}
 			else
 			{
 				// Delete cells covered by obstacles;
-				cout << "Covered" << endl;
+				// cout << "Covered" << endl;
 				arena.erase(arena.begin() + i);
 				i--;
 				arena_size--;
@@ -735,6 +747,43 @@ vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
 	};
 	return arena;
 };
+*/
+
+/*
+list_of_polygons * subset_over_middle_point(polygon * p)
+{
+    list_of_polygons *tmp_output = new list_of_polygons();
+        
+    Edge_list *e_list = p->edgify();
+    Edge *tmp = e_list->head;
+
+    Edge *start = e_list->head;
+    while (start != NULL)
+    {
+        Edge *end;
+        if (start->next == NULL)
+        {
+            end = e_list->head;
+        }
+        else
+        {
+            end = start->next;
+        };
+
+        point_list *pl_temp = new point_list();
+        pl_temp->add_node(new point_node(p->centroid->x, p->centroid->y));
+        pl_temp->add_node(start->middle_point());
+        pl_temp->add_node(start->points->tail);
+        pl_temp->add_node(end->middle_point());
+
+        polygon *cell = new polygon(pl_temp);
+        tmp_output->add_polygon(cell);
+
+        start = start->next;
+    };
+    return tmp_output;
+}
+*/
 
 /**
  * \fun
@@ -753,46 +802,23 @@ void points_map::make_free_space_cells_squares(int res)
 	// Generate arena subsetting
 	list_of_polygons *tmp_list = new list_of_polygons();
 	tmp_list->add_polygon(new polygon(shrinked_arena));
+	
+    polygon *tmp_pol = NULL;
 
 	for (int i = 0; i < res; i++)
 	{
-		polygon *tmp_pol = tmp_list->head;
-		list_of_polygons *tmp_output = new list_of_polygons();
+		tmp_pol = tmp_list->head;
+        list_of_polygons *tmp_output = new list_of_polygons();
 		while (tmp_pol != NULL)
 		{
-			Edge_list *e_list = tmp_pol->edgify();
-			Edge *tmp = e_list->head;
-
-			Edge *start = e_list->head;
-			while (start != NULL)
-			{
-				Edge *end;
-				if (start->next == NULL)
-				{
-					end = e_list->head;
-				}
-				else
-				{
-					end = start->next;
-				};
-
-				point_list *pl_temp = new point_list();
-				pl_temp->add_node(new point_node(tmp_pol->centroid->x,
-												 tmp_pol->centroid->y));
-				pl_temp->add_node(start->middle_point());
-				pl_temp->add_node(start->points->tail);
-				pl_temp->add_node(end->middle_point());
-
-				polygon *cell = new polygon(pl_temp);
-				tmp_output->add_polygon(cell);
-
-				start = start->next;
-			};
+            tmp_output->append_other_list(subset_over_middle_point(tmp_pol));
 			tmp_pol = tmp_pol->pnext;
 		};
-		tmp_list = tmp_output;
+  
+		tmp_list = tmp_output;       
 	};
-	polygon *tmp_pol;
+	
+    tmp_pol = NULL;
 
 	// convert cells to boost polygons
 	vector<Polygon_boost> cells;
@@ -811,9 +837,13 @@ void points_map::make_free_space_cells_squares(int res)
 		ob_boost.push_back(tmp_pol->to_boost_polygon());
 		tmp_pol = tmp_pol->pnext;
 	};
+    
+    cout << "Before difference of vectors" << endl;
 
 	// Remove obstacles from the cells
 	cells = difference_of_vectors(cells, ob_boost);
+    
+    cout << "After difference of vectors" << endl;
 
 	// Populate free space cells list
 	// list_of_polygons *new_cells = new list_of_polygons();
@@ -833,16 +863,20 @@ void points_map::make_free_space_cells_squares(int res)
 			}
 		}
 	};
+
 	connections.aggregate();
-	connections.info();
+	// connections.info();
+    connections.ensure_LOS(obstacles);
 
 	// Populate free space
 	map<string, polygon *> els = connections.elements();
 	map<string, polygon *>::const_iterator new_it;
-	for (new_it = els.cbegin(); new_it != els.cend(); new_it++)
+    
+    for (new_it = els.cbegin(); new_it != els.cend(); new_it++)
 	{
 		free_space->add_polygon(new_it->second);
 	}
+    connections.info();
 };
 
 /**
