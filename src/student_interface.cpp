@@ -135,7 +135,9 @@ namespace student
         arena.free_space,
         arena.gates,
         arena.obstacles,
-        arena.connections.find_pddl_connections());
+        arena.connections.find_pddl_connections(),
+        arena.connections.make_cells_predicates(),
+        arena.connections.make_cells_conditional_distances());
     
     robot_manager rm(log_test);
 
