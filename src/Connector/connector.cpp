@@ -622,10 +622,11 @@ map<string, polygon *> Connection_map::elements()
  */
 string Connection_map::find_pddl_connections()
 {
+    to_log("Started finding PDDL connections");
+
     typedef map<string, polygon *>::const_iterator conn_it;
     map<string, Master_node>::const_iterator c_it = connections.cbegin();
     string pddl_connections = "";
-    cout << "Started Finding PDDL connections" << endl;
     while (c_it != connections.end())
     {
         // Write adjacent connections  first
@@ -648,7 +649,7 @@ string Connection_map::find_pddl_connections()
         }
         c_it++;
     }
-    cout << "Ended Finding PDDL connections" << endl;
+    to_log("Ended Finding PDDL connections");
     return pddl_connections;
 };
 
@@ -662,7 +663,7 @@ void Connection_map::erase_MasterNode(string id)
 {
     if (connections.count(id) == 0)
     {
-        cout << "No Master Node " << id << " found. Nothing to remove.\n";
+        to_log("No Master Node " + id + " found. Nothing to remove.");
         return;
     }
 
@@ -689,7 +690,6 @@ void Connection_map::erase_MasterNode(string id)
         }
     }
     connections.erase(id);
-    cout << "* Removed " << id << " from connections" << endl;
 }
 
 /**
@@ -703,7 +703,7 @@ void Connection_map::ensure_LOS(list_of_obstacles *ob_l)
     cout << "Evaluating LOS" << endl;
     if (ob_l == NULL)
     {
-        cout << "Obstacle list provided is NULL." << endl;
+        to_log("Obstacle list provided is NULL.");
         return;
     }
 
@@ -736,23 +736,15 @@ void Connection_map::ensure_LOS(list_of_obstacles *ob_l)
 
             if (LOS_point != NULL)
             {
-                cout << "Not in LOS: " << available_id[i] << " " << conn_id[j]
-                     << " LOS_point: ";
                 LOS_point->Print();
                 cout << endl;
 
                 list_of_polygons *pl = new list_of_polygons;
-                // cout << "Initial size of list: " << pl->size << endl;
                 pl->append_other_list(subset_over_middle_point(node->master));
 
                 pl->append_other_list(subset_over_middle_point(second_cell));
 
-                // cout <<  "Subsetted " << second_cell->id << " size: "
-                //      << pl->size - a << endl;
-
                 int new_master_nodes = pl->size;
-
-                // cout << "Result size of subsetting: " << pl->size << endl;
 
                 erase_MasterNode(available_id[i]);
                 erase_MasterNode(conn_id[j]);
@@ -823,7 +815,69 @@ void Connection_map::ensure_LOS(list_of_obstacles *ob_l)
     }
 }
 
+string Connection_map::make_cells_predicates()
+{
+    to_log("Started making cells PDDL predicates");
+    vector<string> cells_id = ids();
+    if (cells_id.size() > 0)
+    {
+        string cells_predicates = "";
+        for(int i=0; i<cells_id.size(); i++)
+        {
+            cells_predicates += "\t\t(is_" + cells_id[i] + " ?c - location)\n";
+        }
+        return cells_predicates;
+    }
+    to_log("Ended making cells PDDL predicates");
+    return "NaN";
+}
+
+string Connection_map::make_cells_conditional_distances()
+{
+    to_log("Started computing cells distances into PDDL conditional effects.");
+    string conditional_distances = "";
+    map<string, Master_node>::const_iterator c_it = connections.cbegin();
+    map<string, polygon*>::const_iterator conn_it_start;
+    map<string, polygon*>::const_iterator conn_it_end;
+
+    while(c_it != connections.cend())
+    {
+        point_node * master_centroid = c_it->second.master->centroid;
+        
+        // Compute distance for adjacent cells
+        vector< map<string, polygon*> * > conns;
+        conns.push_back(&connections[c_it->first].adjacent_connections);
+        conns.push_back(&connections[c_it->first].diagonal_connections);
+        for(int i=0; i<conns.size(); i++)
+        {
+            conn_it_start = conns[i]->cbegin();
+            conn_it_end = conns[i]->cend();
+            while(conn_it_start != conn_it_end)
+            {  
+                point_node * cell_centroid = conn_it_start->second->centroid; 
+                double distance = master_centroid->distance(cell_centroid)*10;
+                conditional_distances +=
+                                     "\n\t\t\t\t\t( when"
+                                     "\n\t\t\t\t\t\t( and"
+                                     "\n\t\t\t\t\t\t\t( is_" + c_it->first +
+                                     " ?loc_start )"
+                                     "\n\t\t\t\t\t\t\t( is_" +
+                                     conn_it_start->first + " ?loc_end)"
+                                     "\n\t\t\t\t\t\t)"
+                                     "\n\t\t\t\t\t\t( increase (total-cost) "
+                                     + to_string(distance) + " )"
+                                     "\n\t\t\t\t\t)";
+                conn_it_start++;
+            }
+        }
+        c_it++;
+    }
+    to_log("Ended computing cells distances into PDDL conditional effects.");
+    return conditional_distances;
+}
+
 void Connection_map::empty()
 {
     connections.clear();
+    to_log("Struct emptied.");
 }

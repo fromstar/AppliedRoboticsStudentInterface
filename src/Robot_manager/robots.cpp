@@ -353,65 +353,69 @@ void robot_fugitive::write_file(string file_name, string what_to_write,
  * \fun
  * This method is used to create the domain file for the fugitive robot.
  *  */
-string robot_fugitive::make_pddl_domain_file()
+string robot_fugitive::make_pddl_domain_file(World_representation wr)
 {
 	to_log("Writing domain file");
 
 	// Define name of the domain
 	string domain_name = "domain_" + self->ID;
+    
+    string cells_predicates = wr.get_cells_predicates();
+    string cells_conditional_cost = wr.get_cells_conditional_distances();
+    cout << "Here" << endl;
 
 	// Write header of the file
-	string domain_file =
-		"(define (domain " + domain_name + ")\n"
+	string domain_file = "(define (domain " + domain_name + ")\n"
 
-										   // Write requirements
-										   "\t(:requirements "
-										   "\n\t\t:strips :typing :negative-preconditions"
-										   "\n\t\t:disjunctive-preconditions"
-										   "\n\t)\n"
+                           // Write requirements
+                           "\t(:requirements "
+                           "\n\t\t:strips :typing :negative-preconditions"
+                           "\n\t\t:disjunctive-preconditions"
+                           "\n\t)\n"
 
-										   // Write types
-										   "\t(:types\n\t\tfugitive catcher - robot"
-										   "\n\t\tcell gate - location\n\t)\n"
+                           // Write types
+                           "\t(:types\n\t\tfugitive catcher - robot"
+                           "\n\t\tcell gate - location\n\t)\n"
 
-										   // Write cost function
-										   "\t(:functions (total-cost) - number)\n"
+                           // Write cost function
+                           "\t(:functions (total-cost) - number)\n"
 
-										   // Write predicates
-										   "\t(:predicates\n"
-                                           "\t\t(visited ?c - location)\n"
-										   "\t\t(is_in ?r - robot ?loc - location)\n"
-										   "\t\t(connected ?loc_start - location ?loc_end - location)\n"
-										   "\t\t(is_diagonal ?c1 - location ?c2 - location)"
-										   "\n\t)"
+                           // Write predicates
+                           "\t(:predicates\n"
+                           "\t\t(visited ?c - location)\n"
+                           "\t\t(is_in ?r - robot ?loc - location)\n"
+                           "\t\t(connected ?loc_start - location ?loc_end - location)\n"
+                           "\t\t(is_diagonal ?c1 - location ?c2 - location)\n"
+                           + cells_predicates +
+                           "\t)"
 
-										   // Write actions
-										   "\n\t(:action move"
-										   "\n\t\t:parameters (?r - fugitive ?loc_start - location "
-										   "?loc_end - location)"
-										   "\n\t\t:precondition"
-										   "\n\t\t\t(and"
-                                           "\n\t\t\t\t(and"
-                                           "\n\t\t\t\t\t( not ( visited ?loc_end) )"
-                                           "\n\t\t\t\t\t( visited ?loc_start )"
-                                           "\n\t\t\t\t)"
-										   "\n\t\t\t\t( is_in ?r ?loc_start )"
-										   "\n\t\t\t\t( or"
-										   "\n\t\t\t\t\t( connected ?loc_start ?loc_end )"
-										   "\n\t\t\t\t\t( connected ?loc_end ?loc_start )"
-										   "\n\t\t\t\t)"
-										   "\n\t\t\t)"
-										   "\n\t\t:effect"
-										   "\n\t\t\t(and"
-                                           "\n\t\t\t\t( visited ?loc_end )"
-										   "\n\t\t\t\t( not ( is_in ?r ?loc_start ) )"
-										   "\n\t\t\t\t( is_in ?r ?loc_end)"
-										   "\n\t\t\t\t(when"
-										   "\n\t\t\t\t\t( or"
-										   "\n\t\t\t\t\t\t( is_diagonal ?loc_start ?loc_end )"
-										   "\n\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
-										   "\n\t\t\t\t\t)"
-										   "\n\t\t\t\t\t( increase (total-cost) " +
+                           // Write actions
+                           "\n\t(:action move"
+                           "\n\t\t:parameters (?r - fugitive ?loc_start - location "
+                           "?loc_end - location)"
+                           "\n\t\t:precondition"
+                           "\n\t\t\t(and"
+                           "\n\t\t\t\t(and"
+                           "\n\t\t\t\t\t( not ( visited ?loc_end) )"
+                           "\n\t\t\t\t\t( visited ?loc_start )"
+                           "\n\t\t\t\t)"
+                           "\n\t\t\t\t( is_in ?r ?loc_start )"
+                           "\n\t\t\t\t( or"
+                           "\n\t\t\t\t\t( connected ?loc_start ?loc_end )"
+                           "\n\t\t\t\t\t( connected ?loc_end ?loc_start )"
+                           "\n\t\t\t\t)"
+                           "\n\t\t\t)"
+                           "\n\t\t:effect"
+                           "\n\t\t\t(and"
+                           "\n\t\t\t\t( visited ?loc_end )"
+                           "\n\t\t\t\t( not ( is_in ?r ?loc_start ) )"
+                           "\n\t\t\t\t( is_in ?r ?loc_end)"
+                           "\n\t\t\t\t(when"
+                           "\n\t\t\t\t\t( or"
+                           "\n\t\t\t\t\t\t( is_diagonal ?loc_start ?loc_end )"
+                           "\n\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
+                           "\n\t\t\t\t\t)"
+                           "\n\t\t\t\t\t( increase (total-cost) " +
 		to_string(DIAGONAL_MOVE_COST) + ")"
 										"\n\t\t\t\t)"
 										"\n\t\t\t\t(when"
@@ -424,6 +428,8 @@ string robot_fugitive::make_pddl_domain_file()
 										"\n\t\t\t\t\t( increase (total-cost) " +
 		to_string(PERPENDICULAR_MOVE_COST) + ")"
 											 "\n\t\t\t\t)"
+                                             "\n\t\t\t\t; Cells costs\n"
+                                             + cells_conditional_cost +
 											 "\n\t\t\t)"
 											 "\n\t)"
 
@@ -555,6 +561,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	for (it = wr.world_free_cells.begin(); it != wr.world_free_cells.end(); ++it)
 	{
 		problem_file += "\t\t\t" + it->first + " - cell\n";
+    
 	};
 	for (it = wr.world_gates.begin(); it != wr.world_gates.end(); ++it)
 	{
@@ -577,9 +584,16 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	// Write initial state
 	problem_file += "\t(:init\n";
 	problem_file += "\t\t ( = (total-cost) 0)\n"; // Initial value of cost
-
+    
 	map<string, World_node>::const_iterator it_1;
 	map<string, World_node>::const_iterator it_2;
+	
+    for (it_1 = wr.world_free_cells.cbegin();
+         it_1 != wr.world_free_cells.cend();
+		 it_1++)
+    {
+        problem_file += "\t\t( is_" + it_1->first + " " + it_1->first + ")\n";
+    }
 
 	// cells connected	
 	to_log("Writing cells connections");
@@ -1086,7 +1100,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 													   ".tmp", b_ant);
 		// Suppose that the catcher is the only threat
 		ghost_fugitive.add_antagonist(self);
-		string g_domain_name = ghost_fugitive.make_pddl_domain_file();
+		string g_domain_name = ghost_fugitive.make_pddl_domain_file(wr);
 		string g_problem_name = ghost_fugitive.make_pddl_problem_file(wr);
 
 		string id_ghost = ghost_fugitive.self->ID;
@@ -1144,6 +1158,9 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	pddl_domain += "\t(:functions (total-cost) - number)\n";
 
 	// write predicates
+    string cells_predicates = wr.get_cells_predicates();                        
+    string cells_conditional_cost = wr.get_cells_conditional_distances();
+
 	to_log("Writing predicates");
 	pddl_domain += "\t(:predicates\n"
                    "\t\t(visited ?c - location)"
@@ -1152,6 +1169,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 				   "\t\t(captured ?r - fugitive)\n"
 				   "\t\t(escaped ?r - fugitive)\n"
 				   "\t\t(is_diagonal ?c1 - location ?c2 - location)\n"
+                   + cells_predicates +
 				   "\t)\n";
 
 	// write actions
@@ -1251,7 +1269,8 @@ void robot_catcher::make_pddl_files(World_representation wr,
 				        to_string(PERPENDICULAR_MOVE_COST) + ")"
 					    "\n\t\t\t\t)";
 
-	string action_move_end = "\n\t\t\t)\n"
+	string action_move_end = cells_conditional_cost +
+                             "\n\t\t\t)\n"
 	                         "\t)\n";
 
 	to_log("Writing action \"Capture\"");
@@ -1281,7 +1300,8 @@ void robot_catcher::make_pddl_files(World_representation wr,
 				         "\t\t:effect "
 				         "\n\t\t\t(and"
 				         "\n\t\t\t\t( is_in ?r_catcher ?loc)"
-				         "\n\t\t\t\t(increase (total-cost) 1)"
+				         "\n\t\t\t\t(increase (total-cost) " +
+                         to_string(FUGITIVE_MOVE_COST_FOR_CATCHER) + ")"
 				         "\n\t\t\t)"
 				         "\n\t)\n";
 
@@ -1341,6 +1361,14 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	to_log("Writing cell connections");
 	string pddl_problem = "\t(:init\n"
 		        		  "\t\t( = (total-cost) 0)\n";
+    for(it_node = wr.world_free_cells.begin();
+        it_node != wr.world_free_cells.end();
+        it_node++)
+    {
+        pddl_problem += "\t\t( is_" + it_node->first + " " +
+                                      it_node->first + ")\n";
+    }
+
 	pddl_problem += wr.find_pddl_connections();
 
     // Write location of the gates

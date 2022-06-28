@@ -22,6 +22,12 @@ using pt = bgm::d2::point_xy<double>;
 using Polygon_boost = bgm::polygon<pt>;
 using Multi_Polygon_boost = bgm::multi_polygon<Polygon_boost>;
 
+points_map::points_map(logger *l)
+{
+    log = l;
+    connections = Connection_map(l);
+}
+
 void points_map::add_arena_points(point_list *ArenaPoints, double offset)
 {
 	arena = ArenaPoints;

@@ -84,7 +84,9 @@ World_representation::World_representation(logger *log,
 										   list_of_polygons *cells,
 										   list_of_polygons *gate_cells,
 										   list_of_obstacles *obs,
-										   string connections)
+										   string connections,
+                                           string cells_pred,
+                                           string cells_dist)
 {
 	l = log;
 	l->add_event("Creating world representation");
@@ -143,6 +145,18 @@ World_representation::World_representation(logger *log,
 		pddl_connections = connections;
 		l->add_event("Added pddl connections");
 	};
+
+    if ( cells_pred != "NaN")
+    {
+        cell_predicates = cells_pred;
+        l->add_event("Added cells connections");
+    }
+
+    if (cells_dist != "NaN")
+    {
+        cells_distances = cells_dist;
+        l->add_event("Added cells distances");
+    }
 	l->add_event("Ended world representation creation");
 };
 
@@ -277,6 +291,33 @@ void World_representation::set_connections(string connections)
 {
 	pddl_connections = connections;
 };
+
+string World_representation::get_cells_predicates()
+{
+    if (cell_predicates == "NaN")
+    {
+        l->add_event("World_representation: No cells predicates");
+    }
+    else
+    {
+        l->add_event("World_representation: Cells predicates in memory, "
+                     "returning.");
+    }
+    return cell_predicates;
+}
+
+string World_representation::get_cells_conditional_distances()
+{
+    if (cells_distances != "NaN")
+    {
+        l->add_event("World_representation: cells distances found, returning.");
+    } 
+    else
+    {
+        l->add_event("No cells distances found");
+    }
+    return cells_distances;
+}
 
 /**
  * \fun

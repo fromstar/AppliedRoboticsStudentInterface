@@ -91,7 +91,9 @@ typedef struct Connection_map
 {
         map<string, Master_node> connections;
         logger *log = NULL;
+        
         Connection_map(logger *_log = new logger);
+        
         void add_element(polygon* p);
         void update_mean_area(string id);
         void unify(string to_update, string to_remove);
@@ -101,14 +103,15 @@ typedef struct Connection_map
         void info();
         void erase_MasterNode(string id="NaN");
         void ensure_LOS(list_of_obstacles * obl=NULL);
+        void empty();
+        void to_log(string msg);
         string min_max_element_area(string id, bool diagonal=false,
                                     bool min=true);
         string find_pddl_connections();
+        string make_cells_predicates();
+        string make_cells_conditional_distances();
         map<string, polygon*> elements();
         vector<string> ids();
-        void empty();
-        void to_log(string msg);
-
 } Connection_map;
 
 #endif

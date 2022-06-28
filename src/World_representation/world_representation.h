@@ -39,6 +39,8 @@ typedef struct World_representation
 	vector<World_node> obstacles;
 
 	string pddl_connections = "NaN";
+    string cell_predicates = "NaN";
+    string cells_distances = "NaN";
 
 	// map<string, Robot *> world_robots;
 
@@ -46,10 +48,14 @@ typedef struct World_representation
                          list_of_polygons *cells = NULL,
                          list_of_polygons *gate_cells = NULL,
 						 list_of_obstacles *obs=NULL,
-						 string connections="NaN");
+						 string connections="NaN",
+                         string cells_pred="NaN",
+                         string cells_dist="NaN");
 	void add_cell(World_node cell, bool gate = false);
 	tuple<vector<double>, vector<double>> get_path(vector<string> plan, polygon *pol);
 	string find_pddl_connections();
+    string get_cells_predicates();
+    string get_cells_conditional_distances();
 	void set_connections(string connections);
 	void info();
 

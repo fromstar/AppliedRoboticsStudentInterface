@@ -122,7 +122,7 @@ typedef struct robot_fugitive {
   // Methods
   void add_antagonist(Robot* r_ant);
   void set_behaviour(behaviour_fugitive b);
-  string make_pddl_domain_file();
+  string make_pddl_domain_file(World_representation wr);
   string make_pddl_problem_file(World_representation wr);
   void write_file(string file_name, string what_to_write,
 		  		  string extension=".pddl");

@@ -205,7 +205,7 @@ void robot_manager::run_agents_planners(World_representation wr,
 
 	for (f_it = fugitives.begin(); f_it != fugitives.end(); f_it++)
 	{	
-		f_it->second->make_pddl_domain_file();
+		f_it->second->make_pddl_domain_file(wr);
 		f_it->second->make_pddl_problem_file(wr);
 	};
 
