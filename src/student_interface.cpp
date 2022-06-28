@@ -148,8 +148,8 @@ namespace student
 
     abstract_arena.info();
     Mat img_arena = arena.plot_arena(1080, 1080, true, PLOT_CELL_ID);
-    imshow("Arena", img_arena);
-    waitKey(0);
+    // imshow("Arena", img_arena);
+    // waitKey(0);
 
     /**********************************************
      * GENERATE PLANS AND MOVE ROBOTS

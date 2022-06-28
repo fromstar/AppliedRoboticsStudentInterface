@@ -1,24 +1,5 @@
 #include "utility.h"
-/*
-point_node::~point_node()
-{
-    x = 0;
-    y = 0;
 
-    if(pnext != NULL)
-    {
-        delete pnext;
-    }
-}
-
-point_list::~point_list()
-{
-    x_min = 0; y_min = 0;
-    x_max = 0; y_max = 0;
-    size = 0;
-    delete_list();
-}
-*/
 /**
  * \fun double_node(double a)
  * It is the constructor of the struct double_node.
@@ -360,7 +341,7 @@ void Edge_list::info()
 };
 
 /**
- * \un ~Edge_list()
+ * \fun ~Edge_list()
  * It is the struct destructor.
  */
 Edge_list::~Edge_list()
@@ -465,6 +446,13 @@ double mod2pi(double ang)
 	return out;
 }
 
+/**
+ * \fun
+ * This function implements the rangeSymm operator.
+ *
+ * @param ang
+ * @return double
+ */
 double rangeSymm(double ang)
 {
 	double out = ang;
@@ -626,6 +614,11 @@ polygon::polygon(point_list *pls, string _id)
 	}
 };
 
+/**
+ * \fun
+ * This method recompute the centroid's coordinates
+ * for the polygon 
+ */
 void polygon::recompute_centroid()
 {
 	point_node *tmp = pl->head;
@@ -641,6 +634,14 @@ void polygon::recompute_centroid()
 };
 
 
+/**
+ * \fun
+ * This method store in a map the common edge
+ * with a cell
+ * 
+ * @param s: string. Cell id
+ * @param e: Edge *. Common edge 
+ */
 void polygon::add_common_edge(string s, Edge* e)
 {
     if(common_edges.count(s) == 0)
@@ -650,6 +651,14 @@ void polygon::add_common_edge(string s, Edge* e)
     common_edges[s]->add_edge(e);
 }
 
+/**
+ * \fun
+ * This function merge two polygons.
+ * 
+ * @param p1: polygon. First polygon. 
+ * @param p2: polygon. Second polygon.
+ * @return polygon*: Merged polygon 
+ */
 polygon* merge(polygon* p1, polygon* p2)
 {
     if(p1 == NULL)
@@ -712,6 +721,13 @@ polygon::~polygon()
     common_edges.clear();
 };
 
+/**
+ * \fun
+ * This method takes the point_list of a polygon
+ * and converts it in a list of Edges.
+ * 
+ * @return Edge_list*: Converted edges list 
+ */
 Edge_list *polygon::edgify()
 {
 	point_node *tmp = pl->head;
@@ -806,7 +822,6 @@ polygon *polygon::add_offset(double offset)
 		// Generic case
 		else
 		{
-			// https://www.youmath.it/formulari/formulari-di-geometria-analitica/430-formule-retta.html
 			// Angular coefficient of the two lines
 			m = (y2 - y1) / (x2 - x1);
 			// Ordered at the origin
@@ -957,6 +972,12 @@ int polygon::points_in_common(polygon *p)
 	return points_in_common;
 }
 
+/**
+ * \fun
+ * This method print the information about the 
+ * polygon.
+ * 
+ */
 void polygon::info()
 {
 	pl->print_list();
@@ -985,6 +1006,13 @@ void list_of_polygons::add_polygon(polygon *p)
 	size += 1;
 };
 
+/**
+ * \fun
+ * This method append to a list of polygons another list of polygons,
+ * creating a merged ones.
+ * 
+ * @param p: list_of_polygons. Merged list of polygons.
+ */
 void list_of_polygons::append_other_list(list_of_polygons *p)
 {
 	if (head == NULL)
@@ -1040,22 +1068,6 @@ void list_of_obstacles::delete_offsetted_list()
 	offset_size = 0;
 };
 
-string exec(const char *cmd)
-{
-	std::array<char, 128> buffer;
-	std::string result;
-	std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-	if (!pipe)
-	{
-		throw std::runtime_error("popen() failed!");
-	}
-	while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
-	{
-		result += buffer.data();
-	}
-	return result;
-}
-
 /**
  * \fun
  * This function return the angle formed by a point into a circonference.
@@ -1089,6 +1101,12 @@ bool is_in_arc(double th0, double thf, double th)
 	return true;
 }
 
+/**
+ * \fun
+ * This method return a copy of the point list.
+ * 
+ * @return point_list*: Copy of the point list
+ */
 point_list* point_list::copy()
 {
     point_list * copy = new point_list;
@@ -1146,6 +1164,12 @@ polygon *boost_polygon_to_polygon(Polygon_boost p, string _id)
 	return new_pol;
 };
 
+/**
+ * \fun
+ * This method return a copy of the polygon.
+ * 
+ * @return polygon*: Polygon's copy 
+ */
 polygon* polygon::copy()
 {
     polygon* copy = new polygon(pl->copy(), id);
@@ -1166,6 +1190,16 @@ double dot2D(double *v1, double *v2)
 	return v1[0] * v2[0] + v1[1] * v2[1];
 }
 
+/**
+ * \fun
+ * This function tells if a point is part of the 
+ * line formed by other 2 points.
+ * 
+ * @param p1: double. First point. 
+ * @param p2: double. Point to check. 
+ * @param p3: double. Second point. 
+ * @returns: True if on segment. False otherwise
+ */
 bool onSegment(point_node *p1, point_node *p2, point_node *p3)
 {
 	if (p2->x <= max(p1->x, p3->x) && p2->x >= min(p1->x, p3->x) &&
@@ -1175,11 +1209,18 @@ bool onSegment(point_node *p1, point_node *p2, point_node *p3)
 	return false;
 }
 
-// To find orientation of ordered triplet (p, q, r).
-// The function returns following values
-// 0 --> p, q and r are collinear
-// 1 --> Clockwise
-// 2 --> Counterclockwise
+
+// onSegment potrebbe non servire piu.
+/**
+ * \fun
+ * This function tells if three points are clockwise 
+ * or counterclockwise.
+ * 
+ * @param p1: point_node *. First point. 
+ * @param p2: point_node *. Second point.
+ * @param p3: point_node *. Third point. 
+ * @returns int: 0 if collinear, 1 if clockwise, 2 counterclockwise. 
+ */
 int orientation(point_node *p1, point_node *p2, point_node *p3)
 {
 	// See https://www.geeksforgeeks.org/orientation-3-ordered-points/
@@ -1196,7 +1237,12 @@ int orientation(point_node *p1, point_node *p2, point_node *p3)
 /**
  * \fun
  * This function calculate the intersection points between two lines.
- *
+ * 
+ * @param p1: First point of the first line. 
+ * @param p2: Second point of the first line. 
+ * @param p3: First point of the second line.
+ * @param p4: Second point of the second line. 
+ * @returns: true if intersects, false otherwise
  */
 bool intersLineLine(point_node *p1, point_node *p2, point_node *p3, point_node *p4)
 {
@@ -1230,109 +1276,6 @@ bool intersLineLine(point_node *p1, point_node *p2, point_node *p3, point_node *
 
 	return false; // Doesn't fall in any of the above cases
 }
-
-/**
- * \fun
- * This function calculate the intersection points between two lines.
- *
- * @param x1: double: x-coordinate of the first point of the first line
- * @param y1: double: y-coordinate of the first point of the first line
- * @param x2: double: x-coordinate of the second point of the first line
- * @param y2: double: y-coordinate of the seconf point of the first line
- * @param x3: double: x-coordinate of the first point of the second line
- * @param y3: double: y-coordinate of the first point of the second line
- * @param x4: double: x-coordinate of the second point of the second line
- * @param y4: double: y-coordinate of the second point of the second line
- * @return tuple<point_list *, double_list *>
- */
-// tuple<point_list *, double_list *> intersLineLine(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
-// {
-// 	point_list *pts = new point_list;
-// 	double_list *ts = new double_list;
-// 	double minX1, minY1, maxX1, maxY1, minX2, minY2, maxX2, maxY2;
-// 	double t;
-
-// 	minX1 = min(x1, x2);
-// 	minY1 = min(y1, y2);
-// 	maxX1 = max(x1, x2);
-// 	maxY1 = max(y1, y2);
-
-// 	minX2 = min(x3, x4);
-// 	minY2 = min(y3, y4);
-// 	maxX2 = max(x3, x4);
-// 	maxY2 = max(y3, y4);
-
-// 	if (maxX2 < minX1 || minX2 > maxX1 || maxY2 < minY1 || minY2 > maxY1)
-// 	{
-// 		double_list *dnull = NULL;
-// 		point_list *pnull = NULL;
-// 		return make_tuple(pnull, dnull);
-// 	}
-
-// 	double q[] = {x1, y1};
-// 	double s[] = {x2, y2};
-// 	for (int i = 0; i < 2; i++)
-// 		s[i] -= q[i];
-
-// 	double p[] = {x3, y3};
-// 	double r[] = {x2, y2};
-// 	for (int i = 0; i < 2; i++)
-// 		r[i] -= p[i];
-
-// 	double diffPQ[2];
-// 	for (int i = 0; i < 2; i++)
-// 		diffPQ[i] = q[i] - p[i];
-
-// 	double crossRS = cross2D(r, s);
-// 	double crossDiffR = cross2D(diffPQ, r);
-// 	double crossDiffS = cross2D(diffPQ, s);
-
-// 	if (crossRS == 0)
-// 	{
-// 		double dotRR = dot2D(r, r);
-// 		double dotSR = dot2D(s, r);
-// 		double t0 = dot2D(diffPQ, r) / dotRR;
-// 		double t1 = t0 + dotSR / dotRR;
-// 		if (dotSR < 0)
-// 		{
-// 			if (t0 >= 0 && t1 <= 1)
-// 			{
-// 				ts->add_node(new double_node(max(t1, 0.0)));
-// 				ts->add_node(new double_node(min(t0, 1.0)));
-// 			}
-// 		}
-// 		else
-// 		{
-// 			if (t1 >= 0 && t0 <= 1)
-// 			{
-// 				ts->add_node(new double_node(max(t0, 0.0)));
-// 				ts->add_node(new double_node(min(t1, 1.0)));
-// 			}
-// 		}
-// 	}
-// 	else
-// 	{
-// 		if (crossRS == 0 && crossDiffR != 0)
-// 		{
-// 			double_list *dnull = NULL;
-// 			point_list *pnull = NULL;
-// 			return make_tuple(pnull, dnull);
-// 		}
-// 		else
-// 			t = crossDiffS / crossRS;
-// 		double u = crossDiffR / crossRS;
-// 		if (t >= 0 && t <= 1 && u >= 0 && u <= 1)
-// 			ts->add_node(new double_node(t));
-// 	}
-// 	double_node *tmp = ts->head;
-// 	while (tmp != NULL)
-// 	{
-// 		pts->add_node(new point_node(p[0] + tmp->value * r[0], p[1] + tmp->value * r[1]));
-// 		tmp = tmp->pnext;
-// 	}
-
-// 	return make_tuple(pts, ts);
-// }
 
 /**
  * \fun
@@ -1412,6 +1355,21 @@ tuple<point_list *, double_list *> intersCircleLine(double a, double b, double r
 	return make_tuple(pts, t);
 }
 
+/**
+ * \fun
+ * This function check if 2 centroids are in line of sight. 
+ * If not the middel point of the common edge between the 2 cells
+ * is returned to help to modify the dubins path. To check that is necessary
+ * iterate all the edges of all the obstacles with the segment formed by the 2
+ * centroids and see if they intersecates.
+ * 
+ * @param p1: point_node *. First centroid.
+ * @param p2: point_node *. Second centroid. 
+ * @param pol: polygon *. First polygon of the obstacles list. 
+ * @param common_edge: Edge *. Common edge between the 2 cells.  
+ * @return point_node*. Null if the centroids are in los,
+ * 						middle point of the common edge otherwise. 
+ */
 point_node *los(point_node *p1, point_node *p2, polygon *pol, Edge *common_edge)
 {
 	if(common_edge == NULL)
@@ -1464,6 +1422,14 @@ point_node *los(point_node *p1, point_node *p2, polygon *pol, Edge *common_edge)
 	return NULL;
 }
 
+/**
+ * \fun
+ * This function find the common edge between two polygons
+ * 
+ * @param p1: polygon *. First polygon. 
+ * @param p2: polygon *. Second polygon. 
+ * @return Edge*: Common edge. Null if doesn't exits. 
+ */
 Edge* find_common_edge(polygon* p1, polygon* p2)
 {
     Edge_list *e1 = p1->edgify();
@@ -1543,20 +1509,12 @@ list_of_polygons * subset_over_middle_point(polygon * p)
         pl_temp->add_node(end->middle_point());                            
                                                                               
         polygon *cell = new polygon(pl_temp, p->id + "_" + to_string(num));
- 
-        /*
-        cout << "Cell id: " << cell->id << " -> ";
-        cell->id += "_" + to_string(num);
-        cout << cell->id << endl;
-        */
-        // cell->id += "_" + to_string(num);
 
         tmp_output->add_polygon(cell);                                     
                                                                               
         start = start->next;                                               
         num++;
     }; 
-    // cout << "Subset size: " << tmp_output->size << endl; 
     return tmp_output;                                                     
 }                                                                          
 

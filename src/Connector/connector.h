@@ -23,6 +23,8 @@
  *                           master node.
  * @param adjacent_connections: map<string, polygon\*>. The adjacent cells.
  * @param diagonal_connections: map<string, polygon\*>. The diagonal cells.
+ * 
+ * @see connection_ids(bool diagonal): Return a vector with all the the adjacent connections.
  */
 typedef struct Master_node
 {
@@ -44,9 +46,11 @@ typedef struct Master_node
  * Attributes:
  * @param connections: map<string, Master_node>. It represents the relations
  *                     among the Master_node instances.
+ * @param logger: logger.
  *
  * Available methods are:
- * @see add_elemnt(polygon\* p): It is the method allowing to add a polygon to
+ * @see Connection_map(logger *_log): Costructor. 
+ * @see add_element(polygon *p): It is the method allowing to add a polygon to
  *                               the map of Master_node instances. Its
  *                               connections will be found automatically.
  * @see update_mean_area(string id): It is the method allowing to re-compute
@@ -66,6 +70,10 @@ typedef struct Master_node
  * @see info(): This method it is used to print relevant informations about
  *              the connections. (i.e. master_node area, diagonal and adjacent
  *                                cells.)
+ * @see erase_MasterNode(string id = "NaN"): Erase a MasterNode from the map 
+ *      @param connections
+ * @see ensure_LOS(list_of_obstacles *obl = NULL): Check that a cell is in 
+ *      line of sight with all it's adjacents. If not, new subcells are created.
  * @see min_max_element_area(string id, bool diagonal, bool min): It is the
  *      method which, given the id of a Master_node in the connections
  *      attribute, will return the element having the minimum/maximum area
@@ -75,11 +83,15 @@ typedef struct Master_node
  *      PDDL representation.
  * @see elements(): It is the method which will return a map containg the
  *      reference to the Master_node instances indexed by their id.
+ * @see ids(): Returns all the Master nodes id.
+ * @see empty(): Delete all the values contained in the @param connections.
+ * @see to_log(string msg): Logger to file.
  */
 typedef struct Connection_map
 {
         map<string, Master_node> connections;
-
+        logger *log = NULL;
+        Connection_map(logger *_log = new logger);
         void add_element(polygon* p);
         void update_mean_area(string id);
         void unify(string to_update, string to_remove);
@@ -95,6 +107,8 @@ typedef struct Connection_map
         map<string, polygon*> elements();
         vector<string> ids();
         void empty();
+        void to_log(string msg);
+
 } Connection_map;
 
 #endif

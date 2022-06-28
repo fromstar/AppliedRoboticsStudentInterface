@@ -1,5 +1,32 @@
 #include "connector.h"
 
+/**
+ * \fun Connection_map(logger *log)
+ * Connection_map costructor
+ * @param log: logger. File logger
+ */
+
+Connection_map::Connection_map(logger *_log)
+{
+    log = _log;
+}
+
+/**
+ * \fun to_log(string msg)
+ * log function.
+ * @param msg: string. Messagge to write in the log file.
+ */
+void Connection_map::to_log(string msg)
+{
+    log->add_event("Connection map: " + msg);
+}
+
+/**
+ * \fun connection_ids(bool diagonal)
+ * This method return all the adjacent cells with the Master_node.
+ * @param diagonal: bool. Flag to get all the adjacent diagonal cell's id.
+ * @return vector<string>: vector with all the ids 
+ */
 vector<string> Master_node::connection_ids(bool diagonal)
 {
     map<string, polygon *>::const_iterator it_s;
@@ -25,6 +52,11 @@ vector<string> Master_node::connection_ids(bool diagonal)
     return ids;
 }
 
+/**
+ * \fun ids()
+ * This method returns all the Master_node ids.
+ * @return vector<string>: All the Master_node ids. 
+ */
 vector<string> Connection_map::ids()
 {
     map<string, Master_node>::const_iterator it = connections.cbegin();
@@ -102,11 +134,6 @@ void Connection_map::add_element(polygon *p)
         return;
     }
 
-    // if (p->pnext != NULL)
-    // {
-    //     p->pnext = NULL;  // Ensure avoidance of cyclical references
-    // }
-
     Master_node tmp;
     tmp.master = p;
     tmp.mean_area = p->area;
@@ -135,12 +162,6 @@ void Connection_map::add_element(polygon *p)
             int common_points = p->points_in_common(c_it->second.master);
 
             // cout << p->id << " and " << c_it->first << " have " << common_points
-            //      << " points in common." << endl;
-            /*
-            cout << "Size of " << p->id << ": " << p->pl->size << endl;
-            cout << "Size of " << c_it->second.master->id << ": " <<
-                    c_it->second.master->pl->size << endl << endl;
-            */
 
             // Only lateral connection allowed -> no diagonal
             if (common_points > 1)
@@ -425,28 +446,9 @@ void Connection_map::unify(string to_update, string to_remove)
         return;
     }
 
-    // result->id = to_update;
-    // fixed in method boost_polygon_to_polygon
-
     // Update union
     unified_node->master = result;
-    /*
-    cout << "A" << endl;
-    map<string, polygon*>::iterator it = connections[to_remove].adjacent_connections.begin();
-    while(it != connections[to_remove].adjacent_connections.end())
-    {
-        connections[to_update].master->points_in_common(it->second);
-        it++;
-    }
-
-    cout << "B" << endl;
-    it = connections[to_remove].diagonal_connections.begin();
-    while(it != connections[to_remove].diagonal_connections.end())
-    {
-        connections[to_update].master->points_in_common(it->second);
-        it++;
-    }
-    */
+    
     cout << "Before embedding" << endl;
     // merge connections
     embed_connections(to_update, to_remove);
@@ -650,6 +652,12 @@ string Connection_map::find_pddl_connections()
     return pddl_connections;
 };
 
+/**
+ * \fun erase_MasterNode(string id)
+ * This method delete a Master node with the given id.
+ * @param id: string. Cell id to delete. 
+ */
+
 void Connection_map::erase_MasterNode(string id)
 {
     if (connections.count(id) == 0)
@@ -684,6 +692,12 @@ void Connection_map::erase_MasterNode(string id)
     cout << "* Removed " << id << " from connections" << endl;
 }
 
+/**
+ * \fun ensure_LOS(list_of_obstacles *ob_l)
+ * This method ensures that each cells is in line of sight with it's adjacents. If not subcells 
+ * are created.
+ * @param ob_l: list_of_obstacles. List of obstacles to use to see if two cells are in LOS.
+ */
 void Connection_map::ensure_LOS(list_of_obstacles *ob_l)
 {
     cout << "Evaluating LOS" << endl;
@@ -699,11 +713,8 @@ void Connection_map::ensure_LOS(list_of_obstacles *ob_l)
     int id_size = available_id.size();
     while (i < id_size)
     {
-        cout << "A: " << i << " \\ " << id_size << endl;
         Master_node *node = &connections[available_id[i]];
-        cout << "B\n";
         vector<string> conn_id = node->connection_ids();
-        cout << "C\n";
         point_node *LOS_point = NULL;
         int j = 0;
         while (j < conn_id.size() && LOS_point == NULL)
@@ -712,13 +723,6 @@ void Connection_map::ensure_LOS(list_of_obstacles *ob_l)
             polygon *second_cell = node->adjacent_connections[conn_id[j]];
             Edge *comm_edge = find_common_edge(node->master,
                                                second_cell);
-            /*
-            if (comm_edge == NULL)
-            {
-                cout << "Common edge for " << available_id[i] << " and "
-                     << conn_id[j] << " is NULL" << endl;
-            }
-            */
 
             polygon *ob = ob_l->offset_head;
             while (ob != NULL && LOS_point == NULL)
@@ -741,12 +745,6 @@ void Connection_map::ensure_LOS(list_of_obstacles *ob_l)
                 // cout << "Initial size of list: " << pl->size << endl;
                 pl->append_other_list(subset_over_middle_point(node->master));
 
-                /*
-                cout << "Subsetted " << node->master->id << " size: "
-                     << pl->size << endl;
-                int a = pl->size;
-                */
-
                 pl->append_other_list(subset_over_middle_point(second_cell));
 
                 // cout <<  "Subsetted " << second_cell->id << " size: "
@@ -755,19 +753,6 @@ void Connection_map::ensure_LOS(list_of_obstacles *ob_l)
                 int new_master_nodes = pl->size;
 
                 // cout << "Result size of subsetting: " << pl->size << endl;
-                /*
-                cout << "Elements in list: " << endl;
-                polygon * el = pl->head;
-                int tot_el = 0;
-                while(el != NULL)
-                {
-                    cout << el->id << endl;
-                    el = el->pnext;
-                    tot_el +=1;
-                }
-                cout << "Total el in list " << tot_el << endl;
-                cout << endl;
-                */
 
                 erase_MasterNode(available_id[i]);
                 erase_MasterNode(conn_id[j]);
@@ -790,7 +775,6 @@ void Connection_map::ensure_LOS(list_of_obstacles *ob_l)
                 if (del_idx != -1)
                 {
                     available_id.erase(available_id.begin() + del_idx);
-                    // i -= 1;
                 }
 
                 polygon *tmp = pl->head;
@@ -809,7 +793,6 @@ void Connection_map::ensure_LOS(list_of_obstacles *ob_l)
     }
 
     // Inefficient code
-
     vector<Polygon_boost> ob;
     vector<Polygon_boost> pols;
 
@@ -839,16 +822,6 @@ void Connection_map::ensure_LOS(list_of_obstacles *ob_l)
         add_element(boost_polygon_to_polygon(pols[i], base_id + to_string(i)));
     }
 }
-
-/*
-Master_node::~Master_node()
-{
-    delete master;
-    mean_area = 0;
-    adjacent_connections.clear();
-    diagonal_connections.clear();
-}
-*/
 
 void Connection_map::empty()
 {

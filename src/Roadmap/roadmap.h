@@ -17,22 +17,6 @@
 using pt = boost::geometry::model::d2::point_xy<double>;
 using Polygon_boost = boost::geometry::model::polygon<pt>;
 
-/*
-typedef struct list_of_obstacles
-{
-	polygon *head = NULL;
-	polygon *tail = NULL;
-	polygon *offset_head = NULL;
-	polygon *offset_tail = NULL;
-	double offset = 105e-3;
-	int size = 0;
-	int offset_size = 0;
-
-	~list_of_obstacles();
-	void delete_offsetted_list();
-} list_of_obstacles;
-*/
-
 /**
  * \struct points_map
  * This structure represents all the entity in an arena.
@@ -77,7 +61,7 @@ typedef struct points_map
 
 	points_map(logger *l = new logger) { log = l; };
 
-	void add_arena_points(point_list *ArenaPoints, double offset = 101e-3);
+	void add_arena_points(point_list *ArenaPoints, double offset = OFFSET);
 	void add_robot(Robot *r);
 	void set_robot_position(string robot_id, double x, double y, double th);
 	void add_obstacle(polygon *ob);

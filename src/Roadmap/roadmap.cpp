@@ -173,6 +173,7 @@ void points_map::print_info()
  * @param show_original_polygons: bool. It is a flag telling whether or not
  * to show the polygons as they are together with their offsetted
  * representation (true) or not (false).
+ * @param show_cells_id: bool. Flag to plot the cell id in the arena img.
  */
 Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons,
 						   bool show_cells_id)

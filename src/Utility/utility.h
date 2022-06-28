@@ -5,11 +5,12 @@
 #include <stdio.h>
 #include <opencv2/opencv.hpp>
 #include <cmath>
-
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
 #include <string.h>
+
+#include "../Log/logger.h"
 #include "../../../simulator/src/9_project_interface/include/utils.hpp"
 #include "../config.hpp"
 
@@ -100,7 +101,7 @@ struct point_node
 	point_node *copy();
 	void Print();
 	double distance(point_node *p = NULL);
-    // ~point_node();
+	// ~point_node();
 } typedef point_node;
 
 /**
@@ -144,8 +145,8 @@ struct point_list
 	void delete_list();
 	void pop();
 	Polygon_boost to_boost_polygon();
-    point_list * copy();
-    // ~point_list();
+	point_list *copy();
+	// ~point_list();
 } typedef point_list;
 
 /**
@@ -158,12 +159,13 @@ struct point_list
  * @param slope : pointer of type double. The slope of the edge.
  *
  * Available methods are:
- * @see info(): It prints the coordinates of the points constituing an edge and
- * its slope.
+ * @see Edge(): Is is the struct costructor.
+ * @see ~Edge(): It is the struct destructor.
+ * @see intersection(Edge e): It checks whether the edge intersects with another.
  * @see middle_point(): It is the method return a point_node instance
  *                      representing the middle point_of the edge.
- * @see intersection(Edge e): It checks whether the edge intersects with another.
- * @see ~Edge(): It is the struct destructor.
+ * @see info(): It prints the coordinates of the points constituing an edge and
+ * its slope.
  */
 typedef struct Edge
 {
@@ -222,9 +224,13 @@ typedef struct Edge_list
  * @param pnext: polygon*. Is a pointer to another polygon istance, useful for
  * implementing a list.
  * @param area: double. It is the value representing the area of the polygon.
- *
+ * @param common_edges: map<string, Edge_list * >. List to know with which cells
+ * has some edges in common.
+ * 
  * The method available are:
  * @see polygon(point_list* pls): It is the struct constructor.
+ * @see ~polygon(): It is the class destructor.
+ * 
  * @see edgify(): It is the function responsible to turn the polygon into a
  * list of edges.
  * @see add_offset(double offset): It is the function responsible to turn a
@@ -241,7 +247,9 @@ typedef struct Edge_list
  * @see info(): It is the function responsible to print all the information
  * representing a polygon and calls the info() functions of the point_node
  * elements.
- * @see ~polygon(): It is the class destructor.
+ * @see copy(): Return a copy of the polygon.
+ * @see add_common_edge(string s, Edge *e): Set a common edge between the polygon
+ * and the cell with the given id.
  */
 typedef struct polygon
 {
@@ -254,7 +262,7 @@ typedef struct polygon
 	map<string, Edge_list *> common_edges;
 
 	// constructor
-	polygon(point_list *pls, string _id="NaN");
+	polygon(point_list *pls, string _id = "NaN");
 	~polygon();
 
 	// Methods
@@ -263,10 +271,10 @@ typedef struct polygon
 	void concatenate(polygon *p);
 	void recompute_centroid();
 	Polygon_boost to_boost_polygon(); // Polygon_boost of boost library
-	int points_in_common(polygon *p=NULL);
+	int points_in_common(polygon *p = NULL);
 	void info();
-    polygon* copy();
-    void add_common_edge(string s="NaN", Edge* e=NULL);
+	polygon *copy();
+	void add_common_edge(string s = "NaN", Edge *e = NULL);
 } polygon;
 
 /**
@@ -291,7 +299,7 @@ typedef struct list_of_polygons
 	int size = 0;
 
 	void add_polygon(polygon *p);
-	void append_other_list(list_of_polygons *p=NULL);
+	void append_other_list(list_of_polygons *p = NULL);
 } list_of_polygons;
 
 /**
@@ -325,7 +333,7 @@ typedef struct list_of_obstacles
 	polygon *tail = NULL;
 	polygon *offset_head = NULL;
 	polygon *offset_tail = NULL;
-	double offset = 101e-3; //101e-3
+	double offset = OFFSET; // 101e-3
 	int size = 0;
 	int offset_size = 0;
 
@@ -370,14 +378,6 @@ void sort(double_list *, point_list *);
 tuple<double, double> get_new_point(double, double, double, double);
 
 /**
- * \fun exec(const char *cmd)
- * Execute command cmd with a pipe.
- * @param const char *cmd: command to execute.
- * @return string: result of the execution.
- */
-string exec(const char *cmd);
-
-/**
  * \fun get_angle(double xc, double yx, double x, double y)
  * This function return the angle formed by the center of a circonference and a point that is part of it.
  * @param double xc: x-coordinate of the circonference's center
@@ -404,7 +404,7 @@ bool is_in_arc(double, double, double);
  * @param Polygon_boost p: It is the boost polygon to transform.
  * @return polygon: the polygon instance representing the boost one.
  */
-polygon *boost_polygon_to_polygon(Polygon_boost p, string _id="NaN");
+polygon *boost_polygon_to_polygon(Polygon_boost p, string _id = "NaN");
 
 /**
  * \fun boost_polygon_to_point_list(Polygon_boost p)
@@ -443,7 +443,7 @@ double dot2D(double *, double *);
  */
 // tuple<point_list *, double_list *> intersLineLine(double, double, double, double, double, double, double, double);
 
-bool intersLineLine(point_node*,point_node*,point_node*,point_node*);
+bool intersLineLine(point_node *, point_node *, point_node *, point_node *);
 
 /**
  * \fun tuple<point_list *, double_list *> intersCircleLine(double a, double b, double r, double x1, double y1, double x2, double y2)
@@ -459,13 +459,50 @@ bool intersLineLine(point_node*,point_node*,point_node*,point_node*);
  */
 tuple<point_list *, double_list *> intersCircleLine(double, double, double, double, double, double, double);
 
-point_node* los(point_node *p1 = NULL, point_node *p2 = NULL, polygon *pol = NULL, Edge *common_edge = NULL);
+/**
+ * \fun point_node *los(point_node *p1, point_node *p2, polugon *pol, Edge *common_edge)
+ * This function check the line formed between two centroids intersects with any line in the arena.
+ * If yes, the two points are not in line of sight.
+ * 
+ * @param p1: point_node *. First centroid.
+ * @param p2: point_node *. Second centroid.
+ * @param pol: First element of the obstacles to check. 
+ * @param common_edge: Common edge between the 2 cells having p1 and p2 as centroids.
+ * @return point_node*: Null if in los. Mid-point of the common edge otherwise. 
+ */
+point_node *los(point_node *p1 = NULL, point_node *p2 = NULL, polygon *pol = NULL, Edge *common_edge = NULL);
 
-polygon* merge(polygon* p1, polygon* p2);
+/**
+ * \fun polygon *merge(polygon *p1, polygon *p2)
+ * This function merge two given polygons.
+ * 
+ * @param p1: polygon *. First polygon
+ * @param p2: polygon *. Second polygon
+ * @return polygon *: Merged polygon 
+ */
+polygon *merge(polygon *p1, polygon *p2);
 
-Edge* find_common_edge(polygon* p1=NULL, polygon* p2=NULL);
-list_of_polygons * subset_over_middle_point(polygon * p = NULL);
+/**
+ * \fun Edge *find_common_edge(polygon *p1, polygon *p2)
+ * This function find the common edge between two given polygons.
+ * @param p1: polygon. First polygon 
+ * @param p2: polygon. Second polygon 
+ * @return Edge *: Common Edge. 
+ */
+Edge *find_common_edge(polygon *p1 = NULL, polygon *p2 = NULL);
 
+
+list_of_polygons *subset_over_middle_point(polygon *p = NULL);
+
+/**
+ * \fun difference_of_vectors(vector<Polygon_boost> arena, vector<Polygon_boost> obstacles)
+ * This function subtracts a vector of polygons from another one.
+ * @param arena: vector<Polygon_boost>. Is the vector of polygons from which
+ * the other polygons will be subtracted.
+ * @param obstacles: vector<Polygon_boost>. Is the vector of polygons that will
+ * be subtracted. 
+ * @return vector<Polygon_boost>: subtracted vector. 
+ */
 vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
-                                            vector<Polygon_boost> obstacles);
+											vector<Polygon_boost> obstacles);
 #endif
