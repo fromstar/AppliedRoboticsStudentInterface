@@ -204,9 +204,9 @@
 
 
 #define MAX_CONSTANTS 2000
-#define MAX_PREDICATES 50
+#define MAX_PREDICATES 2000
 #define MAX_FUNCTIONS 50
-#define MAX_TYPES 50
+#define MAX_TYPES 2000
 #define MAX_ARITY 5
 #define MAX_VARS 2000
 
