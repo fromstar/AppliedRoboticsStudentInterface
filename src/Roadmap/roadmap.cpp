@@ -121,12 +121,12 @@ void points_map::set_robot_position(string robot_id, double x, double y, double 
 /**
  * \fun
  * This function is used to add a polygon representing a gate to the
- * pointsmap.
+ * pointsmap. It is a shortcut command.
  * @param gt: polygon\*. It is a pointer to a polygon instance representing a
  * gate in the environment.
  */
 void points_map::add_gate(polygon *gt)
-{ // is a shortcut
+{
 	gates->add_polygon(gt);
 };
 

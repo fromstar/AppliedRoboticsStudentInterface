@@ -505,4 +505,6 @@ list_of_polygons *subset_over_middle_point(polygon *p = NULL);
  */
 vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
 											vector<Polygon_boost> obstacles);
+
+string PDDL_conditional_cost(string el1, string el2, double cost);
 #endif

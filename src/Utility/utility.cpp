@@ -1601,3 +1601,22 @@ vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
 	};
 	return arena;
 };
+
+string PDDL_conditional_cost(string el1, string el2, double cost)
+{
+    string cost_PDDL = "\n\t\t\t\t\t( when"                      
+                       "\n\t\t\t\t\t\t( or"                      
+                       "\n\t\t\t\t\t\t\t( and"                   
+                       "\n\t\t\t\t\t\t\t\t( is_" + el1 + " ?loc_start )"                           
+                       "\n\t\t\t\t\t\t\t\t( is_" + el2 + " ?loc_end)"       
+                       "\n\t\t\t\t\t\t\t)"                       
+                       "\n\t\t\t\t\t\t\t( and"                   
+                       "\n\t\t\t\t\t\t\t\t( is_" + el2 + " ?loc_start )"    
+                       "\n\t\t\t\t\t\t\t\t( is_" + el1 + " ?loc_end)"                
+                       "\n\t\t\t\t\t\t\t)"                       
+                       "\n\t\t\t\t\t\t)"                         
+                       "\n\t\t\t\t\t\t( increase (total-cost) "
+                       + to_string(cost) + " )"              
+                       "\n\t\t\t\t\t)";                          
+    return cost_PDDL;
+}
