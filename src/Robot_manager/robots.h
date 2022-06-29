@@ -229,4 +229,6 @@ string plan_in_pddl_conditional_effects(string id_agent,
                                         bool consider_end_escape=true);
 string find_agent_location_pddl(Robot* agent, World_representation wr,
                                 bool return_loc_id=false);
+map<string, vector<string>> find_gates_wrt_cells(World_representation wr,
+                                                 string * problem_file=NULL);
 #endif

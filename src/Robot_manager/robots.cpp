@@ -362,7 +362,21 @@ string robot_fugitive::make_pddl_domain_file(World_representation wr)
     
     string cells_predicates = wr.get_cells_predicates();
     string cells_conditional_cost = wr.get_cells_conditional_distances();
-    cout << "Here" << endl;
+    
+    string gates_conditional_cost = "";
+    map<string, vector<string>> gates_conn = find_gates_wrt_cells(wr);
+    map<string, vector<string>>::const_iterator g_it = gates_conn.cbegin();
+    while(g_it != gates_conn.cend())
+    {
+        for(int i=0; i<g_it->second.size(); i++)
+        {
+            double dist = wr.distance(g_it->first, g_it->second[i]);
+            gates_conditional_cost += PDDL_conditional_cost(g_it->first,
+                                                            g_it->second[i],
+                                                            dist);
+        }
+        g_it++;
+    }
 
 	// Write header of the file
 	string domain_file = "(define (domain " + domain_name + ")\n"
@@ -386,7 +400,8 @@ string robot_fugitive::make_pddl_domain_file(World_representation wr)
                            "\t\t(is_in ?r - robot ?loc - location)\n"
                            "\t\t(connected ?loc_start - location ?loc_end - location)\n"
                            "\t\t(is_diagonal ?c1 - location ?c2 - location)\n"
-                           + cells_predicates +
+                           + cells_predicates 
+                           + wr.get_gates_predicates() + 
                            "\t)"
 
                            // Write actions
@@ -429,7 +444,8 @@ string robot_fugitive::make_pddl_domain_file(World_representation wr)
 		to_string(PERPENDICULAR_MOVE_COST) + ")"
 											 "\n\t\t\t\t)"
                                              "\n\t\t\t\t; Cells costs\n"
-                                             + cells_conditional_cost +
+                                             + cells_conditional_cost 
+                                             + gates_conditional_cost +
 											 "\n\t\t\t)"
 											 "\n\t)"
 
@@ -538,6 +554,75 @@ string find_agent_location_pddl(Robot* agent, World_representation wr,
     return  found_pddl;
 }
 
+map<string, vector<string>> find_gates_wrt_cells(World_representation wr,
+                                                 string * problem_file)
+{
+	map<string, World_node> missed_gates = wr.world_gates;
+    map<string, World_node>::const_iterator it_1;
+    map<string, World_node>::const_iterator it_2;
+
+    map<string, vector<string>> gates_connections;
+
+	for (it_1 = wr.world_free_cells.cbegin();
+         it_1 != wr.world_free_cells.cend();
+		 it_1++)
+	{
+		Polygon_boost p1 = it_1->second.cell->to_boost_polygon();
+		for (it_2 = wr.world_gates.cbegin(); it_2 != wr.world_gates.cend();
+			 it_2++)
+		{
+			Polygon_boost p2 = it_2->second.cell->to_boost_polygon();
+			if (boost::geometry::intersects(p1, p2) ||
+				boost::geometry::covered_by(p2, p1))
+			{
+                if (problem_file != NULL)
+                {
+				    *problem_file += "\t\t( connected " + it_2->first + " " +
+					     			 it_1->first + " )\n";
+                }
+                gates_connections[it_2->first].push_back(it_1->first);
+
+				missed_gates.erase(it_2->first);
+			};
+		};
+	};
+
+	if (missed_gates.size() > 0)
+	{
+		// Associate gate to the nearest cell
+		// warning: association to just 1 cell
+		for (it_2 = missed_gates.cbegin(); it_2 != missed_gates.cend(); it_2++)
+		{
+			// cout<<it_2->first<< endl;
+			map<double, string> cell_distance;
+
+			for (it_1 = wr.world_free_cells.cbegin();
+				 it_1 != wr.world_free_cells.cend();
+				 it_1++)
+			{
+				point_node *gate = it_2->second.cell->centroid;
+				point_node *cell = it_1->second.cell->centroid;
+				double distance = gate->distance(cell);
+				cell_distance[distance] = it_1->first;
+			};
+			if (cell_distance.size() == 0)
+			{
+				cout << "This should never happen. No cells in arena?" << endl;
+			};
+
+			map<double, string>::iterator nearest_cell;
+			nearest_cell = cell_distance.upper_bound(0.0);
+            if (problem_file != NULL)
+            {
+			    *problem_file += "\t\t( connected " + it_2->first + " " +
+				     			 nearest_cell->second + " )\n";
+            }
+            gates_connections[it_2->first].push_back(nearest_cell->second);
+		};
+	};
+    return gates_connections;
+}
+
 string robot_fugitive::make_pddl_problem_file(World_representation wr)
 {
 	to_log("Writing problem file");
@@ -601,56 +686,15 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	
 	// gates in cells
 	to_log("Find and write in which cells the gates are");
-	map<string, World_node> missed_gates = wr.world_gates;
+    map<string, vector<string>> gates_conn;
+    gates_conn = find_gates_wrt_cells(wr, &problem_file);
+    map<string, vector<string>>::const_iterator g_it = gates_conn.cbegin();
+    while(g_it != gates_conn.cend())
+    {
+        problem_file += "\t\t(is_" + g_it->first + " " + g_it->first + ")\n";
+        g_it++;
+    }
 
-	for (it_1 = wr.world_free_cells.cbegin();
-         it_1 != wr.world_free_cells.cend();
-		 it_1++)
-	{
-		Polygon_boost p1 = it_1->second.cell->to_boost_polygon();
-		for (it_2 = wr.world_gates.cbegin(); it_2 != wr.world_gates.cend();
-			 it_2++)
-		{
-			Polygon_boost p2 = it_2->second.cell->to_boost_polygon();
-			if (boost::geometry::intersects(p1, p2) ||
-				boost::geometry::covered_by(p2, p1))
-			{
-				problem_file += "\t\t( connected " + it_2->first + " " +
-								it_1->first + " )\n";
-				missed_gates.erase(it_2->first);
-			};
-		};
-	};
-
-	if (missed_gates.size() > 0)
-	{
-		// Associate gate to the nearest cell
-		// warning: association to just 1 cell
-		for (it_2 = missed_gates.cbegin(); it_2 != missed_gates.cend(); it_2++)
-		{
-			// cout<<it_2->first<< endl;
-			map<double, string> cell_distance;
-
-			for (it_1 = wr.world_free_cells.cbegin();
-				 it_1 != wr.world_free_cells.cend();
-				 it_1++)
-			{
-				point_node *gate = it_2->second.cell->centroid;
-				point_node *cell = it_1->second.cell->centroid;
-				double distance = gate->distance(cell);
-				cell_distance[distance] = it_1->first;
-			};
-			if (cell_distance.size() == 0)
-			{
-				cout << "This should never happen. No cells in arena?" << endl;
-			};
-
-			map<double, string>::iterator nearest_cell;
-			nearest_cell = cell_distance.upper_bound(0.0);
-			problem_file += "\t\t( connected " + it_2->first + " " +
-							nearest_cell->second + " )\n";
-		};
-	};
 	
 	// agents location
 	// Fugitive

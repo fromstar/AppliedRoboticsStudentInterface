@@ -840,6 +840,8 @@ string Connection_map::make_cells_conditional_distances()
     map<string, polygon*>::const_iterator conn_it_start;
     map<string, polygon*>::const_iterator conn_it_end;
 
+    map<string, double> computed_distances;
+
     while(c_it != connections.cend())
     {
         point_node * master_centroid = c_it->second.master->centroid;
@@ -854,19 +856,19 @@ string Connection_map::make_cells_conditional_distances()
             conn_it_end = conns[i]->cend();
             while(conn_it_start != conn_it_end)
             {  
-                point_node * cell_centroid = conn_it_start->second->centroid; 
-                double distance = master_centroid->distance(cell_centroid)*10;
-                conditional_distances +=
-                                     "\n\t\t\t\t\t( when"
-                                     "\n\t\t\t\t\t\t( and"
-                                     "\n\t\t\t\t\t\t\t( is_" + c_it->first +
-                                     " ?loc_start )"
-                                     "\n\t\t\t\t\t\t\t( is_" +
-                                     conn_it_start->first + " ?loc_end)"
-                                     "\n\t\t\t\t\t\t)"
-                                     "\n\t\t\t\t\t\t( increase (total-cost) "
-                                     + to_string(distance) + " )"
-                                     "\n\t\t\t\t\t)";
+                string couple = conn_it_start->first + "_" + c_it->first;
+                string couple_simm = c_it->first + "_" + conn_it_start->first;
+                if (computed_distances.count(couple) == 0 &&
+                    computed_distances.count(couple_simm) == 0)
+                {
+                    point_node * cell_centroid = conn_it_start->second->centroid; 
+                    double distance = master_centroid->distance(cell_centroid);
+                    string cost = PDDL_conditional_cost(c_it->first,
+                                                        conn_it_start->first,
+                                                        distance);
+                    conditional_distances += cost;
+                    computed_distances[couple] = distance;
+                }
                 conn_it_start++;
             }
         }
@@ -878,6 +880,7 @@ string Connection_map::make_cells_conditional_distances()
 
 void Connection_map::empty()
 {
+    to_log("Starting emptying structure");
     connections.clear();
-    to_log("Struct emptied.");
+    to_log("Structure emptied.");
 }

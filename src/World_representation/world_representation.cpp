@@ -292,6 +292,59 @@ void World_representation::set_connections(string connections)
 	pddl_connections = connections;
 };
 
+string World_representation::get_gates_predicates()
+{
+    string gates_predicates = "";
+    map<string, World_node>::const_iterator g_it = world_gates.cbegin();
+    while(g_it != world_gates.cend())
+    {
+        gates_predicates += "\t\t(is_" + g_it->first + " ?g - location )\n";
+        g_it++;
+    }
+    return gates_predicates;
+}
+
+double World_representation::distance(string el1, string el2)
+{
+    double dist = -1;
+
+    // Find elements
+    vector<string> els = {el1, el2};
+    vector< map<string, World_node>::const_iterator > its;
+    for(int i=0; i<els.size(); i++)
+    {
+        map<string, World_node>::const_iterator temp_it;
+        temp_it = world_free_cells.find(els[i]);  // Suppose first they are
+                                                  // cells
+        if ( temp_it != world_free_cells.cend())
+        {
+            its.push_back(temp_it);
+        }
+        else
+        {
+            temp_it = world_gates.find(els[i]);
+            if (temp_it != world_gates.cend())
+            {
+                its.push_back(temp_it);
+            }
+        }
+    }
+
+    if(its.size() == 2)
+    {
+        point_node * el_1_centroid = its[0]->second.cell->centroid;
+        point_node * el_2_centroid = its[1]->second.cell->centroid;
+
+        dist = el_1_centroid->distance(el_2_centroid);
+    }
+
+    if(dist == -1)
+    {
+        cout << "No elements found. Distance is negative" << endl;
+    }
+    return dist;
+}
+
 string World_representation::get_cells_predicates()
 {
     if (cell_predicates == "NaN")

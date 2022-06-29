@@ -54,8 +54,10 @@ typedef struct World_representation
 	void add_cell(World_node cell, bool gate = false);
 	tuple<vector<double>, vector<double>> get_path(vector<string> plan, polygon *pol);
 	string find_pddl_connections();
+    string get_gates_predicates();
     string get_cells_predicates();
     string get_cells_conditional_distances();
+    double distance(string el1, string el2);  // Distance among elements centroid
 	void set_connections(string connections);
 	void info();
 
