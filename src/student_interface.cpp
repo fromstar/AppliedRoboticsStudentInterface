@@ -114,10 +114,11 @@ namespace student
     }
 
     // Before merging obstacle they must be convexify to avoid boost::error
-    arena.make_free_space_cells_squares(RES);
+    // arena.make_free_space_cells_squares(RES);
+    arena.make_exact_cell();
 
     cout << "Made free space" << endl;
-
+    
     log_test->add_event("Created Roadmap");
 
     Robot *c_1 = new Robot("Catcher_1", catcher, log_test);

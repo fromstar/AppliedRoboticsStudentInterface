@@ -19,6 +19,7 @@
 
 using pt = boost::geometry::model::d2::point_xy<double>;
 using Polygon_boost = boost::geometry::model::polygon<pt>;
+using Edge_boost = boost::geometry::model::segment<pt>;
 
 using namespace cv;
 using namespace std;
@@ -102,6 +103,9 @@ struct point_node
 	void Print();
 	double distance(point_node *p = NULL);
 	// ~point_node();
+    bool operator == (const point_node &p);
+    bool operator != (const point_node &p);
+    pt to_boost();
 } typedef point_node;
 
 /**
@@ -146,6 +150,7 @@ struct point_list
 	void pop();
 	Polygon_boost to_boost_polygon();
 	point_list *copy();
+    bool is_in(point_node * p);
 	// ~point_list();
 } typedef point_list;
 
@@ -176,13 +181,14 @@ typedef struct Edge
 	// Constructor
 	Edge(point_node *p_1, point_node *p_2);
 
-	// Destructor
-	~Edge();
-
 	// Methods
 	point_node *intersection(Edge *e);
 	point_node *middle_point();
 	void info();
+    Edge * copy();
+	
+    // Destructor
+	~Edge();
 } Edge;
 
 /**
@@ -274,6 +280,8 @@ typedef struct polygon
 	int points_in_common(polygon *p = NULL);
 	void info();
 	polygon *copy();
+    point_list* intersections_with_edge(Edge* e);
+    bool is_vertex(point_node *p);
 	void add_common_edge(string s = "NaN", Edge *e = NULL);
 } polygon;
 
@@ -507,4 +515,9 @@ vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
 											vector<Polygon_boost> obstacles);
 
 string PDDL_conditional_cost(string el1, string el2, double cost);
+bool compare_doubles(double a, double b);
+bool equal_point_nodes(point_node * a, point_node * b);
+bool point_belong_to_edge(point_node *p, Edge * e);
+point_node * edge_has_vertex(Edge * e, polygon * pol);
+bool point_less_edge(Edge * e, point_node * p);
 #endif

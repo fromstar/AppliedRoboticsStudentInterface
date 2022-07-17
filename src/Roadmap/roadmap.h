@@ -70,6 +70,7 @@ typedef struct points_map
 	void convexify_obstacles();
 	void make_free_space_cells_triangular(int res = 3);
 	void make_free_space_cells_squares(int res = 3);
+    void make_exact_cell();
 	void print_info();
 	Mat plot_arena(int x_dim, int y_dim, bool show_original_polygons=true,
                    bool show_cells_id=false);
@@ -85,4 +86,7 @@ typedef struct points_map
 list_of_polygons *subset_polygon(polygon *p, int levels = 1);
 vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
 											vector<Polygon_boost> obstacles);
+vector<Edge*> fine_tune_sweep_line(vector<Edge*> edges_ob,
+                                   list_of_polygons * obstacles,
+                                   polygon * limits=NULL);
 #endif

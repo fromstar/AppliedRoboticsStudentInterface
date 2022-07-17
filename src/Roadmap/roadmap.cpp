@@ -19,6 +19,7 @@ namespace bg = boost::geometry;
 namespace bgm = bg::model;
 
 using pt = bgm::d2::point_xy<double>;
+using Edge_boost = bgm::segment<pt>;
 using Polygon_boost = bgm::polygon<pt>;
 using Multi_Polygon_boost = bgm::multi_polygon<Polygon_boost>;
 
@@ -141,6 +142,7 @@ void points_map::add_obstacle(polygon *ob)
 	obstacles->size++;
 	obstacles->offset_size++;
 	polygon *offsetted_ob = ob->add_offset(obstacles->offset);
+    offsetted_ob->id = "Offsetted_" + ob->id;
 	if (obstacles->head == NULL)
 	{
 		obstacles->head = ob;
@@ -715,6 +717,531 @@ list_of_polygons * subset_over_middle_point(polygon * p)
     return tmp_output;
 }
 */
+
+
+vector<Edge*> fine_tune_sweep_line(vector<Edge*> edges_ob,
+                                   list_of_polygons * obstacles,
+                                   polygon * limits)
+{
+    cout << "- * Refining sweep over " << edges_ob.size() << " edges" << endl;
+
+    // For each sweep line edge
+    polygon * pol = NULL;
+
+    vector<Edge *> new_edges = edges_ob;
+    
+    int edges_size = edges_ob.size();
+
+    pol = obstacles->head;
+    while(pol != NULL)
+    {
+        Polygon_boost pol_boost = pol->to_boost_polygon();
+        for (int i=0; i < edges_size; i++)
+        {
+            cout << "Working on Polygon: " << pol->id << " for Edge " << i << endl;
+
+            point_list * intersection_points = NULL;
+            intersection_points = pol->intersections_with_edge(edges_ob[i]);
+     
+            cout << "Intersection points size: " << intersection_points->size << endl;
+
+            // For all points in intersection with the polygon
+            if (intersection_points != NULL && intersection_points->size > 0)
+            {   
+                if (intersection_points->size == 1) // Only one intersection
+                {
+                    cout << "Intersection points list has size == 1" << endl;
+                    point_node * inter = intersection_points->head;
+
+                    if(pol->is_vertex(inter) == true)
+                    {
+                        point_node * vertex = inter->copy();
+                        
+                        pt edge_point = edges_ob[i]->points->head->to_boost();
+
+                        Edge * new_edge_1 = NULL;
+                        Edge * new_edge_2 = NULL;
+                        if(!bg::within(edge_point, pol_boost))
+                        {
+                            new_edge_1 = new Edge(vertex, edges_ob[i]->points->head);
+                        }
+                        
+                        edge_point = edges_ob[i]->points->tail->to_boost();
+                        if(!bg::within(edge_point, pol_boost))
+                        {
+                            new_edge_2 = new Edge(vertex, edges_ob[i]->points->tail);
+                        }
+
+                        if (new_edge_1 != NULL && new_edge_2 != NULL)
+                        {
+                            edges_ob[i] = new_edge_1;
+                            edges_ob.push_back(new_edge_2);
+                        }
+                        else if(new_edge_1 != NULL)
+                        {
+                            edges_ob[i] = new_edge_1;
+                        }
+                        else if(new_edge_2 != NULL)
+                        {
+                            edges_ob[i] = new_edge_2;
+                        }
+                    }
+                    else // Line created by another polygon vertex -> find it
+                    {
+                        cout << "In this case" << endl;
+
+                        polygon * pol_iter = obstacles->head;
+                        point_node * found_point = NULL;
+                        
+                        point_node * head = edges_ob[i]->points->head;
+                        point_node * tail = edges_ob[i]->points->tail;
+                        int counter = 0;
+                        while(pol_iter != NULL && found_point == NULL)
+                        {
+                            found_point = edge_has_vertex(edges_ob[i],
+                                                          pol_iter);
+                            
+                            pol_iter = pol_iter->pnext;
+                        }
+                        
+                        if (found_point != NULL)
+                        {
+                            edges_ob[i] = new Edge(found_point, inter);
+                            point_node * vertex = found_point;
+                            // Preserve other chunk
+                            if (head->y > tail->y)
+                            {
+                                if (inter->y > vertex->y &&
+                                    vertex->y > tail->y &&
+                                    vertex->y < head->y)
+                                {
+                                    edges_ob.push_back(new Edge(vertex, tail));
+                                    edges_size++;
+                                }
+                                else if(inter->y < vertex->y &&
+                                        vertex->y < head->y &&
+                                        vertex->y > tail->y)
+                                {
+                                    edges_ob.push_back(new Edge(vertex, head));
+                                    edges_size++;
+                                }
+                            }
+                            else if (head->y < tail->y)
+                            {
+                                if (inter->y > vertex->y &&
+                                    vertex->y > head->y &&
+                                    vertex->y < tail->y)
+                                {
+                                    edges_ob.push_back(new Edge(vertex, head));
+                                    edges_size++;
+                                }
+                                else if(inter->y < vertex->y &&
+                                        vertex->y > head->y &&
+                                        vertex->y < tail->y)
+                                {
+                                    edges_ob.push_back(new Edge(vertex, tail));
+                                    edges_size++;
+                                } 
+                            }
+                        }
+                        else
+                        {
+                            cout << "Found point is NULL" << endl;
+                        }
+                    }
+                }
+                else if (intersection_points->size == 2)
+                {
+                    cout << "Intersection points list size == 2" << endl;
+
+                    point_node * int_pt1 = intersection_points->head;  // head
+                    point_node * int_pt2 = intersection_points->tail;  // tail
+                    
+                    point_node * e_head = edges_ob[i]->points->head;
+                    point_node * e_tail = edges_ob[i]->points->tail;
+
+                    Edge * new_e = NULL;
+
+                    if (int_pt2->y < int_pt1->y)
+                    {
+                        if(pol->is_vertex(int_pt1) && pol->is_vertex(int_pt2))
+                        {
+                            new_e = new Edge(int_pt1, e_head);
+                            Edge * e2 = new Edge(int_pt2, e_tail);
+                            edges_ob[i] = new_e;
+                            edges_ob.push_back(e2);
+                        }
+                        else if (pol->is_vertex(int_pt1))
+                        {
+                            new_e = new Edge(int_pt1, e_head);
+                            edges_ob[i] = new_e;
+                        }
+                        else if (pol->is_vertex(int_pt2))
+                        {
+                            new_e = new Edge(int_pt2, e_tail);
+                            edges_ob[i] = new_e;
+                        }
+                        else // None of them is a vertex
+                        {
+                            Edge_list * e_l = new Edge_list();
+                            polygon * pol_iter = obstacles->head;
+                            bool head_vertex = false;
+                            bool tail_vertex = false;
+
+                            while(pol_iter != NULL &&
+                                  head_vertex == false &&
+                                  tail_vertex == false)
+                            {
+                                if(pol_iter->is_vertex(e_head))
+                                {
+                                    head_vertex = true;
+                                }
+                                if(pol_iter->is_vertex(e_tail))
+                                {
+                                    tail_vertex = true;
+                                }
+                                pol_iter = pol_iter->pnext;
+                            }
+
+                            if (head_vertex == true)
+                            {
+                                e_l->add_edge(new Edge(e_head, int_pt1));
+                            }
+                            if (tail_vertex == true)
+                            {
+                                e_l->add_edge(new Edge(e_tail, int_pt2));
+                            }
+                            
+                            if (!head_vertex && !tail_vertex)
+                            {
+                                // An original sweep_line -> no vertex at each
+                                // ends -> vertex is in between
+                                Edge * t_e_1 = new Edge(e_head, int_pt1);
+                                Edge * t_e_2 = new Edge(int_pt2, e_tail);
+                                
+                                bool t_e_1_ok = false;
+                                bool t_e_2_ok = false;
+
+                                // Validate new sub_edges
+                                polygon * new_pol_iter = obstacles->head;
+                                while(new_pol_iter != NULL &&
+                                      (!t_e_1_ok || !t_e_2_ok))
+                                {
+                                    point_node * temp = NULL;
+
+                                    if (!t_e_1_ok)
+                                    {
+                                        temp = edge_has_vertex(t_e_1,
+                                                               new_pol_iter);
+                                        if (temp != NULL)
+                                        {
+                                            t_e_1_ok = true;
+                                        }
+                                    }
+                                    if (!t_e_2_ok)
+                                    {
+                                        temp = edge_has_vertex(t_e_2,
+                                                               new_pol_iter);
+                                        if(temp != NULL)
+                                        {
+                                            t_e_2_ok = true;
+                                        }
+                                    }
+                                    new_pol_iter = new_pol_iter->pnext;
+                                }
+
+                                if(t_e_1_ok)
+                                {
+                                    e_l -> add_edge(t_e_1);
+                                }
+                                if(t_e_2_ok)
+                                {
+                                    e_l -> add_edge(t_e_2);
+                                }
+                           
+                            }
+
+                            new_e = e_l->head;
+                            bool updated = false;
+                            while(new_e != NULL)
+                            {
+                                if (updated == false)
+                                {
+                                    edges_ob[i] = new_e;
+                                    updated = true;
+                                }
+                                else
+                                {
+                                    edges_ob.push_back(new_e);
+                                }
+                                new_e = new_e->next;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if(pol->is_vertex(int_pt1) && pol->is_vertex(int_pt2))
+                        {
+                            new_e = new Edge(int_pt1,
+                                                 edges_ob[i]->points->tail);
+                            Edge * e2 = new Edge(int_pt2,
+                                                 edges_ob[i]->points->head);
+                            edges_ob[i] = new_e;
+                            edges_ob.push_back(e2);
+                        }
+                        else if (pol->is_vertex(int_pt1))
+                        {
+                            new_e = new Edge(int_pt1, edges_ob[i]->points->tail);
+                            edges_ob[i] = new_e;
+
+                        }
+                        else if (pol->is_vertex(int_pt2))
+                        {
+                            new_e = new Edge(int_pt2, edges_ob[i]->points->head);
+                            edges_ob[i] = new_e;
+                        }
+                        else // None of them is a vertex
+                        {
+                            Edge_list * e_l = new Edge_list();
+                            polygon * pol_iter = obstacles->head;
+                            bool head_vertex = false;
+                            bool tail_vertex = false;
+
+                            while(pol_iter != NULL &&
+                                  head_vertex == false &&
+                                  tail_vertex == false)
+                            {
+                                if(pol_iter->is_vertex(e_head))
+                                {
+                                    head_vertex = true;
+                                }
+                                if(pol_iter->is_vertex(e_tail))
+                                {
+                                    tail_vertex = true;
+                                }
+                                pol_iter = pol_iter->pnext;
+                            }
+
+                            if (head_vertex == true)
+                            {
+                                e_l->add_edge(new Edge(e_head, int_pt2));
+                            }
+                            if (tail_vertex == true)
+                            {
+                                e_l->add_edge(new Edge(e_tail, int_pt1));
+                            }
+
+                            if (!head_vertex && ! tail_vertex)
+                            {
+                                // An original sweep_line -> no vertex at each
+                                // ends -> vertex is in between
+                                Edge * t_e_1 = new Edge(e_head, int_pt2);
+                                Edge * t_e_2 = new Edge(int_pt1, e_tail);
+
+                                bool t_e_1_ok = false;
+                                bool t_e_2_ok = false;
+
+                                // Validate new sub_edges
+                                polygon * new_pol_iter = obstacles->head;
+                                while(new_pol_iter != NULL &&
+                                      (!t_e_1_ok || !t_e_2_ok))
+                                {   
+                                    point_node * temp = NULL;
+                                    if (!t_e_1_ok)
+                                    {
+                                        temp = edge_has_vertex(t_e_1,
+                                                               new_pol_iter);
+                                        if (temp != NULL)
+                                        {
+                                            t_e_1_ok = true;
+                                        }
+
+                                    }
+                                    if (!t_e_2_ok)
+                                    {
+                                        temp = edge_has_vertex(t_e_2,
+                                                               new_pol_iter);
+                                        if (temp != NULL)
+                                        {
+                                            t_e_2_ok = true;
+                                        }
+                                    }
+                                    new_pol_iter = new_pol_iter->pnext;
+                                }
+
+                                if(t_e_1_ok)
+                                {
+                                    e_l -> add_edge(t_e_1);
+                                }
+                                if(t_e_2_ok)
+                                {
+                                    e_l -> add_edge(t_e_2);
+                                }
+
+                            }
+
+                            new_e = e_l->head;
+                            bool updated = false;
+                            while(new_e != NULL)
+                            {
+                                if (updated == false)
+                                {
+                                    edges_ob[i] = new_e;
+                                    updated = true;
+                                }
+                                else
+                                {
+                                    edges_ob.push_back(new_e);
+                                }
+                                new_e = new_e->next;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        edges_size = edges_ob.size();
+
+        pol = pol->pnext;
+    }
+
+    // check if the limits are satisfied if any
+    /*
+    if (limits != NULL)
+    {
+        Edge_list * el = limits->edgify();
+        Edge * edge_iter = el->head;
+
+        while(edge_iter != NULL)
+        {
+            point_node * limit_head = edge_iter->points->head;
+            point_node * limit_tail = edge_iter->points->tail;
+
+            for(int i=0; i < edges_ob.size(); i++)
+            {
+                point_node * edge_head = edges_ob[i]->points->head;
+                point_node * edge_tail = edges_ob[i]->points->tail;
+
+                point_node * inter = edges_ob[i]->intersection(edge_iter);
+                if (inter != NULL)
+                {
+                  if (inter != edge_head && inter != edge_tail)
+                  {
+                    // One of them out -> reshape
+                    if(inter->y > edge_tail->y && edge_tail->y < edge_head->y)
+                    {
+                        edges_ob[i] = new Edge(edge_head, inter);
+                    }
+                    else if(inter->y < edge_tail->y && edge_tail->y > edge_head->y)
+                    {
+                        edges_ob[i] = new Edge(edge_head, inter);
+                    }
+                  }
+                }
+            }
+
+            edge_iter = edge_iter->next;
+        }
+    }
+    */
+    cout << "Total edges: " << edges_ob.size() << endl;
+    return edges_ob;
+}
+
+
+void points_map::make_exact_cell()                 
+{ 
+  convexify_obstacles();
+  merge_obstacles();
+  convexify_obstacles();
+
+  double * low_y = NULL;                             
+  double * high_y = NULL;                            
+                                                     
+  point_node * tmp = shrinked_arena->head;           
+  
+  // Find min and max y  
+  while(tmp != NULL)                                 
+  {                                                  
+           if (low_y == NULL || tmp->y < *low_y)          
+           {                                              
+                low_y = &tmp->y;                            
+           }                                              
+                                                          
+           if (high_y == NULL || tmp->y > *high_y)        
+           {                                              
+                high_y = &tmp->y;                           
+           }                                              
+           tmp = tmp->pnext;                              
+       }                                                  
+  
+  // Make sweep lines  
+  polygon * pol = obstacles->offset_head;    
+  vector<Edge*> edges_ob;
+  
+  list_of_polygons * polygons_to_parse = new list_of_polygons();
+  
+  map< double, double > sweep_lines;
+ 
+  polygon * arena_pol = new polygon(shrinked_arena);
+  Edge_list * arena_limits = arena_pol->edgify();
+
+  Polygon_boost arena_boost = arena_pol->to_boost_polygon();
+  boost::geometry::correct(arena_boost);
+
+  while(pol != NULL)                                 
+  {    
+       polygons_to_parse->add_polygon(pol->copy());
+       point_node * temp_p = pol->pl->head; // polygon vertex
+       
+       pt vertex = temp_p->to_boost();
+
+       Edge_list * pol_edge = pol->edgify();
+
+       while(temp_p != NULL)
+       {    
+            bool accepted = bg::covered_by(vertex, arena_boost);
+            if (accepted)
+            {
+                point_node * start = new point_node(temp_p->x, *high_y);
+                point_node * end = new point_node(temp_p->x, *low_y);
+
+                Edge * v_sweep_edge = new Edge(start, end);
+                if (sweep_lines.count(temp_p->x) == 0)
+                {
+                        sweep_lines[temp_p->x] = start->y;
+                        edges_ob.push_back(v_sweep_edge);
+                }
+            }
+
+            // edges_ob.push_back(v_sweep_edge);
+            temp_p = temp_p->pnext;
+            if (temp_p != NULL)
+            {
+                vertex = temp_p->to_boost();
+            } 
+       }  
+       pol = pol->pnext; 
+  }
+
+  cout << "Edges in Arena: " << edges_ob.size() << endl; 
+  cout << "Polygons to parse: " << polygons_to_parse->size << endl;
+  
+  // vector<Edge*> new_edges;
+  // new_edges.push_back(edges_ob[12]);
+  
+  vector<Edge*> final_edges = fine_tune_sweep_line(edges_ob, polygons_to_parse);
+
+  Mat image = plot_arena(1000, 1000);
+  for (int i=0; i< final_edges.size(); i++)
+  {    
+    image = plot_points(final_edges[i]->points, image, Scalar(0, 0, 0), false);
+  }
+  imshow("Image", image);
+  waitKey(0);
+}
+
+
 
 /**
  * \fun

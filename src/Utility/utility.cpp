@@ -111,6 +111,35 @@ double point_node::distance(point_node *p)
 	return sqrt(pow(x - p->x, 2) + pow(y - p->y, 2));
 };
 
+bool point_node::operator == (const point_node &p)
+{
+    if (compare_doubles(x, p.x) && compare_doubles(y, p.y))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool point_node::operator != (const point_node &p)
+{
+    if (!compare_doubles(x, p.x) && !compare_doubles(y, p.y))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+pt point_node::to_boost()
+{
+    return pt(x, y);
+}
+
 /**
  * Function to add a point in a list of points.
  * @param node: poiter of type point_node.
@@ -125,7 +154,7 @@ void point_list::add_node(point_node *node, int iterations)
 		size++;
 		if (head == NULL)
 		{
-			head = node;
+			head = node->copy();
 			tail = head;
 			x_min = node->x;
 			x_max = x_min;
@@ -139,7 +168,7 @@ void point_list::add_node(point_node *node, int iterations)
 		y_min = std::min(y_min, node->y);
 		y_max = std::max(y_max, node->y);
 
-		tail->pnext = node;
+		tail->pnext = node->copy();
 		tail = tail->pnext;
 	};
 }
@@ -230,7 +259,7 @@ void point_list::delete_list()
  */
 Edge::Edge(point_node *p_1, point_node *p_2)
 {
-	points = new point_list;
+	points = new point_list();
 	points->add_node(new point_node(p_1->x, p_1->y));
 	points->add_node(new point_node(p_2->x, p_2->y));
 	*slope = (p_2->y - p_1->y) / (p_2->x - p_1->x);
@@ -255,31 +284,22 @@ Edge::~Edge()
  */
 point_node *Edge::intersection(Edge *e)
 {
-	// given the slope, the equation of a line is y-y1 = m(x-x1).
-	if (*slope - *e->slope < 1e-6 * max(*slope, *e->slope))
-	{
-		return NULL;
-	};
-	point_node *start = points->head;
-	point_node *end = points->tail;
-	point_node *e_start = e->points->head;
-	point_node *e_end = e->points->tail;
+    
+    Edge_boost self = Edge_boost(points->head->to_boost(),
+                                 points->tail->to_boost());    
+    Edge_boost e_boost = Edge_boost(e->points->head->to_boost(),
+                                    e->points->tail->to_boost());
+    vector<pt> inter;
 
-	double x_int = (e_start->y - start->y + (start->x * *slope) -
-					(e_start->x * *e->slope)) /
-				   (*slope - *e->slope);
-	double y_int = (*slope * (x_int - start->x) + start->y);
-
-	// Check intersection point to avoid that relies over the segments
-	if (x_int > min(points->x_min, e->points->x_min) &&
-		x_int < max(points->x_max, e->points->x_max) &&
-		y_int > min(points->y_min, e->points->y_min) &&
-		y_int < max(points->y_max, e->points->y_max))
-	{
-		point_node *intersection = new point_node(x_int, y_int);
-		return intersection;
-	};
-	return NULL;
+    if (boost::geometry::intersects(self, e_boost))
+    {
+        boost::geometry::intersection(self, e_boost, inter);
+        return new point_node(inter[0].x(), inter[0].y());
+    }
+    else
+    {
+        return NULL;
+    }   
 };
 
 /**
@@ -307,6 +327,33 @@ void Edge::info()
 };
 
 /**
+ * Checks whether the edge has one of the verteces of the provided polygons
+ */
+point_node * edge_has_vertex(Edge * e, polygon * pol)
+{
+    Edge_list * pol_edges = pol->edgify();
+    Edge * e_iter = pol_edges->head;
+    point_node * vertex = NULL;
+    // bool has_edge = false;
+
+    while(e_iter != NULL && vertex == NULL)
+    {
+        point_node * inter = e->intersection(e_iter);
+        if (inter != NULL && pol->is_vertex(inter))
+        {
+            vertex = inter;
+        }
+        e_iter = e_iter->next;
+    }
+    return vertex;
+}
+
+Edge * Edge::copy()
+{
+    return new Edge(points->head, points->tail);
+}
+
+/**
  * \fun add_edge(Edge* e)
  * This method allows to add a new Edge instance to the list of edges.
  * @param e: Edge\*. It is the pointer to the Edge instance to add to the list.
@@ -315,13 +362,13 @@ void Edge_list::add_edge(Edge *e)
 {
 	if (head == NULL)
 	{
-		head = e;
+		head = e->copy();
 		tail = head;
 		size++;
 		return;
 	};
 
-	tail->next = e;
+	tail->next = e->copy();
 	tail = tail->next;
 	size++;
 };
@@ -599,7 +646,7 @@ polygon::polygon(point_list *pls, string _id)
 {
 	if (pls->size >= 3)
 	{
-		pl = pls;
+		pl = pls->copy();
 		pt new_centroid;
 		boost::geometry::centroid(pls->to_boost_polygon(), new_centroid);
 		centroid = new point_node(new_centroid.x(), new_centroid.y());
@@ -705,6 +752,41 @@ polygon* merge(polygon* p1, polygon* p2)
    result->id = p1->id;
    cout << "Result sizes: " << result->common_edges.size() << endl;
    return result;
+}
+
+point_list * polygon::intersections_with_edge(Edge * e)
+{
+    Edge_list * pol_edges = edgify();              
+    point_list * intersection_points = new point_list();
+
+    Edge * it_e = pol_edges->head;                              
+    while(it_e != NULL)                                             
+    {
+        point_node * intersection = it_e->intersection(e);
+        
+        // Do not allow duplicates
+        if (intersection != NULL && !intersection_points->is_in(intersection))
+        {                                                               
+            intersection_points->add_node(intersection->copy());      
+        } 
+        it_e = it_e->next;                                          
+    }
+    return intersection_points;
+}
+
+bool polygon::is_vertex(point_node *p)
+{
+    point_node * temp = pl->head;
+    while(temp != NULL)
+    {
+        if (*temp == *p)
+        {
+            cout << "Found comparison" << endl;
+            return true;
+        }
+        temp = temp->pnext;
+    }
+    return false;
 }
 
 /**
@@ -905,6 +987,23 @@ Polygon_boost point_list::to_boost_polygon()
 	return p;
 }
 
+bool point_list::is_in(point_node * p)
+{
+    point_node * p_iter = head;
+    while(p_iter != NULL)
+    {
+        if (*p == *p_iter)
+        {
+            return true;
+        }
+        else
+        {
+            p_iter = p_iter->pnext;
+        }
+    }
+    return false;
+}
+
 /**
  * \fun
  * This function converts a polygon into a boost::polygon
@@ -980,6 +1079,7 @@ int polygon::points_in_common(polygon *p)
  */
 void polygon::info()
 {
+    cout << "polygon: " << id << endl;
 	pl->print_list();
 	printf("Polygon centroid: ");
 	centroid->Print();
@@ -995,12 +1095,12 @@ void list_of_polygons::add_polygon(polygon *p)
 {
 	if (head == NULL)
 	{
-		head = p;
+		head = p->copy();
 		tail = head;
 	}
     else
     {
-	    tail->pnext = p;
+	    tail->pnext = p->copy();
 	    tail = tail->pnext;
     }
 	size += 1;
@@ -1109,14 +1209,22 @@ bool is_in_arc(double th0, double thf, double th)
  */
 point_list* point_list::copy()
 {
-    point_list * copy = new point_list;
-    copy->head = head;
-    copy->tail = tail;
+    point_list * copy = new point_list();
+    point_node * node_iter = head;
+    while(node_iter != NULL)
+    {
+        copy->add_node(node_iter->copy());
+        node_iter = node_iter->pnext;
+    }
+    /*
+    copy->head = head->copy();
+    copy->tail = tail->copy();
     copy->x_min = x_min;
     copy->x_max = x_max;
     copy->y_min = y_min;
     copy->y_max = y_max;
     copy->size = size;
+    */
     return copy;
 }
 
@@ -1174,7 +1282,7 @@ polygon* polygon::copy()
 {
     polygon* copy = new polygon(pl->copy(), id);
     copy->centroid = centroid->copy();
-    copy->pnext = pnext;
+    copy->pnext = NULL;
     copy->area = area;
     copy->common_edges = common_edges;
     return copy;
@@ -1436,39 +1544,23 @@ Edge* find_common_edge(polygon* p1, polygon* p2)
     Edge_list *e2 = p2->edgify();
 
     Edge* tmp = e1->head;
-    Edge* tmp_2 = e2->head;
 
     while(tmp != NULL)
     {
+        Edge* tmp_2 = e2->head;
         while(tmp_2 != NULL)
         {
-            double eps = 1e-6;
+            point_node * p11 = tmp->points->head;
+            point_node * p12 = tmp->points->tail;
+            point_node * p21 = tmp_2->points->head;
+            point_node * p22 = tmp_2->points->tail;
 
-            double x_s_1 = tmp->points->head->x;
-            double x_s_2 = tmp_2->points->tail->x;
-            double max_x_s = max(x_s_1, x_s_2);
-
-            double y_s_1 = tmp->points->head->y;
-            double y_s_2 = tmp_2->points->tail->y;
-            double max_y_s = max(y_s_1, y_s_2);
-
-            double x_e_1 = tmp->points->head->x;
-            double x_e_2 = tmp_2->points->tail->x;
-            double max_x_e = max(x_e_1, x_e_2);
-
-            double y_e_1 = tmp->points->head->y;
-            double y_e_2 = tmp_2->points->tail->y;
-            double max_y_e = max(y_e_1, y_e_2);
-
-            if (fabs(x_s_1 - x_s_2) < eps*max_x_s &&
-                fabs(y_s_1 - y_s_2) < eps*max_y_s &&
-                fabs(x_e_1 - x_e_2) < eps*max_x_e && 
-                fabs(y_e_1 - y_e_2) < eps*max_y_e)
+            if((*p11 == *p21 && *p12 == *p22) || (*p11 == *p22 && *p12 == *p21))
             {
                 cout << "Found common edge between " << p1->id << " and "
-                     << p2->id << endl;
-                return new Edge( new point_node(x_s_1, y_s_1),
-                                 new point_node(x_e_1, y_e_1));
+                    << p2->id << endl;
+                return new Edge( new point_node(p11->x, p11->y),
+                        new point_node(p12->x, p12->y));
             }
             tmp_2 = tmp_2 -> next;
         }
@@ -1476,6 +1568,7 @@ Edge* find_common_edge(polygon* p1, polygon* p2)
     }
     return NULL;
 }
+
 
 list_of_polygons * subset_over_middle_point(polygon * p)                   
 {                                                                          
@@ -1619,4 +1712,78 @@ string PDDL_conditional_cost(string el1, string el2, double cost)
                        + to_string(cost) + " )"              
                        "\n\t\t\t\t\t)";                          
     return cost_PDDL;
+}
+
+bool compare_doubles(double a, double b)
+{
+    double diff = fabs(fabs(b) - fabs(a));
+    double threshold = 1e-6 * max(fabs(a), fabs(b));
+    if (diff < threshold)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool equal_point_nodes(point_node * a, point_node * b)
+{   
+    if (a == NULL || b == NULL)
+    {
+        cout << "One of input points is NULL" << endl;
+        return false;
+    }
+
+    if (compare_doubles(a->x, b->x) && compare_doubles(a->y, b->y))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool point_belong_to_edge(point_node *p, Edge * e)
+{
+    point_node * start_e = e->points->head;
+    point_node * end_e = e->points->tail;
+    
+    double *x = NULL;
+    double *y = NULL;
+    
+    double diff_y = start_e->y - end_e->y;
+    double diff_x = start_e->x - end_e->x;
+
+    if (diff_y == 0)
+    {
+        y = new double(start_e->y);
+    }
+
+    if (diff_x == 0)
+    {
+        x = new double(start_e->x);
+    }
+    
+    if (y == NULL)
+    {
+        y = new double((p->y - end_e->y) / diff_y);
+    }
+    
+    if (x == NULL)
+    {
+        x = new double((p->x - end_e->x) / diff_x);
+    }
+    
+    cout << *y << " " << *x << endl;
+
+    if (compare_doubles(*y, *x))
+    {
+        return true;
+    }
+    
+    return false;
+
 }

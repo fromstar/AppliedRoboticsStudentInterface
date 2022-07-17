@@ -1,8 +1,9 @@
 #include "Roadmap/roadmap.h"
 //#include "../../simulator/src/9_project_interface/include/utils.hpp"
-#include <time.h>
-#include <iostream>
-#include "Dubins/dubins.h"
+// #include <time.h>
+// #include <iostream>
+// #include "Dubins/dubins.h"
+#include "Utility/utility.h"
 
 using namespace std;
 
@@ -12,18 +13,59 @@ void test2();
 int main()
 {
 	// test();
-
-    point_node * a = new point_node(5, 2);
-    point_node * b = new point_node(8, 2);
-    point_node * c = new point_node(7, 5);
- 
-    point_list * h = new point_list;
-    h->add_node(a);
-    h->add_node(b);
-    h->add_node(c);
     
-    polygon * p = new polygon(h);
-    p->info();
+    point_list * arena_bounds = new point_list();
+    arena_bounds->add_node(new point_node(-1, 1));
+    arena_bounds->add_node(new point_node(1, 1));
+    arena_bounds->add_node(new point_node(1, -1));
+    arena_bounds->add_node(new point_node(-1, -1));
+
+    // Obstacles
+    point_node * a = new point_node(0.3, 0.2);
+    point_node * b = new point_node(0.5, 0.2);
+    point_node * c = new point_node(0.4, 0.5);
+    
+    point_node * e = new point_node(0.1, -0.1);
+    point_node * f = new point_node(0.6, -0.1);
+    point_node * g = new point_node(0.6, -0.2);
+    point_node * h = new point_node(0.1, -0.2);
+
+    // Obstacle edges
+    Edge * ab = new Edge(a, b);
+    Edge * bc = new Edge(b, c);
+    Edge * ca = new Edge(c, a);
+    Edge * cb = new Edge(c, b);
+    Edge * ac = new Edge(a, c);
+   
+    // Test edges
+    Edge * t1 = new Edge(new point_node(0.3, 0.8), new point_node(0.3, 0));
+    Edge * t2 = new Edge(new point_node(0.4, 0.8), new point_node(0.4, 0));
+    Edge * t3 = new Edge(new point_node(0.5, 0.8), new point_node(0.5, 0));
+
+    point_list * ob1 = new point_list();
+    ob1->add_node(a);
+    ob1->add_node(b);
+    ob1->add_node(c);
+    polygon * p1 = new polygon(ob1, "Triangle");
+
+    point_list * ob2 = new point_list();
+    ob2->add_node(e);
+    ob2->add_node(f);
+    ob2->add_node(g);
+    ob2->add_node(h);
+    polygon * p2 = new polygon(ob2, "Square");
+   
+    points_map map;
+    map.add_arena_points(arena_bounds);
+    map.add_obstacle(p1);
+    map.add_obstacle(p2);
+        
+    cout << "Started exact cell" << endl << endl;
+    map.make_exact_cell(); 
+
+    // Mat image = map.plot_arena(1000, 1000);
+    // imshow("Arena", image);
+    // waitKey(0);
 
 	return 0;
 };
