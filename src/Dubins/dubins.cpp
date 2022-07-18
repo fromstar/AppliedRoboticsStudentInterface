@@ -1,10 +1,10 @@
 #include "dubins.h"
 
 /*--------------------START DUBINS.H----------------------------------*/
-tuple<int, curve> dubins(double x0, double y0, double th0, double xf, double yf, double thf, double Kmax)
+tuple<int, curve> dubins(double x0, double y0, double th0, double xf, double yf, double thf)
 {
 	double sc_th0, sc_thf, sc_Kmax, lambda;
-	tie(sc_th0, sc_thf, sc_Kmax, lambda) = scaleToStandard(x0, y0, th0, xf, yf, thf, Kmax);
+	tie(sc_th0, sc_thf, sc_Kmax, lambda) = scaleToStandard(x0, y0, th0, xf, yf, thf);
 	int ksigns[6][3] = {{1, 0, 1}, {-1, 0, -1}, {1, 0, -1}, {-1, 0, 1}, {-1, 1, -1}, {1, -1, 1}};
 	int pidx = -1;
 	double L = INFINITY;
@@ -54,8 +54,8 @@ tuple<int, curve> dubins(double x0, double y0, double th0, double xf, double yf,
 		ok = true;
 		tie(s1, s2, s3) = scaleFromStandard(lambda, sc_s1, sc_s2, sc_s3);
 		c = dubinscurve(x0, y0, th0, s1, s2, s3,
-						ksigns[pidx][0] * Kmax, ksigns[pidx][1] * Kmax,
-						ksigns[pidx][2] * Kmax);
+						ksigns[pidx][0] * KMAX, ksigns[pidx][1] * KMAX,
+						ksigns[pidx][2] * KMAX);
 		assert(check(sc_s1, ksigns[pidx][0] * sc_Kmax, sc_s2,
 					 ksigns[pidx][1] * sc_Kmax, sc_s3,
 					 ksigns[pidx][2] * sc_Kmax, sc_th0, sc_thf));
@@ -111,13 +111,13 @@ curve dubinscurve(double x0, double y0, double th0, double s1, double s2, double
 	return d;
 }
 
-tuple<double, double, double, double> scaleToStandard(double x0, double y0, double th0, double xf, double yf, double thf, double Kmax)
+tuple<double, double, double, double> scaleToStandard(double x0, double y0, double th0, double xf, double yf, double thf)
 {
 	double dx = xf - x0;
 	double dy = yf - y0;
 	double phi = atan2(dy, dx);
 	double lambda = hypot(dx, dy) / 2;
-	double sc_Kmax = Kmax * lambda;
+	double sc_Kmax = KMAX * lambda;
 	double sc_th0 = mod2pi(th0 - phi);
 	double sc_thf = mod2pi(thf - phi);
 	return make_tuple(sc_th0, sc_thf, sc_Kmax, lambda);
@@ -435,7 +435,7 @@ vector<double> theta_discretization(double starting_angle, double search_angle)
 
 	vector<double> plausible_theta;
 	plausible_theta.push_back(starting_angle);
-	double res_steps = M_PI / 180; // 1 degree converted in radiants
+	double res_steps = 1 * (M_PI / 180); // 1 degree converted in radiants
 
 	double theta = starting_angle - (search_angle / 2);
 
@@ -462,7 +462,6 @@ vector<double> theta_discretization(double starting_angle, double search_angle)
  * @param xf: double. x-coordinate of the final point.
  * @param yf: double. y-coordinate of the final point.
  * @param thf: double. Arriving angle.
- * @param Kmax: double. Curvature angle.
  * @param arena_limits: List of the points of the arena's limits.
  * @param obstacle: polygon. First element of the polygon list in the arena.
  * @param search_angle: double. Area where discretize the angles.
@@ -470,115 +469,85 @@ vector<double> theta_discretization(double starting_angle, double search_angle)
  * @return tuple<curve, int>
  */
 tuple<curve, int> dubins_no_inter(double x0, double y0, double th0,
-								  double xf, double yf, double *thf,
-								  double Kmax, point_list *arena_limits, polygon *obstacle,
-								  double search_angle, vector<double> used_th)
+								  double xf, double yf, double thf,
+								  point_list *arena_limits, polygon *obstacle)
 {
-	curve c, c_min;
-	int pidx, min_pidx = 0;
-	double initial_th = *thf;
+	curve c;
+	int pidx;
 
-	bool has_c_min = false;
 	bool intersection = false;
-	bool finished_angles = false;
 
-	vector<double> angles = theta_discretization(initial_th, search_angle);
+	// vector<double> angles = theta_discretization(initial_th, search_angle);
 
-	int i = 0;
-	/* Compute dubins path for all the angles available*/
-	while (i < angles.size())
+	tie(pidx, c) = dubins(x0, y0, th0, xf, yf, thf);
+
+	if (pidx > 0)
 	{
-		tie(pidx, c) = dubins(x0, y0, th0, xf, yf, angles[i], Kmax);
-		intersection = false;
-		if (pidx > 0)
+		// Boolean that check the intersection for all the three arcs of a curve
+		bool inter_a1, inter_a2, inter_a3;
+
+		/* Search an intersection between the arcs of the dubins curve and the arena */
+		point_node *pt_arena_1 = arena_limits->head;
+
+		while (pt_arena_1 != NULL && intersection == false)
 		{
-			// Boolean that check the intersection for all the three arcs of a curve
-			bool inter_a1, inter_a2, inter_a3;
-
-			/* Search an intersection between the arcs of the dubins curve and the arena */
-			point_node *pt_arena_1 = arena_limits->head;
-
-			while (pt_arena_1 != NULL && intersection == false)
+			point_node *pt_arena_2;
+			if (pt_arena_1->pnext == NULL)
 			{
-				point_node *pt_arena_2;
-				if (pt_arena_1->pnext == NULL)
+				pt_arena_2 = arena_limits->head;
+			}
+			else
+			{
+				pt_arena_2 = pt_arena_1->pnext;
+			}
+
+			inter_a1 = find_intersection(c.a1, pt_arena_1, pt_arena_2);
+			inter_a2 = find_intersection(c.a2, pt_arena_1, pt_arena_2);
+			inter_a3 = find_intersection(c.a3, pt_arena_1, pt_arena_2);
+
+			if (inter_a1 || inter_a2 || inter_a3)
+			{
+				intersection = true;
+			}
+
+			pt_arena_1 = pt_arena_1->pnext;
+		}
+
+		/* Search an intersection between the arcs of the dubins curve and all the obstacles */
+		polygon *obs = obstacle;
+		while (obs != NULL && intersection == false)
+		{
+			point_node *pt_ob_1 = obs->pl->head;
+			while (pt_ob_1 != NULL && intersection == false)
+			{
+				point_node *pt_ob_2;
+				if (pt_ob_1->pnext == NULL)
 				{
-					pt_arena_2 = arena_limits->head;
+					pt_ob_2 = obs->pl->head;
 				}
 				else
 				{
-					pt_arena_2 = pt_arena_1->pnext;
+					pt_ob_2 = pt_ob_1->pnext;
 				}
 
-				inter_a1 = find_intersection(c.a1, pt_arena_1, pt_arena_2);
-				inter_a2 = find_intersection(c.a2, pt_arena_1, pt_arena_2);
-				inter_a3 = find_intersection(c.a3, pt_arena_1, pt_arena_2);
+				inter_a1 = find_intersection(c.a1, pt_ob_1, pt_ob_2);
+				inter_a2 = find_intersection(c.a2, pt_ob_1, pt_ob_2);
+				inter_a3 = find_intersection(c.a3, pt_ob_1, pt_ob_2);
 
 				if (inter_a1 || inter_a2 || inter_a3)
 				{
 					intersection = true;
 				}
-
-				pt_arena_1 = pt_arena_1->pnext;
+				pt_ob_1 = pt_ob_1->pnext;
 			}
-
-			/* Search an intersection between the arcs of the dubins curve and all the obstacles */
-			polygon *obs = obstacle;
-			while (obs != NULL && intersection == false)
-			{
-				point_node *pt_ob_1 = obs->pl->head;
-				while (pt_ob_1 != NULL && intersection == false)
-				{
-					point_node *pt_ob_2;
-					if (pt_ob_1->pnext == NULL)
-					{
-						pt_ob_2 = obs->pl->head;
-					}
-					else
-					{
-						pt_ob_2 = pt_ob_1->pnext;
-					}
-
-					inter_a1 = find_intersection(c.a1, pt_ob_1, pt_ob_2);
-					inter_a2 = find_intersection(c.a2, pt_ob_1, pt_ob_2);
-					inter_a3 = find_intersection(c.a3, pt_ob_1, pt_ob_2);
-
-					if (inter_a1 || inter_a2 || inter_a3)
-					{
-						intersection = true;
-					}
-					pt_ob_1 = pt_ob_1->pnext;
-				}
-				obs = obs->pnext;
-			}
-
-			/* If an intersection is not found the dubins curve is admitted*/
-			if (intersection == false && count(used_th.begin(), used_th.end(), angles[i]) == 0)
-			{
-				/* Store the first curve found or sobstitute it if it's length is less*/
-				if (has_c_min == false || c.L < c_min.L)
-				{
-					c_min = c;
-					has_c_min = true;
-					*thf = angles[i];
-					min_pidx = pidx;
-				}
-			}
-		}
-		i++;
-
-		/* If no curves is found, take the opposite searh area */
-		if (i == angles.size() && min_pidx <= 0 && finished_angles == false)
-		{
-			finished_angles = true;
-			initial_th = initial_th + M_PI;
-			search_angle = (2 * M_PI) - search_angle;
-			angles.clear();
-			angles = theta_discretization(initial_th, search_angle);
-			i = 0;
+			obs = obs->pnext;
 		}
 	}
-	return make_tuple(c_min, min_pidx);
+	if (intersection)
+	{
+		return make_tuple(c, 0);
+	}
+	return make_tuple(c, pidx);
 }
 
 /**
@@ -715,7 +684,7 @@ Path push_path(curve c, Path p)
 	p.points.push_back(get_pose(a));
 	for (int i = 0; i < n_samples; i++)
 	{
-		
+
 		a.x0 = a.xf;
 		a.y0 = a.yf;
 		a.th0 = a.thf;
@@ -728,10 +697,10 @@ Path push_path(curve c, Path p)
 	a.th0 = c.a2.th0;
 	a.k = c.a2.k;
 	a.L = c.a2.L / n_samples;
-	//p.points.push_back(get_pose(a));
+	// p.points.push_back(get_pose(a));
 	for (int i = 0; i < n_samples; i++)
 	{
-		
+
 		a.x0 = a.xf;
 		a.y0 = a.yf;
 		a.th0 = a.thf;
@@ -747,7 +716,7 @@ Path push_path(curve c, Path p)
 	// p.points.push_back(get_pose(a));
 	for (int i = 0; i < n_samples; i++)
 	{
-		
+
 		a.x0 = a.xf;
 		a.y0 = a.yf;
 		a.th0 = a.thf;
@@ -756,6 +725,137 @@ Path push_path(curve c, Path p)
 	}
 
 	return p;
+}
+
+tuple<vector<double>, vector<vector<curve>>> get_dubins_path_recursive(vector<double> x_path, vector<double> y_path, vector<double> th_path,
+																	   points_map arena, bool inside_offset_arena, bool inside_offset_ob, double search_angle, bool first_iteration)
+{
+	curve c;
+	int pidx;
+
+	// These vectors are ordered. So at the first path position I have
+	// a combination of curves and in the first length position it's total
+	// length.
+	vector<double> length;
+	vector<vector<curve>> path;
+
+	// Exit condition for the ricorsion. If there are less than 2 points
+	// Then there are no dubins path to calculate.
+	if (x_path.size() < 2)
+	{
+		// Return 2 empty vectors.
+		return make_tuple(length, path);
+	}
+
+	// Create sub-arrays of the path without the first element.
+	vector<double> sub_x(x_path.begin() + 1, x_path.end());
+	vector<double> sub_y(y_path.begin() + 1, y_path.end());
+	vector<double> sub_th(th_path.begin() + 1, th_path.end());
+
+	// Recursive call. The dubins path is calculated backward.
+	tie(length, path) = get_dubins_path_recursive(sub_x, sub_y, sub_th, arena, inside_offset_arena, inside_offset_ob, search_angle, false);
+	// if (th_path[0] < 0)
+	// 	th_path[0] = th_path[0] + (M_PI);
+	// if (th_path[1] < 0)
+	// 	th_path[1] = th_path[1] + ( M_PI);
+
+	vector<double> thf_discretized = theta_discretization(th_path[1], search_angle);
+
+	vector<curve> local_path;
+
+	for (int i = 0; i < thf_discretized.size(); i++)
+	{
+		if (first_iteration == true)
+		{
+			point_list *map = arena.shrinked_arena;
+			polygon *obs = arena.obstacles->offset_head;
+			if (inside_offset_arena == true)
+				map = arena.arena;
+			if (inside_offset_ob == true)
+				obs = arena.obstacles->head;
+
+			tie(c, pidx) = dubins_no_inter(x_path[0], y_path[0], th_path[0], x_path[1], y_path[1],
+										   thf_discretized[i], map, obs);
+			if (pidx > 0)
+				local_path.push_back(c);
+		}
+		else
+		{
+			vector<double> th0_discretized = theta_discretization(th_path[0], search_angle);
+			vector<curve> tmp_c;
+			for (int j = 0; j < th0_discretized.size(); j++)
+			{
+
+				point_list *map = arena.shrinked_arena;
+				if (x_path.size() == 2)
+				{
+					map = arena.arena;
+				}
+
+				tie(c, pidx) = dubins_no_inter(x_path[0], y_path[0], th0_discretized[j], x_path[1], y_path[1],
+											   thf_discretized[i], map, arena.obstacles->offset_head);
+
+				if (pidx > 0)
+					tmp_c.push_back(c);
+			}
+			if (local_path.size() == 0)
+				local_path = tmp_c;
+			else
+			{
+				for (int j = 0; j < tmp_c.size(); j++)
+				{
+					int k = 0;
+					bool found_angle = false;
+					while (k < local_path.size() && found_angle == false)
+					{
+						if (compare_doubles(tmp_c[j].a3.thf, local_path[k].a3.thf) == true)
+						{
+							found_angle = true;
+							if (tmp_c[j].L < local_path[k].L)
+							{
+								local_path[k] = tmp_c[j];
+							}
+						}
+						k++;
+					}
+					if (found_angle == false)
+						local_path.push_back(tmp_c[j]);
+				}
+			}
+		}
+	}
+
+	if (path.size() == 0)
+	{
+		for (int i = 0; i < local_path.size(); i++)
+		{
+			vector<curve> lpath;
+			lpath.push_back(local_path[i]);
+			path.push_back(lpath);
+			length.push_back(local_path[i].L);
+		}
+		return make_tuple(length, path);
+	}
+
+	for (int i = 0; i < local_path.size(); i++)
+	{
+		bool pushed = false;
+		int j = 0;
+		while (j < path.size() && pushed == false)
+		{
+			if (compare_doubles(local_path[i].a3.thf, path[j][0].a1.th0) == true ||
+				compare_doubles((local_path[i].a3.thf + (2 * M_PI)), path[j][0].a1.th0) == true ||
+				compare_doubles(local_path[i].a3.thf, (path[j][0].a1.th0 + (2 * M_PI))) == true)
+			{
+				path[j].insert(path[j].begin(), local_path[i]);
+				length[j] += local_path[i].L;
+				pushed = true;
+			}
+			j++;
+		}
+	}
+
+	return make_tuple(length, path);
 }
 
 /**
@@ -778,29 +878,15 @@ Path push_path(curve c, Path p)
  */
 vector<curve> get_dubins_path(points_map arena, World_representation abstract_arena, Robot *r)
 {
-	vector<curve> path;
-
 	/* centroid path coordinates vectors */
 	vector<double> x_path;
 	vector<double> y_path;
 	vector<double> th_path; // The angles are in radiants!
-	
+
 	/* Get the cells centroids of the path */
 	tie(x_path, y_path) = abstract_arena.get_path(r->plan, arena.obstacles->offset_head);
-	
 	/* Get the starting angle for moving from a cell to another one */
 	th_path = opti_theta(x_path, y_path);
-
-	/* Overwrite first cell centroid's coordinates with robot's coordinates */
-	if (x_path.size() != 0)
-	{
-		x_path[0] = r->location->x;
-		y_path[0] = r->location->y;
-		th_path[0] = r->theta;
-	}
-
-	curve c;
-	int pidx;
 
 	/* Copy of the theta's vector */
 	vector<double> original_theta = th_path;
@@ -808,71 +894,41 @@ vector<curve> get_dubins_path(points_map arena, World_representation abstract_ar
 	/* Vector that stores the thetas used for all the dubins curve found */
 	vector<double> used_theta[th_path.size()];
 
-	// double kmax = 27;
-	double kmax = KMAX;
 	/* Space where to search a minimum dubins curve */
-	double search_angle = M_PI / 2;
+	double search_angle = M_PI_2;
 
-	int i = 0;
-	int size = x_path.size();
+	vector<double> total_length;
+	vector<vector<curve>> all_paths;
+	vector<curve> path;
 
-	bool inside_offset_arena = r->inside_offset_arena;
-	bool inside_offset_obstacle = r->inside_offset_obstacle;
+	x_path[0] = r->location->x;
+	y_path[0] = r->location->y;
+	th_path[0] = r->theta;
 
-	/* Calculate dubin's curves without intersection */
-	while (i < size - 1)
+	tie(total_length, all_paths) = get_dubins_path_recursive(x_path, y_path, th_path, arena, r->inside_offset_arena, r->inside_offset_obstacle, search_angle, true);
+
+	double length;
+
+	for (int i = 0; i < all_paths.size(); i++)
 	{
-		point_list *tmp_arena_limits = arena.shrinked_arena;
-		polygon *tmp_obstacle = arena.obstacles->offset_head;
-
-		if (r->inside_offset_arena)
+		// cout << "plan_size: " << all_paths[i].size() << endl;
+		// cout << "x_plan_size: " << x_path.size() << endl;
+		// cout << "Difference: " << x_path.size() - all_paths[i].size() << endl
+		// 	 << endl;
+		if ((all_paths[i].size() + 1) == x_path.size())
 		{
-			tmp_arena_limits = arena.arena;
-			inside_offset_arena = false;
-		}
-		if (r->inside_offset_obstacle)
-		{
-			tmp_obstacle = arena.obstacles->head;
-			inside_offset_obstacle = false;
-		}
-
-		tie(c, pidx) = dubins_no_inter(x_path[i], y_path[i], th_path[i], x_path[i + 1],
-									   y_path[i + 1], &th_path[i + 1], kmax, tmp_arena_limits,
-									   tmp_obstacle, search_angle, used_theta[i]);
-
-		/* If pidx > 0 a curve is found */
-		if (pidx > 0)
-		{
-			/* Store the curve found and the arrival theta used for that */
-			path.push_back(c);
-			used_theta[i].push_back(th_path[i + 1]);
-			i++;
-		}
-		else
-		{
-			if (i > 0)
+			if (path.size() == 0)
 			{
-				/* If no curve is found the last curve is removed to compute
-				 * another one with a different arrival angle. */
-				path.pop_back();
-
-				/* Restore the original theta. In this way we avoid to use
-				 * different angles than the previous ones */
-				th_path[i] = original_theta[i];
-				i--;
-
-				if (i == 0)
-				{
-					inside_offset_arena = r->inside_offset_arena;
-					inside_offset_obstacle = r->inside_offset_obstacle;
-				}
+				length = total_length[i];
+				path = all_paths[i];
 			}
-			else
+			else if (length < total_length[i])
 			{
-				throw std::logic_error("NO DUBINS PATH AVAILABLE - kmax too small\n");
-				return path;
+				length = total_length[i];
+				path = all_paths[i];
 			}
 		}
 	}
+
 	return path;
 }

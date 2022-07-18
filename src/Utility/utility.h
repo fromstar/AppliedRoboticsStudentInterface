@@ -478,7 +478,7 @@ tuple<point_list *, double_list *> intersCircleLine(double, double, double, doub
  * @param common_edge: Common edge between the 2 cells having p1 and p2 as centroids.
  * @return point_node*: Null if in los. Mid-point of the common edge otherwise. 
  */
-point_node *los(point_node *p1 = NULL, point_node *p2 = NULL, polygon *pol = NULL, Edge *common_edge = NULL);
+bool los(point_node *p1 = NULL, point_node *p2 = NULL, polygon *pol = NULL, vector<Edge*> *sweep_line = NULL);
 
 /**
  * \fun polygon *merge(polygon *p1, polygon *p2)

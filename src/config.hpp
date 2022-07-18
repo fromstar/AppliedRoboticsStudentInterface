@@ -12,6 +12,6 @@
 
 #define DIM_X_PLOT 600
 #define DIM_Y_PLOT 900
-#define PLOT_CELL_ID false
+#define PLOT_CELL_ID true
 
 #endif

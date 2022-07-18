@@ -105,6 +105,7 @@ typedef struct Connection_map
         void ensure_LOS(list_of_obstacles * obl=NULL);
         void empty();
         void to_log(string msg);
+        void overwrite(map<string,Master_node> new_connections);
         string min_max_element_area(string id, bool diagonal=false,
                                     bool min=true);
         string find_pddl_connections();

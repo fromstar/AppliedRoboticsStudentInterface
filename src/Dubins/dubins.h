@@ -56,10 +56,10 @@ struct curve
 	double L; // Curve length
 } typedef curve;
 
-tuple<int, curve> dubins(double, double, double, double, double, double, double);
+tuple<int, curve> dubins(double, double, double, double, double, double);
 arc dubinsarc(double, double, double, double, double);
 curve dubinscurve(double, double, double, double, double, double, double, double, double);
-tuple<double, double, double, double> scaleToStandard(double, double, double, double, double, double, double);
+tuple<double, double, double, double> scaleToStandard(double, double, double, double, double, double);
 tuple<double, double, double> scaleFromStandard(double, double, double, double);
 tuple<bool, double, double, double> LSL(double, double, double);
 tuple<bool, double, double, double> RSR(double, double, double);
@@ -117,15 +117,14 @@ tuple<double, double, double> get_circle_center(double, double, double, double, 
  * @param double xf: x-final coordinate of the dubins curve
  * @param double yf: x-final coordinate of the dubins curve
  * @param double thf: Ending angle of the dubins curve
- * @param double kmax: Max angle curvature possible
  * @param point_list *arena_limits: Points of the arena 
  * @param polygon *obstacle: First node of the obstacle list in the arena
  * @param double search_angle: Range where to search the dubins curve with minimum distance
  * @param vector<double> used_th: List of the already used final angle that must not to be re-used
  * @returns tuple<curve c, int pidx>: Dounded curve c and it's pidx. If pidx <= 0 no curve is founded
  */
-tuple<curve, int> dubins_no_inter(double, double, double, double, double, double *, double,
-								  point_list*, polygon*, double, vector<double>);
+tuple<curve, int> dubins_no_inter(double, double, double, double, double, double,
+								  point_list*, polygon*);
 			
 /**
  * \fun bool pt_in_arc(point_node *ptso, arc a)

@@ -63,7 +63,8 @@ vector<string> Connection_map::ids()
     vector<string> ids;
 
     while (it != connections.cend())
-    {
+    {   
+        cout << "ID: " << it->first << endl;
         ids.push_back(it->first);
         it++;
     }
@@ -715,9 +716,9 @@ void Connection_map::ensure_LOS(list_of_obstacles *ob_l)
     {
         Master_node *node = &connections[available_id[i]];
         vector<string> conn_id = node->connection_ids();
-        point_node *LOS_point = NULL;
+        bool LOS_point = true;
         int j = 0;
-        while (j < conn_id.size() && LOS_point == NULL)
+        while (j < conn_id.size() && LOS_point == true)
         {
 
             polygon *second_cell = node->adjacent_connections[conn_id[j]];
@@ -725,18 +726,16 @@ void Connection_map::ensure_LOS(list_of_obstacles *ob_l)
                                                second_cell);
 
             polygon *ob = ob_l->offset_head;
-            while (ob != NULL && LOS_point == NULL)
+            while (ob != NULL && LOS_point == true)
             {
                 LOS_point = los(node->master->centroid,
                                 second_cell->centroid,
-                                ob,
-                                comm_edge);
+                                ob);
                 ob = ob->pnext;
             }
 
-            if (LOS_point != NULL)
+            if (LOS_point == false)
             {
-                LOS_point->Print();
                 cout << endl;
 
                 list_of_polygons *pl = new list_of_polygons;
@@ -876,6 +875,12 @@ string Connection_map::make_cells_conditional_distances()
     }
     to_log("Ended computing cells distances into PDDL conditional effects.");
     return conditional_distances;
+}
+
+void Connection_map::overwrite(map<string, Master_node> new_connections)
+{
+    to_log("Overwriting connections");
+    connections = new_connections;
 }
 
 void Connection_map::empty()

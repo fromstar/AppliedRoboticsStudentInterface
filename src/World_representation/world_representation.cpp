@@ -85,8 +85,8 @@ World_representation::World_representation(logger *log,
 										   list_of_polygons *gate_cells,
 										   list_of_obstacles *obs,
 										   string connections,
-                                           string cells_pred,
-                                           string cells_dist)
+										   string cells_pred,
+										   string cells_dist)
 {
 	l = log;
 	l->add_event("Creating world representation");
@@ -146,17 +146,17 @@ World_representation::World_representation(logger *log,
 		l->add_event("Added pddl connections");
 	};
 
-    if ( cells_pred != "NaN")
-    {
-        cell_predicates = cells_pred;
-        l->add_event("Added cells connections");
-    }
+	if (cells_pred != "NaN")
+	{
+		cell_predicates = cells_pred;
+		l->add_event("Added cells connections");
+	}
 
-    if (cells_dist != "NaN")
-    {
-        cells_distances = cells_dist;
-        l->add_event("Added cells distances");
-    }
+	if (cells_dist != "NaN")
+	{
+		cells_distances = cells_dist;
+		l->add_event("Added cells distances");
+	}
 	l->add_event("Ended world representation creation");
 };
 
@@ -182,9 +182,9 @@ tuple<vector<double>, vector<double>> World_representation::get_path(vector<stri
 		stringstream iss(plan[i]);
 		vector<string> path;
 		while (iss >> word)
-        {
+		{
 			path.push_back(word);
-        }
+		}
 
 		if (path[3].back() == ')')
 			path[3].resize(path[3].size() - 1);
@@ -196,33 +196,25 @@ tuple<vector<double>, vector<double>> World_representation::get_path(vector<stri
 		{
 			x = world_free_cells[path[2]].cell->centroid->x;
 			y = world_free_cells[path[2]].cell->centroid->y;
-            /*
-            cout << path[2] << endl;
+
 			if (i != 0)
 			{
-				cout << "prec_id: " << prec_id << endl;
-				cout << "actual_id: " << path[2] << endl;
-				cout<<"SIZE: " << world_free_cells[prec_id].cell->common_edges.size() << endl;
-				cout << "OKEE\n"<<endl;
+				polygon *pol_a = world_free_cells[prec_id].cell;
+				polygon *pol_b = world_free_cells[path[2]].cell;
 
-				// common_edge = world_free_cells[prec_id].cell->common_edges[path[2]]->head;
-                
-                polygon *pol_a = world_free_cells[prec_id].cell;
-                polygon *pol_b = world_free_cells[path[2]].cell;
-                common_edge = find_common_edge(pol_a, pol_b);
-				//common_edge->info();
-				middle_point = los(new point_node(x_path[i - 1], y_path[i - 1]),
-                                   new point_node(x, y), pol, common_edge);
-				if (middle_point != NULL)
+				common_edge = find_common_edge(pol_a, pol_b);
+				if (common_edge != NULL)
 				{
-					// cout << "NO LOS." << endl;
-					// cout << "middle ponint: " << middle_point->x <<":"<<middle_point->y<<endl;
+					// cout << "Common edge p1: " << common_edge->points->head->x << "|" << common_edge->points->head->y << endl;
+					// cout << "Common edge p2: " << common_edge->points->tail->x << "|" << common_edge->points->tail->y << endl;
+					// cout << "Common edge middle point: " << common_edge->middle_point()->x << "|" << common_edge->middle_point()->y << endl;
+
+					point_node *middle_point = common_edge->middle_point();
 					x_path.push_back(middle_point->x);
 					y_path.push_back(middle_point->y);
 				}
-                cout << "Hello 1" << endl;
 			}
-            */
+
 			x_path.push_back(x);
 			y_path.push_back(y);
 
@@ -230,25 +222,22 @@ tuple<vector<double>, vector<double>> World_representation::get_path(vector<stri
 			{
 				x = world_gates[path[3]].cell->centroid->x;
 				y = world_gates[path[3]].cell->centroid->y;
-				/*
-                if (i != 0)
-				{
-					//Potrebbe essere che il gate in realtà non sia adiacente alla cella. Occhio!
-					// common_edge = world_free_cells[prec_id].cell->common_edges[path[3]]->head;
-                    polygon *pol_a = world_free_cells[prec_id].cell;
-                    polygon *pol_b = world_gates[path[3]].cell;
-                    common_edge = find_common_edge(pol_a, pol_b);
 
-					middle_point = los(new point_node(x_path[i - 1], y_path[i - 1]),
-                                       new point_node(x, y), pol, common_edge);
-                    cout << "Hello 2" << endl;
-					if (middle_point != NULL)
-					{
-						x_path.push_back(middle_point->x);
-						y_path.push_back(middle_point->y);
-					}
+				if (i != 0)
+				{
+					// Potrebbe essere che il gate in realtà non sia adiacente alla cella. Occhio!
+					//  common_edge = world_free_cells[prec_id].cell->common_edges[path[3]]->head;
+					polygon *pol_a = world_free_cells[prec_id].cell;
+					polygon *pol_b = world_gates[path[3]].cell;
+					common_edge = find_common_edge(pol_a, pol_b);
+					// if (common_edge != NULL)
+					// {
+					// 	point_node *middle_point = common_edge->middle_point();
+					// 	x_path.push_back(middle_point->x);
+					// 	y_path.push_back(middle_point->y);
+					// }
 				}
-                */
+
 				x_path.push_back(x);
 				y_path.push_back(y);
 			}
@@ -257,26 +246,21 @@ tuple<vector<double>, vector<double>> World_representation::get_path(vector<stri
 		{
 			x = world_free_cells[path[3]].cell->centroid->x;
 			y = world_free_cells[path[3]].cell->centroid->y;
-            /*
 			if (i != 0)
 			{
 				// common_edge = world_free_cells[prec_id].cell->common_edges[path[3]]->head;
 
-                polygon *pol_a = world_free_cells[prec_id].cell;
-                polygon *pol_b = world_free_cells[path[3]].cell;
-                common_edge = find_common_edge(pol_a, pol_b);
-
-				middle_point = los(new point_node(x_path[i - 1], y_path[i - 1]),
-                                   new point_node(x, y), pol, common_edge);
-				if (middle_point != NULL)
+				polygon *pol_a = world_free_cells[prec_id].cell;
+				polygon *pol_b = world_free_cells[path[3]].cell;
+				common_edge = find_common_edge(pol_a, pol_b);
+				if (common_edge != NULL)
 				{
+					point_node *middle_point = common_edge->middle_point();
 					x_path.push_back(middle_point->x);
 					y_path.push_back(middle_point->y);
 				}
-                cout << "Hello 3" << endl;
-
 			}
-            */
+
 			x_path.push_back(x);
 			y_path.push_back(y);
 		}
@@ -294,82 +278,82 @@ void World_representation::set_connections(string connections)
 
 string World_representation::get_gates_predicates()
 {
-    string gates_predicates = "";
-    map<string, World_node>::const_iterator g_it = world_gates.cbegin();
-    while(g_it != world_gates.cend())
-    {
-        gates_predicates += "\t\t(is_" + g_it->first + " ?g - location )\n";
-        g_it++;
-    }
-    return gates_predicates;
+	string gates_predicates = "";
+	map<string, World_node>::const_iterator g_it = world_gates.cbegin();
+	while (g_it != world_gates.cend())
+	{
+		gates_predicates += "\t\t(is_" + g_it->first + " ?g - location )\n";
+		g_it++;
+	}
+	return gates_predicates;
 }
 
 double World_representation::distance(string el1, string el2)
 {
-    double dist = -1;
+	double dist = -1;
 
-    // Find elements
-    vector<string> els = {el1, el2};
-    vector< map<string, World_node>::const_iterator > its;
-    for(int i=0; i<els.size(); i++)
-    {
-        map<string, World_node>::const_iterator temp_it;
-        temp_it = world_free_cells.find(els[i]);  // Suppose first they are
-                                                  // cells
-        if ( temp_it != world_free_cells.cend())
-        {
-            its.push_back(temp_it);
-        }
-        else
-        {
-            temp_it = world_gates.find(els[i]);
-            if (temp_it != world_gates.cend())
-            {
-                its.push_back(temp_it);
-            }
-        }
-    }
+	// Find elements
+	vector<string> els = {el1, el2};
+	vector<map<string, World_node>::const_iterator> its;
+	for (int i = 0; i < els.size(); i++)
+	{
+		map<string, World_node>::const_iterator temp_it;
+		temp_it = world_free_cells.find(els[i]); // Suppose first they are
+												 // cells
+		if (temp_it != world_free_cells.cend())
+		{
+			its.push_back(temp_it);
+		}
+		else
+		{
+			temp_it = world_gates.find(els[i]);
+			if (temp_it != world_gates.cend())
+			{
+				its.push_back(temp_it);
+			}
+		}
+	}
 
-    if(its.size() == 2)
-    {
-        point_node * el_1_centroid = its[0]->second.cell->centroid;
-        point_node * el_2_centroid = its[1]->second.cell->centroid;
+	if (its.size() == 2)
+	{
+		point_node *el_1_centroid = its[0]->second.cell->centroid;
+		point_node *el_2_centroid = its[1]->second.cell->centroid;
 
-        dist = el_1_centroid->distance(el_2_centroid);
-    }
+		dist = el_1_centroid->distance(el_2_centroid);
+	}
 
-    if(dist == -1)
-    {
-        cout << "No elements found. Distance is negative" << endl;
-    }
-    return dist;
+	if (dist == -1)
+	{
+		cout << "No elements found. Distance is negative" << endl;
+	}
+	return dist;
 }
 
 string World_representation::get_cells_predicates()
 {
-    if (cell_predicates == "NaN")
-    {
-        l->add_event("World_representation: No cells predicates");
-    }
-    else
-    {
-        l->add_event("World_representation: Cells predicates in memory, "
-                     "returning.");
-    }
-    return cell_predicates;
+	if (cell_predicates == "NaN")
+	{
+		l->add_event("World_representation: No cells predicates");
+	}
+	else
+	{
+		l->add_event("World_representation: Cells predicates in memory, "
+					 "returning.");
+	}
+	return cell_predicates;
 }
 
 string World_representation::get_cells_conditional_distances()
 {
-    if (cells_distances != "NaN")
-    {
-        l->add_event("World_representation: cells distances found, returning.");
-    } 
-    else
-    {
-        l->add_event("No cells distances found");
-    }
-    return cells_distances;
+	if (cells_distances != "NaN")
+	{
+		l->add_event("World_representation: cells distances found, returning.");
+	}
+	else
+	{
+		l->add_event("No cells distances found");
+	}
+	return cells_distances;
 }
 
 /**
