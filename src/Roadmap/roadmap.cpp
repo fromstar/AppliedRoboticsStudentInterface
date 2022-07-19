@@ -1285,16 +1285,28 @@ void points_map::make_exact_cell()
 					}
 				}
 			}
+			else if(con.count(it->first) == 0)
+			{
+				point_list *pts = it->second->points->copy();
+				pts->append_list(pts->copy());
+				cout << "Polygon size: " << pts->size << endl;
+				polygon *p = new polygon(pts, it->first);
+				p->centroid = it->second->middle_point();
+				Master_node mn;
+				mn.master = p;
+				con[it->first] = mn;
+			}
 		}
 	}
 
 	connections.overwrite(con);
-
+	connections.info();
 	map<string, Master_node>::const_iterator cit;
-
-	for(cit = connections.connections.cbegin(); cit != connections.connections.cend(); cit++)
+	cout << "Con size: " << con.size() << endl;
+	cout << "Final edges size: " << final_edges.size() << endl;
+	for (cit = connections.connections.cbegin(); cit != connections.connections.cend(); cit++)
 	{
-		cout << "cit: " <<  cit->second.master->id<< endl;
+		cout << "cit: " << cit->second.master->id << endl;
 		free_space->add_polygon(cit->second.master);
 	}
 

@@ -200,7 +200,14 @@ string Robot::get_type()
  */
 void Robot::set_plan(vector<string> p)
 {
-	plan = p;
+	// for(int i=0;i<p.size();i++)
+	// {
+	// 	cout << p[i] << endl;
+	// }
+	if(p.size()>0)
+		plan = p;
+	else
+		cout << "Trying to set the plan with an empty plan\n";
 };
 
 /**
@@ -567,7 +574,7 @@ map<string, vector<string>> find_gates_wrt_cells(World_representation wr,
 	{
 		map<string, World_node>::const_iterator cit;
 		list_of_polygons *obs = new list_of_polygons;
-		for (int i = 0; i< wr.obstacles.size(); i++)
+		for (int i = 0; i < wr.obstacles.size(); i++)
 		{
 			obs->add_polygon(wr.obstacles[i].cell);
 		}
@@ -580,14 +587,18 @@ map<string, vector<string>> find_gates_wrt_cells(World_representation wr,
 			edges.push_back(tmp);
 		}
 
+		int i = 0;
 		for (it_1 = wr.world_free_cells.cbegin();
 			 it_1 != wr.world_free_cells.cend();
 			 it_1++)
 		{
+			vector<Edge *> edges_copy = edges;
+			edges_copy.erase(edges_copy.begin() + i);
+			i++;
 			for (it_2 = wr.world_gates.cbegin(); it_2 != wr.world_gates.cend();
 				 it_2++)
 			{
-				if (los(it_1->second.cell->centroid, it_2->second.cell->centroid, obs->head, &edges) == true)
+				if (los(it_1->second.cell->centroid, it_2->second.cell->centroid, obs->head, &edges_copy) == true)
 				{
 					if (problem_file != NULL)
 					{
@@ -598,6 +609,7 @@ map<string, vector<string>> find_gates_wrt_cells(World_representation wr,
 				}
 			}
 		}
+		return gates_connections;
 	}
 
 	for (it_1 = wr.world_free_cells.cbegin();
@@ -779,7 +791,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 			remove((filesPath + "/" + tmp_name + ".plan").c_str());
 		};
 		int idx_least = 0;
-
+		
 		for (int i = 0; i < all_plans.size(); i++)
 		{
 			if (all_plans[i].size() < all_plans[idx_least].size())
@@ -787,13 +799,14 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 				idx_least = i;
 			};
 		};
-
+		
 		// identify desire and write goal
 		it_1 = wr.world_gates.cbegin();
 		for (int i = 0; i < idx_least; i++)
 		{
 			it_1++;
 		};
+		
 		self->set_plan(all_plans[idx_least]);
 		self->set_desire("( is_in " + self->ID + " " + it_1->first + " )");
 		to_log("End least_steps behaviour");
@@ -882,7 +895,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 				counter++;
 			}
 		};
-
+		
 		// compute distance from fugitive to antagonists
 		for (int i = 0; i < antagonists.size(); i++)
 		{
@@ -909,6 +922,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 
 		// Apply rule to chose which gate
 		// Step 1: find nearest catcher to the fugitive
+
 		int idx_near = 0;
 		for (int i = 0; i < antagonists_distance.size(); i++)
 		{
@@ -917,7 +931,7 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 				idx_near = i;
 			};
 		};
-
+		
 		// Step 2: find gate which distance is less or equal than the
 		// minimum distance between fugitive and antagonists.
 		int idx_gate = -1;
@@ -947,11 +961,12 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 		// set_plan
 		// cout << "Setting plan" << endl;
 		cout << gates_distance.size() << endl;
-
+		
 		self->set_plan(gates_distance[idx_gate]);
 
 		self->set_desire("( is_in " + self->ID + " " + gates_id[idx_gate] + " )");
 		to_log("End aware behaviour");
+
 		return problem_name + "_" + gates_id[idx_gate];
 		break;
 	};
@@ -1451,24 +1466,38 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	pddl_problem += wr.find_pddl_connections();
 
 	// Write location of the gates
-	map<string, World_node>::iterator itg;
-	for (itg = wr.world_gates.begin(); itg != wr.world_gates.end(); itg++)
-	{
-		Polygon_boost gate_boost = itg->second.cell->to_boost_polygon();
-		map<string, World_node>::iterator itc;
-		for (itc = wr.world_free_cells.begin();
-			 itc != wr.world_free_cells.end();
-			 itc++)
-		{
-			Polygon_boost cell_boost = itc->second.cell->to_boost_polygon();
-			if (boost::geometry::intersects(gate_boost, cell_boost))
-			{
-				pddl_problem += "\t\t( connected " +
-								upperify(itg->first) + " " +
-								upperify(itc->first) + ")\n";
-			}
-		}
-	}
+	// map<string, World_node>::iterator itg;
+	// for (itg = wr.world_gates.begin(); itg != wr.world_gates.end(); itg++)
+	// {
+	// 	Polygon_boost gate_boost = itg->second.cell->to_boost_polygon();
+	// 	map<string, World_node>::iterator itc;
+	// 	for (itc = wr.world_free_cells.begin();
+	// 		 itc != wr.world_free_cells.end();
+	// 		 itc++)
+	// 	{
+	// 		Polygon_boost cell_boost = itc->second.cell->to_boost_polygon();
+	// 		if (boost::geometry::intersects(gate_boost, cell_boost))
+	// 		{
+	// 			pddl_problem += "\t\t( connected " +
+	// 							upperify(itg->first) + " " +
+	// 							upperify(itc->first) + ")\n";
+	// 		}
+	// 	}
+	// }
+
+	cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n";
+	map<string, vector<string>> gates = find_gates_wrt_cells(wr, &pddl_problem, true);
+	// cout << "Gates size: " <<gates.size() << endl;
+	// map<string, vector<string>>::const_iterator cit;
+	// for (cit = gates.cbegin(); cit != gates.cend(); cit++)
+	// {
+	// 	for (int i = 0; i < cit->second.size(); i++)
+	// 	{
+	// 		pddl_problem += "\t\t( connected " +
+	// 						upperify(cit->first) + " " +
+	// 						upperify(cit->second[i]) + ")\n";
+	// 	}
+	// }
 
 	pddl_problem = problem_preamble + problem_objects +
 				   problem_objects_end + pddl_problem;

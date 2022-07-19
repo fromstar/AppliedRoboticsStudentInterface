@@ -1478,9 +1478,9 @@ tuple<point_list *, double_list *> intersCircleLine(double a, double b, double r
  */
 bool los(point_node *p1, point_node *p2, polygon *pol, vector<Edge *> *sweep_line)
 {
-	polygon *tmp = pol;
+	polygon *tmp = pol->copy();
 	bool los = true;
-
+	Edge *los_e = new Edge(p1,p2);
 	while (tmp != NULL && los == true)
 	{
 		point_node *pt1 = tmp->pl->head;
@@ -1495,7 +1495,8 @@ bool los(point_node *p1, point_node *p2, polygon *pol, vector<Edge *> *sweep_lin
 			{
 				pt2 = pt1->pnext;
 			}
-			if (intersLineLine(p1, p2, pt1, pt2))
+			Edge * pol_e = new Edge(pt1,pt2);
+			if (los_e->intersection(pol_e) != NULL)
 			{
 				los = false;
 			}
@@ -1508,12 +1509,14 @@ bool los(point_node *p1, point_node *p2, polygon *pol, vector<Edge *> *sweep_lin
 	if (sweep_line != NULL)
 	{
 		vector<Edge *> s_e = *sweep_line;
-		for (int i = 0; i < s_e.size(); i++)
+		int i=0;
+		while(i < s_e.size() && los == true)
 		{
-			if (intersLineLine(p1, p2, s_e[i]->points->head, s_e[i]->points->tail))
+			if (los_e->intersection(s_e[i]) != NULL	)
 			{
 				los = false;
 			}
+			i++;
 		}
 	}
 	return los;

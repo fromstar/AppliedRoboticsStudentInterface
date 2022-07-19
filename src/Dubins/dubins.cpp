@@ -895,7 +895,7 @@ vector<curve> get_dubins_path(points_map arena, World_representation abstract_ar
 	vector<double> used_theta[th_path.size()];
 
 	/* Space where to search a minimum dubins curve */
-	double search_angle = M_PI_2;
+	double search_angle = M_PI;
 
 	vector<double> total_length;
 	vector<vector<curve>> all_paths;
