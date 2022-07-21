@@ -262,7 +262,7 @@ tuple<double, double, double, double, double, double> circline(double s, double 
 	// Finding a third point included in the arc.
 	// It's necessary to find the center of the circle
 	double x1, y1;
-	double s1 = s * 4;
+	double s1 = s / 2;
 	x1 = x0 + s1 * sinc(k * s1 / 2.0) * cos(th0 + k * s1 / 2);
 	y1 = y0 + s1 * sinc(k * s1 / 2.0) * sin(th0 + k * s1 / 2);
 
@@ -581,11 +581,50 @@ bool find_intersection(arc a, point_node *pnt, point_node *pnt_next)
 	{
 		if (pt_in_arc(pts->head, a) == false)
 		{
-			return false;
+			double th0, thf;
+	th0 = get_angle(a.xc, a.yc, a.x0, a.y0);
+	thf = get_angle(a.xc, a.yc, a.xf, a.yf);
+
+	if (a.th0  > a.thf)
+	{
+		double tmp = th0;
+		th0 = thf;
+		thf = tmp;
+	}
+
+
+	double dx = pnt_next->x - pnt->x;
+	double dy = pnt_next->y - pnt->y;
+	double al = atan(dx / dy);
+
+	if (al < th0 || al > thf)
+	{
+		return false;
+	}
 		}
 	}
 
 	return true;
+
+	// double th0, thf;
+	// th0 = get_angle(a.xc, a.yc, a.x0, a.y0);
+	// thf = get_angle(a.xc, a.yc, a.xf, a.yf);
+
+	// if (a.th0  > a.thf)
+	// {
+	// 	double tmp = th0;
+	// 	th0 = thf;
+	// 	thf = tmp;
+	// }
+
+	// double dx = pnt_next->x - pnt->x;
+	// double dy = pnt_next->y - pnt->y;
+	// double al = atan(dx / dy);
+
+	// if (al < th0 || al > thf)
+	// {
+	// 	return false;
+	// }
 }
 /**
  * \fun
@@ -611,10 +650,10 @@ bool pt_in_arc(point_node *ptso, arc a)
 	end = get_angle(a.xc, a.yc, a.xf, a.yf);
 
 	/* It's simpler work with only positive angles*/
-	if (start < 0)
-		start += (M_PI * 2);
-	if (end < 0)
-		end += (M_PI * 2);
+	// if (start < 0)
+	// 	start += (M_PI * 2);
+	// if (end < 0)
+	// 	end += (M_PI * 2);
 
 	if (end < start)
 	{
@@ -627,8 +666,8 @@ bool pt_in_arc(point_node *ptso, arc a)
 	while (pts != NULL)
 	{
 		angle = get_angle(a.xc, a.yc, pts->x, pts->y);
-		if (angle < 0)
-			angle += (M_PI * 2);
+		// if (angle < 0)
+		// 	angle += (M_PI * 2);
 		if (is_in_arc(start, end, angle))
 		{
 			return true;
@@ -808,8 +847,8 @@ tuple<vector<double>, vector<vector<curve>>> get_dubins_path_recursive(vector<do
 					{
 						double opti_c_th = local_path[thf_discretized[j]].a3.thf;
 						double tmp_c_th = c.a3.thf;
-						if (compare_doubles(opti_c_th, tmp_c_th) || 
-							compare_doubles(opti_c_th + (2 * M_PI), tmp_c_th) || 
+						if (compare_doubles(opti_c_th, tmp_c_th) ||
+							compare_doubles(opti_c_th + (2 * M_PI), tmp_c_th) ||
 							compare_doubles(opti_c_th, tmp_c_th + (2 * M_PI)))
 						{
 							if (c.L < local_path[thf_discretized[j]].L)
@@ -820,7 +859,7 @@ tuple<vector<double>, vector<vector<curve>>> get_dubins_path_recursive(vector<do
 			}
 		}
 	}
-	
+
 	if (t_path.size() == 0)
 	{
 		map<double, curve>::const_iterator cit;
@@ -839,14 +878,14 @@ tuple<vector<double>, vector<vector<curve>>> get_dubins_path_recursive(vector<do
 	{
 		bool pushed = false;
 
-		if (t_path.size() != 0 )
+		if (t_path.size() != 0)
 		{
 			int j = 0;
 			while (pushed == false && j < t_path.size())
-			{	
-				if (compare_doubles(cit->second.a3.thf, t_path[j][0].a1.th0) || 
-				compare_doubles(cit->second.a3.thf + (2 * M_PI), t_path[j][0].a1.th0) || 
-				compare_doubles(cit->second.a3.thf, t_path[j][0].a1.th0 + (2 * M_PI)))
+			{
+				if (compare_doubles(cit->second.a3.thf, t_path[j][0].a1.th0) ||
+					compare_doubles(cit->second.a3.thf + (2 * M_PI), t_path[j][0].a1.th0) ||
+					compare_doubles(cit->second.a3.thf, t_path[j][0].a1.th0 + (2 * M_PI)))
 				{
 					t_path[j].insert(t_path[j].begin(), cit->second);
 					t_length[j] += cit->second.L;
@@ -865,6 +904,34 @@ tuple<vector<double>, vector<vector<curve>>> get_dubins_path_recursive(vector<do
 	}
 	return make_tuple(length, path);
 }
+
+tuple<vector<double>, vector<double>> refine_path(vector<double> x_path, vector<double> y_path)
+{
+	vector<double> new_x_path;
+	vector<double> new_y_path;
+
+	int size = x_path.size();
+
+	double distance = 0;
+
+	if (size > 0)
+	{
+		new_x_path.push_back(x_path[0]);
+		new_y_path.push_back(y_path[0]);
+		for (int i = 1; i < size; i++)
+		{
+			distance += sqrt(pow(x_path[i] - x_path[i - 1], 2) + pow(y_path[i] - y_path[i - 1], 2));
+			if (distance > 0 || i == size - 1)
+			{
+				new_x_path.push_back(x_path[i]);
+				new_y_path.push_back(y_path[i]);
+				distance = 0;
+			}
+		}
+	}
+	return make_tuple(new_x_path, new_y_path);
+}
+
 /**
  * \fun
  * This function return the dubins path formed by all the dubins curve that a robot must follow.
@@ -898,17 +965,22 @@ vector<curve> get_dubins_path(points_map arena, World_representation abstract_ar
 		x_path.insert(x_path.begin(), r->location->x);
 		y_path.insert(y_path.begin(), r->location->y);
 	}
+	else
+	{
+		x_path[0] = r->location->x;
+		y_path[0] = r->location->y;
+	}
+
+	tie(x_path, y_path) = refine_path(x_path, y_path);
 	/* Get the starting angle for moving from a cell to another one */
 	th_path = opti_theta(x_path, y_path);
 
 	/* Space where to search a minimum dubins curve */
-	double search_angle = M_PI;
+	double search_angle = M_PI / 2;
 
 	vector<double> all_lengths;
 	vector<vector<curve>> all_paths;
 
-	x_path[0] = r->location->x;
-	y_path[0] = r->location->y;
 	th_path[0] = r->theta;
 
 	tie(all_lengths, all_paths) = get_dubins_path_recursive(x_path, y_path, th_path, arena,

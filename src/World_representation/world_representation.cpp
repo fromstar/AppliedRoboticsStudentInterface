@@ -226,12 +226,6 @@ tuple<vector<double>, vector<double>> World_representation::get_path(vector<stri
 					polygon *pol_a = world_free_cells[prec_id].cell;
 					polygon *pol_b = world_gates[path[3]].cell;
 					common_edge = find_common_edge(pol_a, pol_b);
-					// if (common_edge != NULL)
-					// {
-					// 	point_node *middle_point = common_edge->middle_point();
-					// 	x_path.push_back(middle_point->x);
-					// 	y_path.push_back(middle_point->y);
-					// }
 				}
 
 				x_path.push_back(x);

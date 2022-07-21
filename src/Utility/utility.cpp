@@ -1201,7 +1201,7 @@ double get_angle(double xc, double yc, double x, double y)
  */
 bool is_in_arc(double th0, double thf, double th)
 {
-	if (th < th0 && th > thf)
+	if (th < th0 || th > thf)
 	{
 		return false;
 	}
