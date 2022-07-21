@@ -150,6 +150,7 @@ struct point_list
 	void pop();
 	Polygon_boost to_boost_polygon();
 	point_list *copy();
+    point_list * orderify(int axis=0);
     bool is_in(point_node * p);
 	// ~point_list();
 } typedef point_list;
@@ -520,4 +521,5 @@ bool equal_point_nodes(point_node * a, point_node * b);
 bool point_belong_to_edge(point_node *p, Edge * e);
 point_node * edge_has_vertex(Edge * e, polygon * pol);
 bool point_less_edge(Edge * e, point_node * p);
+point_list * order_pair_ascending(point_node * a, point_node* b, int axis=0);
 #endif

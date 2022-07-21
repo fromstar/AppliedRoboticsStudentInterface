@@ -38,7 +38,7 @@ int main()
     Edge * ac = new Edge(a, c);
    
     // Test edges
-    Edge * t1 = new Edge(new point_node(0.3, 0.8), new point_node(0.3, 0));
+    Edge * t1 = new Edge(new point_node(0.3, 0.2), new point_node(0.3, 0));
     Edge * t2 = new Edge(new point_node(0.4, 0.8), new point_node(0.4, 0));
     Edge * t3 = new Edge(new point_node(0.5, 0.8), new point_node(0.5, 0));
 
@@ -55,13 +55,18 @@ int main()
     ob2->add_node(h);
     polygon * p2 = new polygon(ob2, "Square");
    
+    if (edge_has_vertex(t1, p1))
+    {
+        cout << "YES" << endl;        
+    }
+    
     points_map map;
     map.add_arena_points(arena_bounds);
     map.add_obstacle(p1);
     map.add_obstacle(p2);
         
     cout << "Started exact cell" << endl << endl;
-    map.make_exact_cell(); 
+    // map.make_exact_cell(); 
 
     // Mat image = map.plot_arena(1000, 1000);
     // imshow("Arena", image);

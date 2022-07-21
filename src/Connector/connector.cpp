@@ -450,18 +450,14 @@ void Connection_map::unify(string to_update, string to_remove)
     // Update union
     unified_node->master = result;
     
-    cout << "Before embedding" << endl;
     // merge connections
     embed_connections(to_update, to_remove);
 
-    cout << "Before mean area" << endl;
     // Update average area
     update_mean_area(to_update);
 
-    cout << "Before deleting" << endl;
     // Delete entry from map
     connections.erase(to_remove);
-    cout << "After deleting" << endl;
 };
 
 /**
@@ -471,6 +467,7 @@ void Connection_map::unify(string to_update, string to_remove)
  */
 void Connection_map::aggregate()
 {
+    cout << "Called aggregator" << endl;
     map<string, Master_node>::iterator c_it;
     vector<string> valid_id;
 
@@ -506,7 +503,6 @@ void Connection_map::aggregate()
             }
             else
             {
-                cout << "Merging: " << includer << " <- " << id << endl;
                 unify(includer, id);
                 available_id--;
                 valid_id.erase(valid_id.begin() + i);

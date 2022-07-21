@@ -210,8 +210,16 @@ void point_list::pop()
  */
 void point_list::append_list(point_list *e)
 {
-	tail->pnext = e->head;
-	tail = e->tail;
+	if (head == NULL)
+    {
+        head = e->head;
+        tail = e->tail;
+    }
+    else
+    {
+        tail->pnext = e->head;
+	    tail = e->tail;
+    }
 	size += e->size;
 };
 
@@ -332,7 +340,7 @@ void Edge::info()
  */
 point_node *edge_has_vertex(Edge *e, polygon *pol)
 {
-	Edge_list *pol_edges = pol->edgify();
+    Edge_list *pol_edges = pol->edgify();
 	Edge *e_iter = pol_edges->head;
 	point_node *vertex = NULL;
 	// bool has_edge = false;
@@ -750,7 +758,6 @@ polygon *merge(polygon *p1, polygon *p2)
 		it++;
 	}
 	result->id = p1->id;
-	cout << "Result sizes: " << result->common_edges.size() << endl;
 	return result;
 }
 
@@ -781,7 +788,7 @@ bool polygon::is_vertex(point_node *p)
 	{
 		if (*temp == *p)
 		{
-			cout << "Found comparison" << endl;
+			cout << "Found Vertex" << endl;
 			return true;
 		}
 		temp = temp->pnext;
@@ -1653,7 +1660,7 @@ vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
 
 					if (diff > 1)
 					{
-						cout << "In diff > 1" << endl;
+						// cout << "In diff > 1" << endl;
 						// tmp_output = arena;
 						for (int k = 1; k < diff; k++)
 						{
@@ -1779,4 +1786,60 @@ bool point_belong_to_edge(point_node *p, Edge *e)
 	}
 
 	return false;
+}
+
+point_list * point_list::orderify(int axis)
+{
+    if (size == 2)
+    {
+        return order_pair_ascending(head, tail, axis);
+    }
+    else
+    {
+        cout << "Yet to be implemented -> return NULL" << endl;
+        return NULL;
+    }
+}
+
+/*
+ * int axis:
+ * - 0 = X
+ * - 1 = Y
+ */
+point_list * order_pair_ascending(point_node * a, point_node * b, int axis)
+{
+    point_list * ordered_pair = new point_list();
+    double quantity_a, quantity_b;
+    point_node * lower = NULL;
+    point_node * higher = NULL;
+
+    switch(axis)
+    {
+        case 0:
+            {
+                quantity_a = a->x;
+                quantity_b = b->x;
+                break;
+            }
+        case 1:
+            {
+                quantity_a = a->y;
+                quantity_b = b->y;
+                break;
+            }
+    }
+    if (quantity_a < quantity_b)
+    {
+        lower = a;
+        higher = b;
+    }
+    else
+    {
+        lower = b;
+        higher = a;
+    }
+    ordered_pair->add_node(lower);
+    ordered_pair->add_node(higher);
+    
+    return ordered_pair;
 }
