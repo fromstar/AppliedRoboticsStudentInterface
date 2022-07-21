@@ -205,10 +205,6 @@ tuple<vector<double>, vector<double>> World_representation::get_path(vector<stri
 				common_edge = find_common_edge(pol_a, pol_b);
 				if (common_edge != NULL)
 				{
-					// cout << "Common edge p1: " << common_edge->points->head->x << "|" << common_edge->points->head->y << endl;
-					// cout << "Common edge p2: " << common_edge->points->tail->x << "|" << common_edge->points->tail->y << endl;
-					// cout << "Common edge middle point: " << common_edge->middle_point()->x << "|" << common_edge->middle_point()->y << endl;
-
 					point_node *middle_point = common_edge->middle_point();
 					x_path.push_back(middle_point->x);
 					y_path.push_back(middle_point->y);
