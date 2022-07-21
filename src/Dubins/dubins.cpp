@@ -761,11 +761,11 @@ tuple<vector<double>, vector<vector<curve>>> get_dubins_path_recursive(vector<do
 
 	vector<double> thf_discretized = theta_discretization(th_path[1], search_angle);
 
-	vector<curve> local_path;
+	map<double, curve> local_path;
 
-	for (int i = 0; i < thf_discretized.size(); i++)
+	if (first_iteration == true)
 	{
-		if (first_iteration == true)
+		for (int i = 0; i < thf_discretized.size(); i++)
 		{
 			point_list *map = arena.shrinked_arena;
 			polygon *obs = arena.obstacles->offset_head;
@@ -777,13 +777,16 @@ tuple<vector<double>, vector<vector<curve>>> get_dubins_path_recursive(vector<do
 			tie(c, pidx) = dubins_no_inter(x_path[0], y_path[0], th_path[0], x_path[1], y_path[1],
 										   thf_discretized[i], map, obs);
 			if (pidx > 0)
-				local_path.push_back(c);
+				local_path[thf_discretized[i]] = c;
 		}
-		else
+	}
+	else
+	{
+		vector<double> th0_discretized = theta_discretization(th_path[0], search_angle);
+		for (int i = 0; i < th0_discretized.size(); i++)
 		{
-			vector<double> th0_discretized = theta_discretization(th_path[0], search_angle);
 			vector<curve> tmp_c;
-			for (int j = 0; j < th0_discretized.size(); j++)
+			for (int j = 0; j < thf_discretized.size(); j++)
 			{
 
 				point_list *map = arena.shrinked_arena;
@@ -792,72 +795,64 @@ tuple<vector<double>, vector<vector<curve>>> get_dubins_path_recursive(vector<do
 					map = arena.arena;
 				}
 
-				tie(c, pidx) = dubins_no_inter(x_path[0], y_path[0], th0_discretized[j], x_path[1], y_path[1],
-											   thf_discretized[i], map, arena.obstacles->offset_head);
+				tie(c, pidx) = dubins_no_inter(x_path[0], y_path[0], th0_discretized[i], x_path[1], y_path[1],
+											   thf_discretized[j], map, arena.obstacles->offset_head);
 
 				if (pidx > 0)
-					tmp_c.push_back(c);
-			}
-			if (local_path.size() == 0)
-				local_path = tmp_c;
-			else
-			{
-				for (int j = 0; j < tmp_c.size(); j++)
 				{
-					int k = 0;
-					bool found_angle = false;
-					while (k < local_path.size() && found_angle == false)
+					if (local_path.count(thf_discretized[j]) == 0)
 					{
-						if (compare_doubles(tmp_c[j].a3.thf, local_path[k].a3.thf) == true)
-						{
-							found_angle = true;
-							if (tmp_c[j].L < local_path[k].L)
-							{
-								local_path[k] = tmp_c[j];
-							}
-						}
-						k++;
+						local_path[thf_discretized[j]] = c;
 					}
-					if (found_angle == false)
-						local_path.push_back(tmp_c[j]);
+					else
+					{
+						double opti_c_th = local_path[thf_discretized[j]].a3.thf;
+						double tmp_c_th = c.a3.thf;
+						if (compare_doubles(opti_c_th, tmp_c_th) ||
+							compare_doubles((opti_c_th + (2 * M_PI)), tmp_c_th) ||
+							compare_doubles(opti_c_th, ((2 * M_PI) + tmp_c_th)))
+						{
+							if(c.L < local_path[thf_discretized[j]].L)
+								local_path[thf_discretized[j]] = c;
+						}
+					}
 				}
 			}
 		}
 	}
-
 	if (path.size() == 0)
 	{
-		for (int i = 0; i < local_path.size(); i++)
+		map<double, curve>::const_iterator cit;
+		for (cit = local_path.cbegin(); cit != local_path.cend(); cit++)
 		{
 			vector<curve> lpath;
-			lpath.push_back(local_path[i]);
+			lpath.push_back(cit->second);
 			path.push_back(lpath);
-			length.push_back(local_path[i].L);
+			length.push_back(cit->second.L);
 		}
 		return make_tuple(length, path);
 	}
 
-	for (int i = 0; i < local_path.size(); i++)
+	map<double, curve>::const_iterator cit;
+	for (cit = local_path.cbegin(); cit != local_path.cend(); cit++)
 	{
 		bool pushed = false;
 		int j = 0;
 		while (j < path.size() && pushed == false)
 		{
-			if (compare_doubles(local_path[i].a3.thf, path[j][0].a1.th0) == true ||
-				compare_doubles((local_path[i].a3.thf + (2 * M_PI)), path[j][0].a1.th0) == true ||
-				compare_doubles(local_path[i].a3.thf, (path[j][0].a1.th0 + (2 * M_PI))) == true)
+			if (compare_doubles(cit->second.a3.thf, path[j][0].a1.th0) == true ||
+				compare_doubles((cit->second.a3.thf + (2 * M_PI)), path[j][0].a1.th0) == true ||
+				compare_doubles(cit->second.a3.thf, (path[j][0].a1.th0 + (2 * M_PI))) == true)
 			{
-				path[j].insert(path[j].begin(), local_path[i]);
-				length[j] += local_path[i].L;
+				path[j].insert(path[j].begin(), cit->second);
+				length[j] += cit->second.L;
 				pushed = true;
 			}
 			j++;
 		}
 	}
-
 	return make_tuple(length, path);
 }
-
 /**
  * \fun
  * This function return the dubins path formed by all the dubins curve that a robot must follow.
@@ -884,7 +879,10 @@ vector<curve> get_dubins_path(points_map arena, World_representation abstract_ar
 	vector<double> th_path; // The angles are in radiants!
 
 	/* Get the cells centroids of the path */
+	cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n";
 	tie(x_path, y_path) = abstract_arena.get_path(r->plan, arena.obstacles->offset_head);
+	cout << "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n";
+
 	/* Get the starting angle for moving from a cell to another one */
 	th_path = opti_theta(x_path, y_path);
 
@@ -905,7 +903,10 @@ vector<curve> get_dubins_path(points_map arena, World_representation abstract_ar
 	y_path[0] = r->location->y;
 	th_path[0] = r->theta;
 
-	tie(total_length, all_paths) = get_dubins_path_recursive(x_path, y_path, th_path, arena, r->inside_offset_arena, r->inside_offset_obstacle, search_angle, true);
+	tie(total_length, all_paths) = get_dubins_path_recursive(x_path, y_path, th_path, arena,
+															 r->inside_offset_arena,
+															 r->inside_offset_obstacle,
+															 search_angle, true);
 
 	double length;
 

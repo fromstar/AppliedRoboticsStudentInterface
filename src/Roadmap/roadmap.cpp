@@ -1180,27 +1180,27 @@ void points_map::make_exact_cell()
 		}
 		tmp = tmp->pnext;
 	}
-    
-    // Make sweep lines
-   	polygon *arena_pol = new polygon(shrinked_arena);
-    list_of_polygons *polygons_to_parse = new list_of_polygons();
-    polygon *pol = obstacles->offset_head;
-    while(pol != NULL)
-    {
-        polygons_to_parse->add_polygon(pol);
-        pol = pol->pnext;
-    }
-    polygons_to_parse->add_polygon(arena_pol);
 
-	map<double, Edge*> sweep_lines;
-    vector<Edge*> final_edges;
+	// Make sweep lines
+	polygon *arena_pol = new polygon(shrinked_arena);
+	list_of_polygons *polygons_to_parse = new list_of_polygons();
+	polygon *pol = obstacles->offset_head;
+	while (pol != NULL)
+	{
+		polygons_to_parse->add_polygon(pol);
+		pol = pol->pnext;
+	}
+	polygons_to_parse->add_polygon(arena_pol);
+
+	map<double, Edge *> sweep_lines;
+	vector<Edge *> final_edges;
 	Edge_list *arena_limits = arena_pol->edgify();
 
 	Polygon_boost arena_boost = arena_pol->to_boost_polygon();
 	boost::geometry::correct(arena_boost);
-    
-    pol = polygons_to_parse->head; 
-    while (pol != NULL)
+
+	pol = polygons_to_parse->head;
+	while (pol != NULL)
 	{
 		// polygons_to_parse->add_polygon(pol->copy());
 		point_node *temp_p = pol->pl->head; // polygon vertex
@@ -1221,7 +1221,7 @@ void points_map::make_exact_cell()
 				if (sweep_lines.count(temp_p->x) == 0)
 				{
 					sweep_lines[temp_p->x] = v_sweep_edge;
-                    final_edges.push_back(v_sweep_edge);
+					final_edges.push_back(v_sweep_edge);
 				}
 			}
 
@@ -1234,175 +1234,178 @@ void points_map::make_exact_cell()
 		}
 		pol = pol->pnext;
 	}
-    
-    int map_size = sweep_lines.size();
-    vector<polygon*> cells;
 
-    point_node * upper_left = NULL;
-    point_node * lower_left = NULL;
-    point_node * upper_right = NULL;
-    point_node * lower_right = NULL;
-    
-    map<double, Edge*>::iterator it;
-    /*
-    for(it = sweep_lines.begin(); it != sweep_lines.end(); it++)
-    {
-        cout << it->first << " -> " << it->second->points->head->y <<
-             " : " << it->second->points->tail->y << endl;
-    }
-    */
-    
-    for(int i=0; i<map_size; i++)
-    {
-        it = sweep_lines.upper_bound(*low_x-1e-6);
-        // cout << it->first << " - " << sweep_lines.size() << endl;
-        
-        if (upper_left == NULL && lower_left == NULL)  // first iteration
-        {
-            point_list * ord_list = it->second->points->orderify(1);
-            upper_left = ord_list->tail;
-            lower_left = ord_list->head;
-        }
-        else
-        {
-            point_list * ord_list = it->second->points->orderify(1);
-            upper_right = ord_list->tail;
-            lower_right = ord_list->head;
-            
-            point_list * pol_pl = new point_list();
-            pol_pl->add_node(lower_left);
-            pol_pl->add_node(upper_left);
-            pol_pl->add_node(upper_right);
-            pol_pl->add_node(lower_right);
+	int map_size = sweep_lines.size();
+	vector<polygon *> cells;
 
-            polygon * new_pol = new polygon(pol_pl, "CELL_" + to_string(i));
-            cells.push_back(new_pol);
-           
-            upper_left = upper_right;
-            lower_left = lower_right;
-        }
-        sweep_lines.erase(it);
-    }
-    
-    // Reshape cells to arena limits
-    vector<Polygon_boost> cells_boost;
-    for(int i=0; i<cells.size(); i++)
-    {
-        vector<Polygon_boost> output;
+	point_node *upper_left = NULL;
+	point_node *lower_left = NULL;
+	point_node *upper_right = NULL;
+	point_node *lower_right = NULL;
 
-        Polygon_boost cell_boost = cells[i]->to_boost_polygon();
-        cells_boost.push_back(cell_boost);
+	map<double, Edge *>::iterator it;
+	/*
+	for(it = sweep_lines.begin(); it != sweep_lines.end(); it++)
+	{
+		cout << it->first << " -> " << it->second->points->head->y <<
+			 " : " << it->second->points->tail->y << endl;
+	}
+	*/
 
-        if (bg::intersects(arena_boost, cell_boost))
-        {
-            bg::intersection(arena_boost, cell_boost, output);
-            if (output.size() == 1)
-            {
-                polygon * p = boost_polygon_to_polygon(output[0], cells[i]->id);
-                cells[i] = p;
-            }
-            else if (output.size() > 1)
-            {
-                cells[i] = boost_polygon_to_polygon(output[0], cells[i]->id);
-                for (int j=1; j<output.size(); j++)
-                {
-                    string _id = cells[i]->id + "_" + to_string(j);
-                    cells.push_back(boost_polygon_to_polygon(output[j], _id));
-                }
-               
-            }
-        }
-    }
-   
-    
-    // Reshape cells to obstacles and populate connection map
-    vector<Polygon_boost> ob_boost;
-    pol = obstacles->offset_head;
-    while(pol != NULL)
-    {
-        Polygon_boost ob_temp = pol->to_boost_polygon();
-        ob_boost.push_back(ob_temp);
-        pol = pol->pnext;
-    }
+	for (int i = 0; i < map_size; i++)
+	{
+		it = sweep_lines.upper_bound(*low_x - 1e-6);
+		// cout << it->first << " - " << sweep_lines.size() << endl;
 
-    vector<Polygon_boost> reshaped_cells;
-    reshaped_cells = difference_of_vectors(cells_boost, ob_boost);
+		if (upper_left == NULL && lower_left == NULL) // first iteration
+		{
+			point_list *ord_list = it->second->points->orderify(1);
+			upper_left = ord_list->tail;
+			lower_left = ord_list->head;
+		}
+		else
+		{
+			point_list *ord_list = it->second->points->orderify(1);
+			upper_right = ord_list->tail;
+			lower_right = ord_list->head;
 
-    vector<polygon*> final_cells;
-    for(int i=0; i<reshaped_cells.size(); i++)
-    {
-       string _id = "CELL_" + to_string(i);
-       polygon * temp_p = boost_polygon_to_polygon(reshaped_cells[i], _id);
-       final_cells.push_back(temp_p);
-       connections.add_element(temp_p);
-    }
+			point_list *pol_pl = new point_list();
+			pol_pl->add_node(lower_left);
+			pol_pl->add_node(upper_left);
+			pol_pl->add_node(upper_right);
+			pol_pl->add_node(lower_right);
 
-    // Merge cells
-    for(int i=0; i<final_cells.size(); i++)
-    {
-        polygon * p_now = final_cells[i];
-        if(connections.connections.count(p_now->id) != 0)
-        {
-            Master_node pol_node = connections.connections[p_now->id];
-            map<string, polygon*> conns = pol_node.adjacent_connections;
+			polygon *new_pol = new polygon(pol_pl, "CELL_" + to_string(i));
+			cells.push_back(new_pol);
 
-            map<string, polygon*>::const_iterator conn_it_2;
-            for(conn_it_2 = conns.cbegin(); conn_it_2 != conns.cend();
-                conn_it_2++)
-            {
-                Edge * c_edge = find_common_edge(p_now,
-                                                 conn_it_2->second);
-                
-                if (c_edge != NULL)
-                {
-                    point_node * vertex = NULL;
-                    
-                    pol = obstacles->offset_head;
-                    while(pol != NULL && vertex == NULL)
-                    {
-                        point_node * t = pol->pl->head;
-                        while(t != NULL && vertex == NULL)
-                        {
-                            if (*t == *c_edge->points->head ||
-                                *t == *c_edge->points->tail)
-                            {
-                                vertex = t->copy();
-                            }
-                            t = t->pnext;
-                        }
-                        pol = pol->pnext;
-                    }
+			upper_left = upper_right;
+			lower_left = lower_right;
+		}
+		sweep_lines.erase(it);
+	}
 
-                    if(vertex == NULL)
-                    {
-                        connections.unify(p_now->id, conn_it_2->first);
-                        final_cells[i] = connections.connections[p_now->id].master;
+	// Reshape cells to arena limits
+	vector<Polygon_boost> cells_boost;
+	for (int i = 0; i < cells.size(); i++)
+	{
+		vector<Polygon_boost> output;
 
-                        int index=-1;
-                        for(int j=0; j<final_cells.size(); j++)
-                        {
-                            if (final_cells[j]->id == conn_it_2->first)
-                            {
-                                index = j;
-                            }
-                        }
+		Polygon_boost cell_boost = cells[i]->to_boost_polygon();
+		cells_boost.push_back(cell_boost);
 
-                        if(index != -1)
-                        {
-                            final_cells[index] = connections.connections[p_now->id].master;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    map<string, polygon*> els = connections.elements(); 
-    map<string, polygon*>::const_iterator c_el;
-    for(c_el = els.cbegin(); c_el != els.cend(); c_el++)
-    {
-        free_space->add_polygon(c_el->second);
-    }
+		if (bg::intersects(arena_boost, cell_boost))
+		{
+			bg::intersection(arena_boost, cell_boost, output);
+			if (output.size() == 1)
+			{
+				polygon *p = boost_polygon_to_polygon(output[0], cells[i]->id);
+				cells[i] = p;
+			}
+			else if (output.size() > 1)
+			{
+				cells[i] = boost_polygon_to_polygon(output[0], cells[i]->id);
+				for (int j = 1; j < output.size(); j++)
+				{
+					string _id = cells[i]->id + "_" + to_string(j);
+					cells.push_back(boost_polygon_to_polygon(output[j], _id));
+				}
+			}
+		}
+	}
+
+	// Reshape cells to obstacles and populate connection map
+	vector<Polygon_boost> ob_boost;
+	pol = obstacles->offset_head;
+	while (pol != NULL)
+	{
+		Polygon_boost ob_temp = pol->to_boost_polygon();
+		ob_boost.push_back(ob_temp);
+		pol = pol->pnext;
+	}
+
+	vector<Polygon_boost> reshaped_cells;
+	reshaped_cells = difference_of_vectors(cells_boost, ob_boost);
+
+	vector<polygon *> final_cells;
+	for (int i = 0; i < reshaped_cells.size(); i++)
+	{
+		string _id = "CELL_" + to_string(i);
+		polygon *temp_p = boost_polygon_to_polygon(reshaped_cells[i], _id);
+		final_cells.push_back(temp_p);
+		connections.add_element(temp_p);
+	}
+
+	// Merge cells
+	for (int i = 0; i < final_cells.size(); i++)
+	{
+		polygon *p_now = final_cells[i];
+		if (connections.connections.count(p_now->id) != 0)
+		{
+			Master_node pol_node = connections.connections[p_now->id];
+			map<string, polygon *> conns = pol_node.adjacent_connections;
+
+			map<string, polygon *>::const_iterator conn_it_2;
+			for (conn_it_2 = conns.cbegin(); conn_it_2 != conns.cend();
+				 conn_it_2++)
+			{
+				Edge *c_edge = find_common_edge(p_now,
+												conn_it_2->second);
+
+				if (c_edge != NULL)
+				{
+					point_node *vertex = NULL;
+
+					pol = obstacles->offset_head;
+					while (pol != NULL && vertex == NULL)
+					{
+						point_node *t = pol->pl->head;
+						while (t != NULL && vertex == NULL)
+						{
+							if (*t == *c_edge->points->head ||
+								*t == *c_edge->points->tail)
+							{
+								vertex = t->copy();
+							}
+							t = t->pnext;
+						}
+						pol = pol->pnext;
+					}
+
+					if (vertex == NULL)
+					{
+						connections.unify(p_now->id, conn_it_2->first);
+						final_cells[i] = connections.connections[p_now->id].master;
+
+						int index = -1;
+						for (int j = 0; j < final_cells.size(); j++)
+						{
+							if (final_cells[j]->id == conn_it_2->first)
+							{
+								index = j;
+							}
+						}
+
+						if (index != -1)
+						{
+							final_cells[index] = connections.connections[p_now->id].master;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	map<string, Master_node>::iterator dit;
+	for (dit = connections.connections.begin(); dit != connections.connections.end(); dit++)
+	{
+		dit->second.diagonal_connections.clear();
+	}
+	map<string, polygon *> els = connections.elements();
+	map<string, polygon *>::const_iterator c_el;
+	for (c_el = els.cbegin(); c_el != els.cend(); c_el++)
+	{
+		free_space->add_polygon(c_el->second);
+	}
 }
 
 /**
