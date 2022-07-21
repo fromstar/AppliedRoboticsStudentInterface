@@ -169,8 +169,15 @@ namespace student
     rm.run_agents_planners(abstract_arena, aware);
     rm.info(true);
 
+    string location_f = find_agent_location_pddl(f_1, abstract_arena, true);
+    string location_c = find_agent_location_pddl(c_1, abstract_arena, true);
+
+    vector<curve> f_path;
     // Get the dubins path without intersection
-    vector<curve> f_path = get_dubins_path(arena, abstract_arena, f_1);
+    if(location_f.compare(location_c) != 0)
+    {
+      f_path = get_dubins_path(arena, abstract_arena, f_1);
+    }
     vector<curve> c_path = get_dubins_path(arena, abstract_arena, c_1);;
    
     /*
@@ -204,7 +211,6 @@ namespace student
     float elapsed_time = (float(clock() - starting_clock)) / CLOCKS_PER_SEC;
     log_test->add_event("Code ended in " + to_string(elapsed_time) + "s\n");
     
-
     if (!push_first)
     {
       imshow("Arena", img_arena);
