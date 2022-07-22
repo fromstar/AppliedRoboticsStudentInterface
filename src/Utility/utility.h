@@ -515,7 +515,8 @@ list_of_polygons *subset_over_middle_point(polygon *p = NULL);
 vector<Polygon_boost> difference_of_vectors(vector<Polygon_boost> arena,
 											vector<Polygon_boost> obstacles);
 
-string PDDL_conditional_cost(string el1, string el2, double cost);
+string PDDL_conditional_cost(string el1, string el2, double cost,
+                             string cost_name="total-cost");
 bool compare_doubles(double a, double b);
 bool equal_point_nodes(point_node * a, point_node * b);
 bool point_belong_to_edge(point_node *p, Edge * e);

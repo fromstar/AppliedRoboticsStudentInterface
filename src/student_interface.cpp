@@ -136,6 +136,7 @@ namespace student
         arena.free_space,
         arena.gates,
         arena.obstacles,
+        &arena.connections,
         arena.connections.find_pddl_connections(),
         arena.connections.make_cells_predicates(),
         arena.connections.make_cells_conditional_distances());
@@ -168,6 +169,10 @@ namespace student
     // Show plans of the robots
     rm.run_agents_planners(abstract_arena, aware);
     rm.info(true);
+      
+    imshow("Arena", img_arena);
+    imwrite("Arena.png", img_arena);
+    waitKey(0);
 
     string location_f = find_agent_location_pddl(f_1, abstract_arena, true);
     string location_c = find_agent_location_pddl(c_1, abstract_arena, true);

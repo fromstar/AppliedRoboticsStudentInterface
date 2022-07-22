@@ -84,6 +84,7 @@ World_representation::World_representation(logger *log,
 										   list_of_polygons *cells,
 										   list_of_polygons *gate_cells,
 										   list_of_obstacles *obs,
+                                           Connection_map * conn_map,
 										   string connections,
 										   string cells_pred,
 										   string cells_dist)
@@ -139,6 +140,11 @@ World_representation::World_representation(logger *log,
 		};
 		l->add_event("Added obstacles");
 	};
+
+    if (conn_map != NULL)
+    {
+        cell_map = *conn_map;
+    }
 
 	if (connections != "NaN")
 	{
@@ -333,10 +339,18 @@ string World_representation::get_cells_predicates()
 	return cell_predicates;
 }
 
-string World_representation::get_cells_conditional_distances()
+string World_representation::get_cells_conditional_distances(string cost_name,
+                                                             bool overload)
 {
 	if (cells_distances != "NaN")
-	{
+	{   
+        if(overload == true)
+        {
+            cells_distances = cell_map.make_cells_conditional_distances(cost_name);
+            l->add_event("Cell creation overloaded.");
+            return cells_distances;
+        }
+
 		l->add_event("World_representation: cells distances found, returning.");
 	}
 	else

@@ -3,6 +3,7 @@
 
 #include "../Utility/utility.h"
 #include "../Log/logger.h"
+#include"../Connector/connector.h"
 
 /**
  * \struct World_node
@@ -37,6 +38,8 @@ typedef struct World_representation
 	map<string, World_node> world_free_cells;
 	map<string, World_node> world_gates;
 	vector<World_node> obstacles;
+    
+    Connection_map cell_map;
 
 	string pddl_connections = "NaN";
     string cell_predicates = "NaN";
@@ -48,6 +51,7 @@ typedef struct World_representation
                          list_of_polygons *cells = NULL,
                          list_of_polygons *gate_cells = NULL,
 						 list_of_obstacles *obs=NULL,
+                         Connection_map * conn_map = NULL,
 						 string connections="NaN",
                          string cells_pred="NaN",
                          string cells_dist="NaN");
@@ -56,7 +60,8 @@ typedef struct World_representation
 	string find_pddl_connections();
     string get_gates_predicates();
     string get_cells_predicates();
-    string get_cells_conditional_distances();
+    string get_cells_conditional_distances(string cost_name="total-cost",
+                                           bool overload=false);
     double distance(string el1, string el2);  // Distance among elements centroid
 	void set_connections(string connections);
 	void info();

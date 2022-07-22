@@ -110,7 +110,7 @@ typedef struct Connection_map
                                     bool min=true);
         string find_pddl_connections();
         string make_cells_predicates();
-        string make_cells_conditional_distances();
+        string make_cells_conditional_distances(string cost_name="total-cost");
         map<string, polygon*> elements();
         vector<string> ids();
 } Connection_map;

@@ -436,7 +436,7 @@ vector<double> theta_discretization(double starting_angle, double search_angle)
 
 	vector<double> plausible_theta;
 	plausible_theta.push_back(starting_angle);
-	double res_steps = 1 * (M_PI / 180); // 1 degree converted in radiants
+	double res_steps = 2 * (M_PI / 180); // 1 degree converted in radiants
 
 	double theta = starting_angle - (search_angle / 2);
 

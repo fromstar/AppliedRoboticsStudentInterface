@@ -223,8 +223,10 @@ void run_planner(string planner_path, string domain_file_path,
  */
 vector<string> string_to_vector(string sentence, string token);
 
-string plan_in_pddl_conditional_effects(string id_agent,
+string plan_in_pddl_conditional_effects(World_representation wr,
+                                        string id_agent,
                                         vector<string> plan,
+                                        string cost_name="total-cost",
                                         int threshold = -1,
                                         bool consider_end_escape=true);
 string find_agent_location_pddl(Robot* agent, World_representation wr,

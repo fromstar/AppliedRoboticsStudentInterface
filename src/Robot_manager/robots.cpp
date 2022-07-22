@@ -998,6 +998,7 @@ vector<string> robot_fugitive::make_plan(bool apply, string domain_name,
 	ifstream pddl_in(filesPath + "/" + plan_name + ".plan");
 	vector<string> tmp_plan;
 	bool pushing = false;
+    cout << "Loading plan " << endl;
 	if (pddl_in.is_open())
 	{
 		while (pddl_in)
@@ -1105,8 +1106,10 @@ void robot_catcher::to_log(string message)
 	self->l->add_event(self->ID + ": " + message);
 };
 
-string plan_in_pddl_conditional_effects(string id_agent,
+string plan_in_pddl_conditional_effects(World_representation wr,
+                                        string id_agent,
 										vector<string> agent_plan,
+                                        string cost_name,
 										int threshold,
 										bool consider_end_escape)
 {
@@ -1145,7 +1148,12 @@ string plan_in_pddl_conditional_effects(string id_agent,
 						 ")\n"
 						 "\t\t\t\t)";
 		}
-        
+       
+        point_node * start = wr.world_free_cells[cell_s.back()].cell->centroid;
+        point_node * end = wr.world_free_cells[cell_e.back()].cell->centroid;
+
+        double cost_value = start->distance(end);
+
         pddl_plan += "\n\t\t\t\t(when\n"
 					 "\t\t\t\t\t(is_in ?r_f_" +
 					 id_agent +
@@ -1157,8 +1165,9 @@ string plan_in_pddl_conditional_effects(string id_agent,
                      "\t\t\t\t\t\t( not ( is_in ?r_f_" +
 					 id_agent + " ?c_" +
 					 cell_s[cell_s.size() - 1] + " ) )\n"
-                     "\t\t\t\t\t\t( increase (total-cost) " +
-                     to_string(FUGITIVE_MOVE_COST_FOR_CATCHER) + " )\n"
+                     "\t\t\t\t\t\t( increase (" + cost_name + ") " +
+                     to_string(cost_value) + " )\n"
+                     "\t\t\t\t\t( visited ?c_" + cell_e.back() + " )\n"
                      "\t\t\t\t\t)\n"
                      "\t\t\t\t)";
 	};
@@ -1256,15 +1265,17 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	pddl_domain += "\t)\n";
 
 	// Write cost function
-	pddl_domain += "\t(:functions (total-cost) - number)\n";
+	pddl_domain += "\t(:functions \n\t\t(catcher_cost) - number" 
+                   "\n\t\t(fugitive_cost) - number\n\t)\n";
 
 	// write predicates
 	string cells_predicates = wr.get_cells_predicates();
-	string cells_conditional_cost = wr.get_cells_conditional_distances();
+	string cells_conditional_cost = wr.get_cells_conditional_distances("catcher_cost", true);
 
 	to_log("Writing predicates");
 	pddl_domain += "\t(:predicates\n"
 				   "\t\t(visited ?c - location)\n"
+                   "\t\t(visitable_fugitive ?c - location)\n"
 				   "\t\t(is_in ?r - robot ?loc - location)\n"
 				   "\t\t(connected ?loc_start - location ?loc_end - location)\n"
 				   "\t\t(captured ?r - fugitive)\n"
@@ -1314,11 +1325,11 @@ void robot_catcher::make_pddl_files(World_representation wr,
 				   "\t\t\t\t(or\n"
 				   "\t\t\t\t\t( connected ?loc_start ?loc_end )\n"
 				   "\t\t\t\t\t( connected ?loc_end ?loc_start )\n"
-				   "\t\t\t\t)\n"
-				   "\t\t\t\t(and\n"
-				   "\t\t\t\t\t( visited ?loc_start )\n"
-				   "\t\t\t\t\t( not ( visited ?loc_end ) )\n"
 				   "\t\t\t\t)\n";
+				   // "\t\t\t\t(and\n"
+				   // "\t\t\t\t\t( visited ?loc_start )\n"
+				   // "\t\t\t\t\t( not ( visited ?loc_end ) )\n"
+				   // "\t\t\t\t)\n";
 	// new
 	if (antagonists_pddl.size() == 1)
 	{
@@ -1342,7 +1353,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	// write effects
 	string move_action_effects = "\t\t:effect\n"
 								 "\t\t\t(and\n"
-								 "\t\t\t\t( visited ?loc_end )\n"
+								 // "\t\t\t\t( visited ?loc_end )\n"
 								 "\t\t\t\t( not ( is_in ?r_c ?loc_start ) )\n"
 								 "\t\t\t\t( is_in ?r_c ?loc_end )\n";
 
@@ -1351,8 +1362,10 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	string move_agents_plans = "";
 	for (it = antagonists_plans.begin(); it != antagonists_plans.end(); ++it)
 	{
-		move_agents_plans += plan_in_pddl_conditional_effects(it->first,
-															  it->second);
+		move_agents_plans += plan_in_pddl_conditional_effects(wr,
+                                                              it->first,
+															  it->second,
+                                                              "fugitive_cost");
 	};
 
 	// Check if cells are diagonal
@@ -1361,7 +1374,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
                         "\n\t\t\t\t\t\t( is_diagonal ?loc_start ?loc_end )"
                         "\n\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
                         "\n\t\t\t\t\t)"
-                        "\n\t\t\t\t\t( increase (total-cost) " +
+                        "\n\t\t\t\t\t( increase (catcher_cost) " +
                         to_string(DIAGONAL_MOVE_COST) + ")"
                         "\n\t\t\t\t)"
                         "\n\t\t\t\t(when"
@@ -1371,7 +1384,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
                         "\n\t\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
                         "\n\t\t\t\t\t\t)"
                         "\n\t\t\t\t\t)"
-                        "\n\t\t\t\t\t( increase (total-cost) " +
+                        "\n\t\t\t\t\t( increase (catcher_cost) " +
                         to_string(PERPENDICULAR_MOVE_COST) + ")"
                         "\n\t\t\t\t)";
 
@@ -1385,20 +1398,30 @@ void robot_catcher::make_pddl_files(World_representation wr,
 							"\t\t:parameters (?r_catcher - catcher "
 							"?r_fugitive - fugitive ?loc - cell)\n"
 							"\t\t:precondition\n"
-							"\t\t\t(and\n"
-							"\t\t\t\t( is_in ?r_catcher ?loc )\n"
-							"\t\t\t\t( is_in ?r_fugitive ?loc )\n"
+							"\t\t\t(or\n"
+                            "\t\t\t\t(and\n"
+							"\t\t\t\t\t( is_in ?r_catcher ?loc )\n"
+							"\t\t\t\t\t( is_in ?r_fugitive ?loc )\n"
 							// Uncomment to avoid collision in planning
 							// "\t\t\t\t( or\n"
 							// "\t\t\t\t\t( connected ?loc_c ?loc_f )"
 							// "\t\t\t\t\t( connected ?loc_f ?loc_c )"
 							// "\t\t\t\t)"
-							"\t\t\t)\n"
+							"\t\t\t\t)\n"
+                            "\t\t\t\t(and\n"
+                            "\t\t\t\t\t( is_in ?r_catcher ?loc )\n"
+                            "\t\t\t\t\t( visitable_fugitive ?loc )\n"
+                            "\t\t\t\t\t( not (visited ?loc ) )"
+                            // "\t\t\t\t\t( < (catcher_cost) (fugitive_cost) ) \n"
+                            "\t\t\t\t)\n"
+                            "\t\t\t)\n"
+
 							"\t\t:effect ( captured ?r_fugitive )\n"
 							"\t)\n";
 
 	// Write stay action
-	to_log("Writing action \"Stay\"");
+	/*
+    to_log("Writing action \"Stay\"");
 	string action_stay = "\t(:action stay\n"
 						 "\t\t:parameters (?r_catcher - catcher ?loc - location)\n"
 						 "\t\t:precondition\n"
@@ -1410,6 +1433,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 						 to_string(FUGITIVE_MOVE_COST_FOR_CATCHER) + ")"
                          "\n\t\t\t)"
                          "\n\t)\n";
+    */
 
 	// Write end of pddl domain
 	string pddl_domain_end = "\n)";
@@ -1466,13 +1490,19 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	// Write initial state
 	to_log("Writing cell connections");
 	string pddl_problem = "\t(:init\n"
-						  "\t\t( = (total-cost) 0)\n";
+						  "\t\t( = (catcher_cost) 0)\n"
+                          "\t\t( = (fugitive_cost) 0)\n";
 	for (it_node = wr.world_free_cells.begin();
 		 it_node != wr.world_free_cells.end();
 		 it_node++)
 	{
 		pddl_problem += "\t\t( is_" + it_node->first + " " +
 						it_node->first + ")\n";
+        if(cells.count(it_node->first) != 0)
+        {
+            pddl_problem += "\t\t( visitable_fugitive " +
+                            it_node->first + " )\n";
+        }
 	}
 
 	pddl_problem += wr.find_pddl_connections();
@@ -1492,7 +1522,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	// Write initial location of the agents
 	to_log("Writing initial location of the agents");
 
-	pddl_problem += find_agent_location_pddl(self, wr);
+	pddl_problem += find_agent_location_pddl(self, wr, false, false);
 
 	to_log("Written location of catcher");
 
@@ -1501,14 +1531,15 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	for (int i = 0; i < antagonists.size(); i++)
 	{
 		Robot *ant = antagonists[i]->copy();
-		pddl_problem += find_agent_location_pddl(ant, wr, false, false);
+		pddl_problem += find_agent_location_pddl(ant, wr, false, true);
 	};
 
 	to_log("Written location of antagonists");
 	pddl_problem += "\t)\n";
 
 	// write metrics
-	pddl_problem += "\t(:metric minimize (total-cost))\n";
+	// pddl_problem += "\t(:metric minimize (total-cost))\n";
+	pddl_problem += "\t(:metric minimize (catcher_cost))\n";
 
 	// write goal
 	to_log("Writing goal");
@@ -1544,7 +1575,8 @@ void robot_catcher::make_pddl_files(World_representation wr,
 							   second_part_action_move;
 
 	// accorpate domain file
-	string last_part_domain = action_capture + action_stay + pddl_domain_end;
+	string last_part_domain = action_capture // + action_stay
+                              + pddl_domain_end;
 
 	string domain_to_write = pddl_domain + final_action_move + last_part_domain;
 
@@ -1566,7 +1598,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	// If plan size == 0 no plan found to catch the fugitive.
 	// Go to the gate in which the fugitives may go
 	cout << "Catcher Found plan size: " << found_plan.size() << endl;
-	
+
     if (found_plan.size() == 0)
 	{
 		string arrival_gate = "";
@@ -1590,7 +1622,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 		problem_goal = "\t(:goal\n"
 					   "\t\t ( is_in " +
 					   self->ID + " " + arrival_gate + " )";
-		problem_goal += "\t)\n";
+		problem_goal += "\t\n)\n";
 
 		// write file end
 		problem_goal += ")\n";
@@ -1609,7 +1641,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 			cout << "Gate " << arrival_gate << " unreachable\n";
 		}
 	}
-
+    
 	// Remove plan file -> no more needed
 	remove((filesPath + "/" + plan_name + ".plan").c_str());
 };
@@ -1645,11 +1677,15 @@ vector<string> robot_catcher::make_plan(bool apply, string domain_name,
 	ifstream pddl_in(filesPath + "/" + plan_name + ".plan");
 	vector<string> tmp_plan;
 	bool pushing = false;
+
+    cout << "*** Catcher plan ****" << endl;
+
 	if (pddl_in.is_open())
 	{
 		while (pddl_in)
 		{
 			getline(pddl_in, tmp_line);
+            cout << tmp_line << endl;
 			if (tmp_line.substr(0, tmp_line.find(" ")) == "step")
 			{
 				pushing = true;
@@ -1738,7 +1774,7 @@ void run_planner(string planner_path, string domain_file_path,
 	int algorithm = 3;
 	if (is_catcher)
 	{
-		algorithm = 5;
+		algorithm = 3;
 	};
 
 	string command = "cd " + planner_path +

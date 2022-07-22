@@ -827,10 +827,10 @@ string Connection_map::make_cells_predicates()
     return "NaN";
 }
 
-string Connection_map::make_cells_conditional_distances()
+string Connection_map::make_cells_conditional_distances(string cost_name)
 {
     to_log("Started computing cells distances into PDDL conditional effects.");
-    string conditional_distances = "";
+    string conditional_distances = "\n\t\t\t\t; Cells distances costs\n";
     map<string, Master_node>::const_iterator c_it = connections.cbegin();
     map<string, polygon*>::const_iterator conn_it_start;
     map<string, polygon*>::const_iterator conn_it_end;
@@ -860,7 +860,8 @@ string Connection_map::make_cells_conditional_distances()
                     double distance = master_centroid->distance(cell_centroid);
                     string cost = PDDL_conditional_cost(c_it->first,
                                                         conn_it_start->first,
-                                                        distance);
+                                                        distance,
+                                                        cost_name);
                     conditional_distances += cost;
                     computed_distances[couple] = distance;
                 }
