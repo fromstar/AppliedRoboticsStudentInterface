@@ -921,7 +921,7 @@ tuple<vector<double>, vector<double>> refine_path(vector<double> x_path, vector<
 		for (int i = 1; i < size; i++)
 		{
 			distance += sqrt(pow(x_path[i] - x_path[i - 1], 2) + pow(y_path[i] - y_path[i - 1], 2));
-			if (distance > 0 || i == size - 1)
+			if (distance > 0.1 || i == size - 1)
 			{
 				new_x_path.push_back(x_path[i]);
 				new_y_path.push_back(y_path[i]);

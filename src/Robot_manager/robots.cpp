@@ -465,7 +465,7 @@ string robot_fugitive::make_pddl_domain_file(World_representation wr)
 };
 
 string find_agent_location_pddl(Robot *agent, World_representation wr,
-								bool return_loc_id)
+								bool return_loc_id, bool want_visited)
 {
 	string found_pddl = "";
 	bool found_agent = false;
@@ -481,10 +481,13 @@ string find_agent_location_pddl(Robot *agent, World_representation wr,
 			if (return_loc_id == false)
 			{
 				found_pddl += "\t\t( is_in " + upperify(agent->ID) + " " +
-							  upperify(it_1->first) + " )\n"
-													  "\t\t( visited " +
-							  upperify(it_1->first) +
-							  " )\n";
+							  upperify(it_1->first) + " )\n";
+                if (want_visited == true)
+                {
+				    found_pddl += "\t\t( visited " +
+							      upperify(it_1->first) +
+							      " )\n";
+                }
 			}
 			else
 			{
@@ -539,10 +542,13 @@ string find_agent_location_pddl(Robot *agent, World_representation wr,
 		if (return_loc_id == false)
 		{
 			found_pddl += "\t\t( is_in " + upperify(agent->ID) + " " +
-						  upperify(nearest_cell->second) + " )\n"
-														   "\t\t( visited " +
-						  upperify(nearest_cell->second) +
-						  " )\n";
+						  upperify(nearest_cell->second) + " )\n";
+            if (want_visited == true)
+            {
+			    found_pddl += "\t\t( visited " +
+						      upperify(nearest_cell->second) +
+						      " )\n";
+            }
 		}
 		else
 		{
@@ -598,7 +604,8 @@ map<string, vector<string>> find_gates_wrt_cells(World_representation wr,
 			for (it_2 = wr.world_gates.cbegin(); it_2 != wr.world_gates.cend();
 				 it_2++)
 			{
-				if (los(it_1->second.cell->centroid, it_2->second.cell->centroid, obs->head, &edges_copy) == true)
+				if (los(it_1->second.cell->centroid, it_2->second.cell->centroid,
+                        obs->head, &edges_copy) == true)
 				{
 					if (problem_file != NULL)
 					{
@@ -1116,44 +1123,44 @@ string plan_in_pddl_conditional_effects(string id_agent,
 	}
 
 	string pddl_plan = "\n\t\t\t\t; Plan for agent: " + id_agent;
-	// make a condition for each step of the plan
-	vector<string> tmp_s = string_to_vector(id_agent, "_");
-	// Must catch it before it goes to the gate, i.e -> n-1 plan steps
+	// make a condition for each step of the plan	
+    // Must catch it before it goes to the gate, i.e -> n-1 plan steps
 	for (int i = threshold; i >= 0; i--)
 	{
 		vector<string> tmp_plan_p1 = string_to_vector(agent_plan[i], " ");
-		vector<string> tmp_plan_p2 = string_to_vector(
-			tmp_plan_p1[tmp_plan_p1.size() - 1],
-			")");
+		
+        vector<string> tmp_plan_p2 = string_to_vector(tmp_plan_p1.back(), ")");
+
 		vector<string> cell_s = string_to_vector(tmp_plan_p1[tmp_plan_p1.size() - 2], "_");
 		vector<string> cell_e = string_to_vector(tmp_plan_p2[0], "_");
 
-		pddl_plan += "\n\t\t\t\t(when\n"
-					 "\t\t\t\t\t(is_in ?r_f_" +
-					 tmp_s[tmp_s.size() - 1] +
-					 " ?c_" + cell_s[cell_s.size() - 1] + " )\n"
-														  "\t\t\t\t\t(and\n"
-														  "\t\t\t\t\t\t( is_in ?r_f_" +
-					 tmp_s[tmp_s.size() - 1] +
-					 " ?c_" + cell_e[cell_e.size() - 1] + " )\n"
-														  "\t\t\t\t\t\t( not ( is_in ?r_f_" +
-					 tmp_s[tmp_s.size() - 1] + " ?c_" +
-					 cell_s[cell_s.size() - 1] + " ) )\n"
-												 "\t\t\t\t\t\t( increase (total-cost) 1 )\n"
-												 "\t\t\t\t\t)\n"
-												 "\t\t\t\t)";
-
-		if (i == threshold && consider_end_escape == true)
+        if (i == threshold && consider_end_escape == true)
 		{
 			pddl_plan += "\n\t\t\t\t(when\n"
 						 "\t\t\t\t\t(is_in ?r_f_" +
-						 tmp_s[tmp_s.size() - 1] +
-						 " ?c_" + cell_s[cell_s.size() - 1] + " )\n"
-															  "\t\t\t\t\t(escaped " +
-						 tmp_s[tmp_s.size() - 1] +
+						 id_agent +
+						 " ?c_" + cell_e[cell_e.size() - 1] + " )\n"
+                         "\t\t\t\t\t(escaped " +
+						 id_agent +
 						 ")\n"
 						 "\t\t\t\t)";
-		};
+		}
+        
+        pddl_plan += "\n\t\t\t\t(when\n"
+					 "\t\t\t\t\t(is_in ?r_f_" +
+					 id_agent +
+					 " ?c_" + cell_s[cell_s.size() - 1] + " )\n"
+                     "\t\t\t\t\t(and\n"
+                     "\t\t\t\t\t\t( is_in ?r_f_" +
+					 id_agent +
+					 " ?c_" + cell_e[cell_e.size() - 1] + " )\n"
+                     "\t\t\t\t\t\t( not ( is_in ?r_f_" +
+					 id_agent + " ?c_" +
+					 cell_s[cell_s.size() - 1] + " ) )\n"
+                     "\t\t\t\t\t\t( increase (total-cost) " +
+                     to_string(FUGITIVE_MOVE_COST_FOR_CATCHER) + " )\n"
+                     "\t\t\t\t\t)\n"
+                     "\t\t\t\t)";
 	};
 	return pddl_plan;
 }
@@ -1257,13 +1264,14 @@ void robot_catcher::make_pddl_files(World_representation wr,
 
 	to_log("Writing predicates");
 	pddl_domain += "\t(:predicates\n"
-				   "\t\t(visited ?c - location)"
+				   "\t\t(visited ?c - location)\n"
 				   "\t\t(is_in ?r - robot ?loc - location)\n"
 				   "\t\t(connected ?loc_start - location ?loc_end - location)\n"
 				   "\t\t(captured ?r - fugitive)\n"
 				   "\t\t(escaped ?r - fugitive)\n"
 				   "\t\t(is_diagonal ?c1 - location ?c2 - location)\n" +
 				   cells_predicates +
+                   "\t\t(is_GATE ?c - location)\n"
 				   "\t)\n";
 
 	// write actions
@@ -1299,6 +1307,10 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	action_move += "\t\t:precondition\n"
 				   "\t\t\t(and\n"
 				   "\t\t\t\t(is_in ?r_c ?loc_start)\n"
+                   // "\t\t\t\t(and\n"
+                   // "\t\t\t\t(not (is_GATE ?loc_end) )\n"
+                   "\t\t\t\t(not (is_GATE ?loc_start) )\n"                 
+                   // "\t\t\t\t)\n"
 				   "\t\t\t\t(or\n"
 				   "\t\t\t\t\t( connected ?loc_start ?loc_end )\n"
 				   "\t\t\t\t\t( connected ?loc_end ?loc_start )\n"
@@ -1344,28 +1356,28 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	};
 
 	// Check if cells are diagonal
-	string move_costs = "\n\t\t\t\t(when"
-						"\n\t\t\t\t\t( or"
-						"\n\t\t\t\t\t\t( is_diagonal ?loc_start ?loc_end )"
-						"\n\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
-						"\n\t\t\t\t\t)"
-						"\n\t\t\t\t\t( increase (total-cost) " +
-						to_string(DIAGONAL_MOVE_COST) + ")"
-														"\n\t\t\t\t)"
-														"\n\t\t\t\t(when"
-														"\n\t\t\t\t\t( not"
-														"\n\t\t\t\t\t\t( or"
-														"\n\t\t\t\t\t\t\t( is_diagonal ?loc_start ?loc_end )"
-														"\n\t\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
-														"\n\t\t\t\t\t\t)"
-														"\n\t\t\t\t\t)"
-														"\n\t\t\t\t\t( increase (total-cost) " +
-						to_string(PERPENDICULAR_MOVE_COST) + ")"
-															 "\n\t\t\t\t)";
+    string move_costs = "\n\t\t\t\t(when"
+                        "\n\t\t\t\t\t( or"
+                        "\n\t\t\t\t\t\t( is_diagonal ?loc_start ?loc_end )"
+                        "\n\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
+                        "\n\t\t\t\t\t)"
+                        "\n\t\t\t\t\t( increase (total-cost) " +
+                        to_string(DIAGONAL_MOVE_COST) + ")"
+                        "\n\t\t\t\t)"
+                        "\n\t\t\t\t(when"
+                        "\n\t\t\t\t\t( not"
+                        "\n\t\t\t\t\t\t( or"
+                        "\n\t\t\t\t\t\t\t( is_diagonal ?loc_start ?loc_end )"
+                        "\n\t\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
+                        "\n\t\t\t\t\t\t)"
+                        "\n\t\t\t\t\t)"
+                        "\n\t\t\t\t\t( increase (total-cost) " +
+                        to_string(PERPENDICULAR_MOVE_COST) + ")"
+                        "\n\t\t\t\t)";
 
-	string action_move_end = cells_conditional_cost +
-							 "\n\t\t\t)\n"
-							 "\t)\n";
+    string action_move_end = cells_conditional_cost +
+                             "\n\t\t\t)\n"
+                             "\t)\n";
 
 	to_log("Writing action \"Capture\"");
 
@@ -1396,8 +1408,8 @@ void robot_catcher::make_pddl_files(World_representation wr,
 						 "\n\t\t\t\t( is_in ?r_catcher ?loc)"
 						 "\n\t\t\t\t(increase (total-cost) " +
 						 to_string(FUGITIVE_MOVE_COST_FOR_CATCHER) + ")"
-																	 "\n\t\t\t)"
-																	 "\n\t)\n";
+                         "\n\t\t\t)"
+                         "\n\t)\n";
 
 	// Write end of pddl domain
 	string pddl_domain_end = "\n)";
@@ -1406,7 +1418,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	to_log("Writing problem file");
 	string problem_name = "problem_" + self->ID;
 	string problem_preamble = "(define (problem " + problem_name + " )\n"
-																   "\t(:domain " +
+                              "\t(:domain " +
 							  domain_name + ")\n";
 
 	// write objects
@@ -1431,7 +1443,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	};
 
 	// Part 2: write gates
-	to_log("Writing gates");
+    to_log("Writing gates");
 	for (it_node = wr.world_gates.begin(); it_node != wr.world_gates.end();
 		 it_node++)
 	{
@@ -1465,40 +1477,15 @@ void robot_catcher::make_pddl_files(World_representation wr,
 
 	pddl_problem += wr.find_pddl_connections();
 
-	// Write location of the gates
-	// map<string, World_node>::iterator itg;
-	// for (itg = wr.world_gates.begin(); itg != wr.world_gates.end(); itg++)
-	// {
-	// 	Polygon_boost gate_boost = itg->second.cell->to_boost_polygon();
-	// 	map<string, World_node>::iterator itc;
-	// 	for (itc = wr.world_free_cells.begin();
-	// 		 itc != wr.world_free_cells.end();
-	// 		 itc++)
-	// 	{
-	// 		Polygon_boost cell_boost = itc->second.cell->to_boost_polygon();
-	// 		if (boost::geometry::intersects(gate_boost, cell_boost))
-	// 		{
-	// 			pddl_problem += "\t\t( connected " +
-	// 							upperify(itg->first) + " " +
-	// 							upperify(itc->first) + ")\n";
-	// 		}
-	// 	}
-	// }
-
-	cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n";
-	map<string, vector<string>> gates = find_gates_wrt_cells(wr, &pddl_problem, true);
-	// cout << "Gates size: " <<gates.size() << endl;
-	// map<string, vector<string>>::const_iterator cit;
-	// for (cit = gates.cbegin(); cit != gates.cend(); cit++)
-	// {
-	// 	for (int i = 0; i < cit->second.size(); i++)
-	// 	{
-	// 		pddl_problem += "\t\t( connected " +
-	// 						upperify(cit->first) + " " +
-	// 						upperify(cit->second[i]) + ")\n";
-	// 	}
-	// }
-
+	map<string, vector<string>> gates = find_gates_wrt_cells(wr, &pddl_problem,
+                                                             false);
+    
+    map<string, vector<string>>::const_iterator cit;
+    for (cit = gates.cbegin(); cit != gates.cend(); cit++)
+	{
+        pddl_problem += "\t\t( is_GATE " + cit->first + ")\n";
+    }
+    
 	pddl_problem = problem_preamble + problem_objects +
 				   problem_objects_end + pddl_problem;
 
@@ -1514,7 +1501,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	for (int i = 0; i < antagonists.size(); i++)
 	{
 		Robot *ant = antagonists[i]->copy();
-		pddl_problem += find_agent_location_pddl(ant, wr);
+		pddl_problem += find_agent_location_pddl(ant, wr, false, false);
 	};
 
 	to_log("Written location of antagonists");
@@ -1579,7 +1566,8 @@ void robot_catcher::make_pddl_files(World_representation wr,
 	// If plan size == 0 no plan found to catch the fugitive.
 	// Go to the gate in which the fugitives may go
 	cout << "Catcher Found plan size: " << found_plan.size() << endl;
-	if (found_plan.size() == 0)
+	
+    if (found_plan.size() == 0)
 	{
 		string arrival_gate = "";
 		double min_distance_gate = -1;
