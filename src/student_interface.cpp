@@ -75,7 +75,7 @@ namespace student
                 const std::vector<float> y, const std::vector<float> theta,
                 std::vector<Path> &path, const std::string &config_folder)
   {
-    bool push_first = true;
+    bool push_first = false;
     clock_t starting_clock = clock();
 
     logger *log_test = new logger("test_log.txt");
@@ -179,10 +179,11 @@ namespace student
 
     vector<curve> f_path;
     // Get the dubins path without intersection
-    if(location_f.compare(location_c) != 0)
-    {
-      f_path = get_dubins_path(arena, abstract_arena, f_1);
-    }
+    // if(location_f.compare(location_c) != 0)
+    // {
+    //   f_path = get_dubins_path(arena, abstract_arena, f_1);
+    // }
+    f_path = get_dubins_path(arena, abstract_arena, f_1);
     vector<curve> c_path = get_dubins_path(arena, abstract_arena, c_1);;
    
     /*
@@ -209,7 +210,7 @@ namespace student
       for (int i = 0; i < c_path.size(); i++)
       {
         path[1] = push_path(c_path[i], path[1]);
-        img_arena = plotdubins(c_path[i], "b", "b", "b", img_arena);
+        img_arena = plotdubins(c_path[i], "y", "y", "y", img_arena);
       }
     }
 

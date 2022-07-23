@@ -321,9 +321,9 @@ Mat plotarc(arc a, string c, Mat img)
 	int r = 0, g = 0, b = 0;
 	if (!strcmp(c.c_str(), "r") || !strcmp(c.c_str(), "red")) // strcmp() returns 0 if the strings are equal
 	{
-		r = 255;
+		r = 0;
 		g = 0;
-		b = 0;
+		b = 255;
 	}
 	else if (!strcmp(c.c_str(), "g") || !strcmp(c.c_str(), "green"))
 	{
@@ -337,8 +337,14 @@ Mat plotarc(arc a, string c, Mat img)
 		g = 0;
 		b = 255;
 	}
+	else if (!strcmp(c.c_str(), "y") || !strcmp(c.c_str(), "yellow"))
+	{
+		r = 255;
+		g = 234;
+		b = 128;
+	}
 
-	img = plot_points(pl, img, Scalar(r, g, b), false);
+	img = plot_points(pl, img, Scalar(b, g, r), false);
 	pl->delete_list();
 	return img;
 }
@@ -436,14 +442,20 @@ vector<double> theta_discretization(double starting_angle, double search_angle)
 
 	vector<double> plausible_theta;
 	plausible_theta.push_back(starting_angle);
-	double res_steps = 2 * (M_PI / 180); // 1 degree converted in radiants
+	double res_steps = 10 * (M_PI / 180); // 1 degree converted in radiants
 
 	double theta = starting_angle - (search_angle / 2);
 
-	while (theta <= starting_angle + (search_angle / 2))
+	int i = -1;
+	while (theta <= starting_angle)
 	{
-		plausible_theta.push_back(theta);
-		theta += res_steps;
+		double val = starting_angle + (i * theta);
+		plausible_theta.push_back(val);
+
+		if (i > 0)
+			theta += res_steps;
+
+		i = -i;
 	}
 	return plausible_theta;
 }
@@ -628,12 +640,6 @@ bool pt_in_arc(point_node *ptso, arc a)
 	start = get_angle(a.xc, a.yc, a.x0, a.y0);
 	end = get_angle(a.xc, a.yc, a.xf, a.yf);
 
-	/* It's simpler work with only positive angles*/
-	// if (start < 0)
-	// 	start += (M_PI * 2);
-	// if (end < 0)
-	// 	end += (M_PI * 2);
-
 	if (end < start)
 	{
 		double tmp;
@@ -645,8 +651,6 @@ bool pt_in_arc(point_node *ptso, arc a)
 	while (pts != NULL)
 	{
 		angle = get_angle(a.xc, a.yc, pts->x, pts->y);
-		// if (angle < 0)
-		// 	angle += (M_PI * 2);
 		if (is_in_arc(start, end, angle))
 		{
 			return true;
@@ -693,7 +697,7 @@ Path push_path(curve c, Path p)
 	 */
 
 	arc a;
-	int n_samples = 100;
+	int n_samples = 1000;
 	a.x0 = c.a1.x0;
 	a.y0 = c.a1.y0;
 	a.th0 = c.a1.th0;
@@ -776,100 +780,257 @@ tuple<vector<double>, vector<vector<curve>>> get_dubins_path_recursive(vector<do
 
 	// Recursive call. The dubins path is calculated backward.
 	tie(t_length, t_path) = get_dubins_path_recursive(sub_x, sub_y, sub_th, arena, inside_offset_arena, inside_offset_ob, search_angle, false);
+	cout << "Ricevuto percorso di size: " << t_path.size() << endl;
 
-	vector<double> thf_discretized = theta_discretization(th_path[1], search_angle);
-
-	map<double, curve> local_path;
+	int cnt = 0;
+	const int N_MAX_CURVES = 100;
 
 	if (first_iteration == true)
 	{
-		for (int i = 0; i < thf_discretized.size(); i++)
-		{
-			point_list *map = arena.shrinked_arena;
-			polygon *obs = arena.obstacles->offset_head;
-			if (inside_offset_arena == true)
-				map = arena.arena;
-			if (inside_offset_ob == true)
-				obs = arena.obstacles->head;
+		point_list *map = arena.shrinked_arena;
+		polygon *obs = arena.obstacles->offset_head;
+		if (inside_offset_arena == true)
+			map = arena.arena;
+		if (inside_offset_ob == true)
+			obs = arena.obstacles->head;
 
-			tie(c, pidx) = dubins_no_inter(x_path[0], y_path[0], th_path[0], x_path[1], y_path[1],
-										   thf_discretized[i], map, obs);
-			if (pidx > 0)
-				local_path[thf_discretized[i]] = c;
-		}
-	}
-	else
-	{
-		vector<double> th0_discretized = theta_discretization(th_path[0], search_angle);
-		for (int i = 0; i < th0_discretized.size(); i++)
+		if (x_path.size() == 2)
 		{
-			vector<curve> tmp_c;
-			for (int j = 0; j < thf_discretized.size(); j++)
+			vector<double> thf_discretized = theta_discretization(th_path[1], search_angle);
+			for (int i = 0; i < thf_discretized.size(); i++)
 			{
-
-				point_list *map = arena.shrinked_arena;
-				if (x_path.size() == 2)
-				{
-					map = arena.arena;
-				}
-
-				tie(c, pidx) = dubins_no_inter(x_path[0], y_path[0], th0_discretized[i], x_path[1], y_path[1],
-											   thf_discretized[j], map, arena.obstacles->offset_head);
-
+				tie(c, pidx) = dubins_no_inter(x_path[0], y_path[0], th_path[0], x_path[1], y_path[1],
+											   thf_discretized[i], map, obs);
 				if (pidx > 0)
 				{
-					if (local_path.count(thf_discretized[j]) == 0)
+					vector<curve> lpath;
+					lpath.push_back(c);
+					double l = c.L;
+
+					if (cnt < N_MAX_CURVES)
 					{
-						local_path[thf_discretized[j]] = c;
+						int k = 0;
+						bool insert = false;
+						while (k < path.size() && insert == false)
+						{
+							if (l > length[k])
+							{
+								path.insert(path.begin() + k, lpath);
+								length.insert(length.begin() + k, l);
+								insert = true;
+							}
+							k++;
+						}
+						if (insert == false)
+						{
+							path.push_back(lpath);
+							length.push_back(l);
+						}
+						cnt++;
 					}
-					else if (c.L < local_path[thf_discretized[j]].L)
+					else
 					{
-						local_path[thf_discretized[j]] = c;
+						int k = 0;
+						bool insert = false;
+						while (k < path.size() && insert == false)
+						{
+							if (l < length[k])
+							{
+								path.insert(path.begin() + k, lpath);
+								length.insert(length.begin() + k, l);
+								path.pop_back();
+								length.pop_back();
+								insert = true;
+							}
+							k++;
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			for (int i = 0; i < t_path.size(); i++)
+			{
+				double th = t_path[i][0].a1.th0;
+				tie(c, pidx) = dubins_no_inter(x_path[0], y_path[0], th_path[0], x_path[1], y_path[1],
+											   th, map, obs);
+				if (pidx > 0)
+				{
+
+					vector<curve> lpath = t_path[i];
+					lpath.insert(lpath.begin(), c);
+					double l = t_length[i] + c.L;
+
+					if (cnt < N_MAX_CURVES)
+					{
+						int k = 0;
+						bool insert = false;
+						while (k < path.size() && insert == false)
+						{
+							if (l > length[k])
+							{
+								path.insert(path.begin() + k, lpath);
+								length.insert(length.begin() + k, l);
+								insert = true;
+							}
+							k++;
+						}
+						if (insert == false)
+						{
+							path.push_back(lpath);
+							length.push_back(l);
+						}
+						cnt++;
+					}
+					else
+					{
+						int k = 0;
+						bool insert = false;
+						while (k < path.size() && insert == false)
+						{
+							if (l < length[k])
+							{
+								path.insert(path.begin() + k, lpath);
+								length.insert(length.begin() + k, l);
+								path.pop_back();
+								length.pop_back();
+								insert = true;
+							}
+							k++;
+						}
 					}
 				}
 			}
 		}
 	}
-
-	if (t_path.size() == 0)
+	else
 	{
-		map<double, curve>::const_iterator cit;
-		for (cit = local_path.cbegin(); cit != local_path.cend(); cit++)
+		if (x_path.size() == 2)
 		{
-			vector<curve> lpath;
-			lpath.push_back(cit->second);
-			path.push_back(lpath);
-			length.push_back(cit->second.L);
-		}
-		return make_tuple(length, path);
-	}
+			vector<double> th0_discretized = theta_discretization(th_path[0], search_angle);
+			vector<double> thf_discretized = theta_discretization(th_path[1], search_angle);
 
-	map<double, curve>::const_iterator cit;
-	for (cit = local_path.cbegin(); cit != local_path.cend(); cit++)
-	{
-		bool pushed = false;
-
-		if (t_path.size() != 0)
-		{
-			int j = 0;
-			while (pushed == false && j < t_path.size())
+			for (int i = 0; i < thf_discretized.size(); i++)
 			{
-				if (compare_doubles(cit->second.a3.thf, t_path[j][0].a1.th0) ||
-					compare_doubles(cit->second.a3.thf + (2 * M_PI), t_path[j][0].a1.th0) ||
-					compare_doubles(cit->second.a3.thf, t_path[j][0].a1.th0 + (2 * M_PI)))
+				for (int j = 0; j < th0_discretized.size(); j++)
 				{
-					t_path[j].insert(t_path[j].begin(), cit->second);
-					t_length[j] += cit->second.L;
+					point_list *map = arena.arena;
 
-					path.push_back(t_path[j]);
-					length.push_back(t_length[j]);
+					tie(c, pidx) = dubins_no_inter(x_path[0], y_path[0], th0_discretized[j], x_path[1], y_path[1],
+												   thf_discretized[i], map, arena.obstacles->offset_head);
 
-					t_path.erase(t_path.begin() + j);
-					t_length.erase(t_length.begin() + j);
+					if (pidx > 0)
+					{
+						vector<curve> lpath;
+						lpath.push_back(c);
+						double l = c.L;
 
-					pushed = true;
+						if (cnt < N_MAX_CURVES)
+						{
+							int k = 0;
+							bool insert = false;
+							while (k < path.size() && insert == false)
+							{
+								if (l > length[k])
+								{
+									path.insert(path.begin() + k, lpath);
+									length.insert(length.begin() + k, l);
+									insert = true;
+								}
+								k++;
+							}
+							if (insert == false)
+							{
+								path.push_back(lpath);
+								length.push_back(l);
+							}
+							cnt++;
+						}
+						else
+						{
+							int k = 0;
+							bool insert = false;
+							while (k < path.size() && insert == false)
+							{
+								if (l < length[k])
+								{
+									path.insert(path.begin() + k, lpath);
+									length.insert(length.begin() + k, l);
+									path.pop_back();
+									length.pop_back();
+									insert = true;
+								}
+								k++;
+							}
+						}
+					}
 				}
-				j++;
+			}
+		}
+		else
+		{
+			vector<double> th0_discretized = theta_discretization(th_path[0], search_angle);
+
+			for (int i = 0; i < t_path.size(); i++)
+			{
+				curve c_min;
+				double pidx_min = 0;
+				for (int j = 0; j < th0_discretized.size(); j++)
+				{
+					double thf = t_path[i][0].a1.th0;
+					tie(c, pidx) = dubins_no_inter(x_path[0], y_path[0], th0_discretized[j], x_path[1], y_path[1],
+												   thf, arena.shrinked_arena, arena.obstacles->offset_head);
+
+					point_node *p1 = new point_node(x_path[0], y_path[0]);
+					point_node *p2 = new point_node(x_path[1], y_path[1]);
+					double distance = p1->distance(p2);
+					if (pidx > 0)
+					{
+						vector<curve> lpath = t_path[i];
+						lpath.insert(lpath.begin(), c);
+						double l = t_length[i] + c.L;
+
+						if (cnt < N_MAX_CURVES)
+						{
+							int k = 0;
+							bool insert = false;
+							while (k < path.size() && insert == false)
+							{
+								if (l > length[k])
+								{
+									path.insert(path.begin() + k, lpath);
+									length.insert(length.begin() + k, l);
+									insert = true;
+								}
+								k++;
+							}
+							if (insert == false)
+							{
+								path.push_back(lpath);
+								length.push_back(l);
+							}
+							cnt++;
+						}
+						else
+						{
+							int k = 0;
+							bool insert = false;
+							while (k < path.size() && insert == false)
+							{
+								if (l < length[k])
+								{
+									path.insert(path.begin() + k, lpath);
+									length.insert(length.begin() + k, l);
+									path.pop_back();
+									length.pop_back();
+									insert = true;
+								}
+								k++;
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -892,7 +1053,7 @@ tuple<vector<double>, vector<double>> refine_path(vector<double> x_path, vector<
 		for (int i = 1; i < size; i++)
 		{
 			distance += sqrt(pow(x_path[i] - x_path[i - 1], 2) + pow(y_path[i] - y_path[i - 1], 2));
-			if (distance > 0.1 || i == size - 1)
+			if (distance > 0.05 || i == size - 1)
 			{
 				new_x_path.push_back(x_path[i]);
 				new_y_path.push_back(y_path[i]);
@@ -947,7 +1108,7 @@ vector<curve> get_dubins_path(points_map arena, World_representation abstract_ar
 	th_path = opti_theta(x_path, y_path);
 
 	/* Space where to search a minimum dubins curve */
-	double search_angle = M_PI / 2;
+	double search_angle = M_PI;
 
 	vector<double> all_lengths;
 	vector<vector<curve>> all_paths;

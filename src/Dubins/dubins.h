@@ -125,6 +125,8 @@ tuple<double, double, double> get_circle_center(double, double, double, double, 
  */
 tuple<curve, int> dubins_no_inter(double, double, double, double, double, double,
 								  point_list*, polygon*);
+
+tuple <vector<double>, vector<vector<curve>> >get_dubins_path_recursive(double, double, double, points_map, bool, bool, double, bool);
 			
 /**
  * \fun bool pt_in_arc(point_node *ptso, arc a)

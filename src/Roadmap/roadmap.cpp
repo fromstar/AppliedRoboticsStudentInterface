@@ -199,7 +199,7 @@ Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons,
 		tmp = obstacles->head;
 		while (tmp != NULL)
 		{
-			img_arena = plot_points(tmp->pl, img_arena, Scalar(255, 0, 0), true);
+			img_arena = plot_points(tmp->pl, img_arena, Scalar(0, 0, 255), true);
 			tmp = tmp->pnext;
 		}
 	};
@@ -237,14 +237,14 @@ Mat points_map::plot_arena(int x_dim, int y_dim, bool show_original_polygons,
 	tmp = free_space->head;
 	while (tmp != NULL)
 	{
-		img_arena = plot_points(tmp->pl, img_arena, Scalar(0, 255, 255),
+		img_arena = plot_points(tmp->pl, img_arena, Scalar(123, 175, 255),
 								true, 1);
 
 		point_list *free_space_centroid = new point_list;
 		free_space_centroid->add_node(tmp->centroid->copy());
 		free_space_centroid->add_node(tmp->centroid->copy());
 		img_arena = plot_points(free_space_centroid, img_arena,
-								Scalar(0, 255, 255), false, 2);
+								Scalar(123, 175, 255), false, 2);
 		if (show_cells_id)
 		{
 			// Write ID of cell
@@ -1394,6 +1394,8 @@ void points_map::make_exact_cell()
 			}
 		}
 	}
+	
+	connections.aggregate();
 
 	map<string, Master_node>::iterator dit;
 	for (dit = connections.connections.begin(); dit != connections.connections.end(); dit++)
