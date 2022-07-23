@@ -582,49 +582,28 @@ bool find_intersection(arc a, point_node *pnt, point_node *pnt_next)
 		if (pt_in_arc(pts->head, a) == false)
 		{
 			double th0, thf;
-	th0 = get_angle(a.xc, a.yc, a.x0, a.y0);
-	thf = get_angle(a.xc, a.yc, a.xf, a.yf);
+			th0 = get_angle(a.xc, a.yc, a.x0, a.y0);
+			thf = get_angle(a.xc, a.yc, a.xf, a.yf);
 
-	if (a.th0  > a.thf)
-	{
-		double tmp = th0;
-		th0 = thf;
-		thf = tmp;
-	}
+			if (a.th0 > a.thf)
+			{
+				double tmp = th0;
+				th0 = thf;
+				thf = tmp;
+			}
 
+			double dx = pnt_next->x - pnt->x;
+			double dy = pnt_next->y - pnt->y;
+			double al = atan(dx / dy);
 
-	double dx = pnt_next->x - pnt->x;
-	double dy = pnt_next->y - pnt->y;
-	double al = atan(dx / dy);
-
-	if (al < th0 || al > thf)
-	{
-		return false;
-	}
+			if (al < th0 || al > thf)
+			{
+				return false;
+			}
 		}
 	}
 
 	return true;
-
-	// double th0, thf;
-	// th0 = get_angle(a.xc, a.yc, a.x0, a.y0);
-	// thf = get_angle(a.xc, a.yc, a.xf, a.yf);
-
-	// if (a.th0  > a.thf)
-	// {
-	// 	double tmp = th0;
-	// 	th0 = thf;
-	// 	thf = tmp;
-	// }
-
-	// double dx = pnt_next->x - pnt->x;
-	// double dy = pnt_next->y - pnt->y;
-	// double al = atan(dx / dy);
-
-	// if (al < th0 || al > thf)
-	// {
-	// 	return false;
-	// }
 }
 /**
  * \fun
@@ -843,17 +822,9 @@ tuple<vector<double>, vector<vector<curve>>> get_dubins_path_recursive(vector<do
 					{
 						local_path[thf_discretized[j]] = c;
 					}
-					else
+					else if (c.L < local_path[thf_discretized[j]].L)
 					{
-						double opti_c_th = local_path[thf_discretized[j]].a3.thf;
-						double tmp_c_th = c.a3.thf;
-						if (compare_doubles(opti_c_th, tmp_c_th) ||
-							compare_doubles(opti_c_th + (2 * M_PI), tmp_c_th) ||
-							compare_doubles(opti_c_th, tmp_c_th + (2 * M_PI)))
-						{
-							if (c.L < local_path[thf_discretized[j]].L)
-								local_path[thf_discretized[j]] = c;
-						}
+						local_path[thf_discretized[j]] = c;
 					}
 				}
 			}
@@ -1007,6 +978,7 @@ vector<curve> get_dubins_path(points_map arena, World_representation abstract_ar
 			}
 		}
 	}
+	cout << "Fine" << endl;
 
 	return path;
 }

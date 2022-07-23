@@ -75,7 +75,7 @@ namespace student
                 const std::vector<float> y, const std::vector<float> theta,
                 std::vector<Path> &path, const std::string &config_folder)
   {
-    bool push_first = false;
+    bool push_first = true;
     clock_t starting_clock = clock();
 
     logger *log_test = new logger("test_log.txt");
@@ -170,9 +170,9 @@ namespace student
     rm.run_agents_planners(abstract_arena, aware);
     rm.info(true);
       
-    imshow("Arena", img_arena);
-    imwrite("Arena.png", img_arena);
-    waitKey(0);
+    // imshow("Arena", img_arena);
+    // imwrite("Arena.png", img_arena);
+    // waitKey(0);
 
     string location_f = find_agent_location_pddl(f_1, abstract_arena, true);
     string location_c = find_agent_location_pddl(c_1, abstract_arena, true);

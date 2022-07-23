@@ -1489,7 +1489,7 @@ void points_map::make_free_space_cells_squares(int res)
 
 	connections.aggregate();
 	// connections.info();
-	connections.ensure_LOS(obstacles);
+	// connections.ensure_LOS(obstacles);
 
 	// Populate free space
 	map<string, polygon *> els = connections.elements();
