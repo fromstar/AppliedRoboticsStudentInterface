@@ -1430,7 +1430,8 @@ void robot_catcher::make_pddl_files(World_representation wr,
 				   // "\t\t\t\t\t( visited ?loc_start )\n"
 				   // "\t\t\t\t\t( not ( visited ?loc_end ) )\n"
 				   // "\t\t\t\t)\n";
-	// new
+	/*
+    // new
 	if (antagonists_pddl.size() == 1)
 	{
 		action_move += "\t\t\t\t(not ( escaped " + antagonists_pddl[0] +
@@ -1447,6 +1448,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 		action_move += "\t\t\t\t)\n";
 	};
 	// end new
+    */
 
 	action_move += "\t\t\t)\n";
 
@@ -1516,8 +1518,8 @@ void robot_catcher::make_pddl_files(World_representation wr,
                             // "\t\t\t\t\t( < (catcher_cost) (fugitive_cost) ) \n"
                             "\t\t\t\t\t)\n"
                             "\t\t\t\t)\n"
-                            "\t\t\t\t(not (escaped ?r_fugitive) )\n"
-                            "\t\t\t\t(< (catcher_cost) (fugitive_cost) )\n"
+                            // "\t\t\t\t(not (escaped ?r_fugitive) )\n"
+                            // "\t\t\t\t(< (catcher_cost) (fugitive_cost) )\n"
                             "\t\t\t)\n"
 
 							"\t\t:effect ( captured ?r_fugitive )\n"
@@ -1643,27 +1645,26 @@ void robot_catcher::make_pddl_files(World_representation wr,
 
 	// write metrics
 	// pddl_problem += "\t(:metric minimize (total-cost))\n";
-	pddl_problem += "\t(:metric minimize (catcher_cost))\n";
+	pddl_problem += "\t(:metric minimize (catcher_cost) )\n";
 
 	// write goal
 	to_log("Writing goal");
 	string problem_goal = "\t(:goal\n";
 	int ant_size = antagonists.size();
-	if (ant_size > 1)
-	{
-		problem_goal += "\t\t(and\n";
-	};
+	
+    problem_goal += "\t\t(and\n";
 
 	for (int i = 0; i < ant_size; i++)
 	{
 		problem_goal += "\t\t\t ( captured " + upperify(antagonists[i]->ID) +
-						" )\n";
-	};
-	if (ant_size > 1)
-	{
-		problem_goal += "\t\t)\n";
-	};
-	problem_goal += "\t)\n";
+						" )\n"
+                        "\t\t\t (not ( escaped " +
+                        upperify(antagonists[i]->ID) + 
+                        ") )\n";
+	};	
+
+	problem_goal += "\t\t)\n"
+	                "\t)\n";
 
 	// write file end
 	problem_goal += ")\n";
@@ -1734,7 +1735,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
 		final_action_move = first_part_action_move +
 							second_part_action_move;
 
-		domain_to_write = pddl_domain + final_action_move + last_part_domain;
+		domain_to_write = pddl_domain + final_action_move + pddl_domain_end;
 
 		write_file(domain_name, domain_to_write, ".pddl");
 		write_file(problem_name, pddl_problem + problem_goal, ".pddl");
