@@ -223,6 +223,8 @@ void run_planner(string planner_path, string domain_file_path,
  */
 vector<string> string_to_vector(string sentence, string token);
 
+vector<string> plan_in_sequence_of_cells(vector<string> plan);
+
 string plan_in_pddl_conditional_effects(World_representation wr,
                                         string id_agent,
                                         vector<string> plan,

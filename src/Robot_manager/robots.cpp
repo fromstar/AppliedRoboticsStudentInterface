@@ -73,6 +73,26 @@ vector<string> string_to_vector(string sentence, string token)
 	return tmp;
 };
 
+vector<string> plan_in_sequence_of_cells(vector<string> plan)
+{
+    // A common move action in pddl is written as
+    // MOVE AGENT CELL_START CELL_END
+    // Using index to avoid problems wrt the move action of the catcher
+    vector<string> sequence_of_cells;
+    for(int i=0; i<plan.size(); i++)
+    {
+        vector<string> tmp = string_to_vector(plan[i], " ");
+        sequence_of_cells.push_back(tmp[2]);
+        
+        if ( i == plan.size()-1 )
+        {
+            // Save ending cell as well
+            sequence_of_cells.push_back(tmp[3]);
+        }
+    }
+    return sequence_of_cells;
+}
+
 /**
  * \fun
  * This is the default constructor for the robot struct.
@@ -387,76 +407,76 @@ string robot_fugitive::make_pddl_domain_file(World_representation wr)
 	}
 
 	// Write header of the file
-	string domain_file = "(define (domain " + domain_name + ")\n"
+    string domain_file = "(define (domain " + domain_name + ")\n"
 
-															// Write requirements
-															"\t(:requirements "
-															"\n\t\t:strips :typing :negative-preconditions"
-															"\n\t\t:disjunctive-preconditions"
-															"\n\t)\n"
+        // Write requirements
+        "\t(:requirements "
+        "\n\t\t:strips :typing :negative-preconditions"
+        "\n\t\t:disjunctive-preconditions"
+        "\n\t)\n"
 
-															// Write types
-															"\t(:types\n\t\tfugitive catcher - robot"
-															"\n\t\tcell gate - location\n\t)\n"
+        // Write types
+        "\t(:types\n\t\tfugitive catcher - robot"
+        "\n\t\tcell gate - location\n\t)\n"
 
-															// Write cost function
-															"\t(:functions (total-cost) - number)\n"
+        // Write cost function
+        "\t(:functions (total-cost) - number)\n"
 
-															// Write predicates
-															"\t(:predicates\n"
-															"\t\t(visited ?c - location)\n"
-															"\t\t(is_in ?r - robot ?loc - location)\n"
-															"\t\t(connected ?loc_start - location ?loc_end - location)\n"
-															"\t\t(is_diagonal ?c1 - location ?c2 - location)\n" +
-						 cells_predicates + wr.get_gates_predicates() +
-						 "\t)"
+        // Write predicates
+        "\t(:predicates\n"
+        "\t\t(visited ?c - location)\n"
+        "\t\t(is_in ?r - robot ?loc - location)\n"
+        "\t\t(connected ?loc_start - location ?loc_end - location)\n"
+        "\t\t(is_diagonal ?c1 - location ?c2 - location)\n" +
+        cells_predicates + wr.get_gates_predicates() +
+        "\t)"
 
-						 // Write actions
-						 "\n\t(:action move"
-						 "\n\t\t:parameters (?r - fugitive ?loc_start - location "
-						 "?loc_end - location)"
-						 "\n\t\t:precondition"
-						 "\n\t\t\t(and"
-						 "\n\t\t\t\t(and"
-						 "\n\t\t\t\t\t( not ( visited ?loc_end) )"
-						 "\n\t\t\t\t\t( visited ?loc_start )"
-						 "\n\t\t\t\t)"
-						 "\n\t\t\t\t( is_in ?r ?loc_start )"
-						 "\n\t\t\t\t( or"
-						 "\n\t\t\t\t\t( connected ?loc_start ?loc_end )"
-						 "\n\t\t\t\t\t( connected ?loc_end ?loc_start )"
-						 "\n\t\t\t\t)"
-						 "\n\t\t\t)"
-						 "\n\t\t:effect"
-						 "\n\t\t\t(and"
-						 "\n\t\t\t\t( visited ?loc_end )"
-						 "\n\t\t\t\t( not ( is_in ?r ?loc_start ) )"
-						 "\n\t\t\t\t( is_in ?r ?loc_end)"
-						 "\n\t\t\t\t(when"
-						 "\n\t\t\t\t\t( or"
-						 "\n\t\t\t\t\t\t( is_diagonal ?loc_start ?loc_end )"
-						 "\n\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
-						 "\n\t\t\t\t\t)"
-						 "\n\t\t\t\t\t( increase (total-cost) " +
-						 to_string(DIAGONAL_MOVE_COST) + ")"
-														 "\n\t\t\t\t)"
-														 "\n\t\t\t\t(when"
-														 "\n\t\t\t\t\t( not"
-														 "\n\t\t\t\t\t\t( or"
-														 "\n\t\t\t\t\t\t\t( is_diagonal ?loc_start ?loc_end )"
-														 "\n\t\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
-														 "\n\t\t\t\t\t\t)"
-														 "\n\t\t\t\t\t)"
-														 "\n\t\t\t\t\t( increase (total-cost) " +
-						 to_string(PERPENDICULAR_MOVE_COST) + ")"
-															  "\n\t\t\t\t)"
-															  "\n\t\t\t\t; Cells costs\n" +
-						 cells_conditional_cost + gates_conditional_cost +
-						 "\n\t\t\t)"
-						 "\n\t)"
+        // Write actions
+        "\n\t(:action move"
+        "\n\t\t:parameters (?r - fugitive ?loc_start - location "
+        "?loc_end - location)"
+        "\n\t\t:precondition"
+        "\n\t\t\t(and"
+        "\n\t\t\t\t(and"
+        "\n\t\t\t\t\t( not ( visited ?loc_end) )"
+        "\n\t\t\t\t\t( visited ?loc_start )"
+        "\n\t\t\t\t)"
+        "\n\t\t\t\t( is_in ?r ?loc_start )"
+        "\n\t\t\t\t( or"
+        "\n\t\t\t\t\t( connected ?loc_start ?loc_end )"
+        "\n\t\t\t\t\t( connected ?loc_end ?loc_start )"
+        "\n\t\t\t\t)"
+        "\n\t\t\t)"
+        "\n\t\t:effect"
+        "\n\t\t\t(and"
+        "\n\t\t\t\t( visited ?loc_end )"
+        "\n\t\t\t\t( not ( is_in ?r ?loc_start ) )"
+        "\n\t\t\t\t( is_in ?r ?loc_end)"
+        "\n\t\t\t\t(when"
+        "\n\t\t\t\t\t( or"
+        "\n\t\t\t\t\t\t( is_diagonal ?loc_start ?loc_end )"
+        "\n\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
+        "\n\t\t\t\t\t)"
+        "\n\t\t\t\t\t( increase (total-cost) " +
+        to_string(DIAGONAL_MOVE_COST) + ")"
+        "\n\t\t\t\t)"
+        "\n\t\t\t\t(when"
+        "\n\t\t\t\t\t( not"
+        "\n\t\t\t\t\t\t( or"
+        "\n\t\t\t\t\t\t\t( is_diagonal ?loc_start ?loc_end )"
+        "\n\t\t\t\t\t\t\t( is_diagonal ?loc_end ?loc_start )"
+        "\n\t\t\t\t\t\t)"
+        "\n\t\t\t\t\t)"
+        "\n\t\t\t\t\t( increase (total-cost) " +
+        to_string(PERPENDICULAR_MOVE_COST) + ")"
+        "\n\t\t\t\t)"
+        "\n\t\t\t\t; Cells costs\n" +
+        cells_conditional_cost + gates_conditional_cost +
+        "\n\t\t\t)"
+        "\n\t)"
 
-						 // Write file end
-						 "\n)";
+        // Write file end
+        "\n)";
 
 	// make folder if it doesn't exist
 	int tmp_folder = mkdir(filesPath.c_str(), 0777);
@@ -781,208 +801,288 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
 	problem_file += "\t(:goal\n";
 	switch (behaviour)
 	{
-	case least_steps:
-	{
-		vector<vector<string>> all_plans;
-		for (it_1 = wr.world_gates.cbegin(); it_1 != wr.world_gates.cend();
-			 ++it_1)
-		{
-			string tmp_out = problem_file + "\t\t( is_in " + self->ID +
-							 " " + it_1->first + " )\n\t)\n\n)";
-			string tmp_name = problem_name + "_" + it_1->first;
-			write_file(tmp_name, tmp_out, ".pddl");
-			all_plans.push_back(make_plan(false, domain_name,
-										  tmp_name, tmp_name));
+        case least_steps:
+            {
+                vector<vector<string>> all_plans;
+                for (it_1 = wr.world_gates.cbegin(); it_1 != wr.world_gates.cend();
+                        ++it_1)
+                {
+                    string tmp_out = problem_file + "\t\t( is_in " + self->ID +
+                        " " + it_1->first + " )\n\t)\n\n)";
+                    string tmp_name = problem_name + "_" + it_1->first;
+                    write_file(tmp_name, tmp_out, ".pddl");
+                    all_plans.push_back(make_plan(false, domain_name,
+                                tmp_name, tmp_name));
 
-			// remove files, they are useless now -> also checked in future
-			remove((filesPath + "/" + tmp_name + ".plan").c_str());
-		};
-		int idx_least = 0;
-		
-		for (int i = 0; i < all_plans.size(); i++)
-		{
-			if (all_plans[i].size() < all_plans[idx_least].size())
-			{
-				idx_least = i;
-			};
-		};
-		
-		// identify desire and write goal
-		it_1 = wr.world_gates.cbegin();
-		for (int i = 0; i < idx_least; i++)
-		{
-			it_1++;
-		};
-		
-		self->set_plan(all_plans[idx_least]);
-		self->set_desire("( is_in " + self->ID + " " + it_1->first + " )");
-		to_log("End least_steps behaviour");
-		return problem_name + "_" + it_1->first;
-		break;
-	};
-	case undeterministic:
-	{
-		cout << "In undeterministic branch" << endl;
-		// chose gate randomly
-		srand(time(0));
-		int idx_gate = rand() % wr.world_gates.size();
-		map<string, World_node>::const_iterator it_g = wr.world_gates.cbegin();
-		for (int i = 0; i < idx_gate; i++)
-		{
-			++it_g;
-		};
-		self->set_desire("( is_in " + self->ID + " " + it_g->first + " )");
-		string tmp_file = problem_file + "\t\t" + self->desire +
-						  "\n\t)\n\n)";
-		string tmp_problem_name = problem_name + "_" + it_g->first;
-		write_file(tmp_problem_name, tmp_file, ".pddl");
-		make_plan(true, domain_name, tmp_problem_name,
-				  tmp_problem_name);
+                    // remove files, they are useless now -> also checked in future
+                    remove((filesPath + "/" + tmp_name + ".plan").c_str());
+                };
+                int idx_least = 0;
 
-		// Remove useless files.
-		remove((filesPath + "/" + tmp_problem_name + ".plan").c_str());
-		to_log("End undeterministic behaviour");
-		return tmp_problem_name;
-		break;
-	};
-	case aware:
-	{
-		cout << "SONO AWARE: " << self->ID << "\n";
-		// Check if behaviour can be done
-		if (antagonists.size() == 0)
-		{
-			cout << "No antagonist found, use method \"trade_fugitives()\""
-					" on the robot manager if any antagonist exists"
-				 << endl;
-			return "NaN";
-		};
+                for (int i = 0; i < all_plans.size(); i++)
+                {
+                    if (all_plans[i].size() < all_plans[idx_least].size())
+                    {
+                        idx_least = i;
+                    };
+                };
 
-		// Chose the gate which distance is less or equal than the
-		// distance from the fugitive to its antagonists.
-		map<string, World_node>::const_iterator it_g;
-		map<string, World_node>::const_iterator it_c;
+                // identify desire and write goal
+                it_1 = wr.world_gates.cbegin();
+                for (int i = 0; i < idx_least; i++)
+                {
+                    it_1++;
+                };
 
-		vector<vector<string>> antagonists_distance;
-		vector<vector<string>> gates_distance;
+                self->set_plan(all_plans[idx_least]);
+                self->set_desire("( is_in " + self->ID + " " + it_1->first + " )");
+                to_log("End least_steps behaviour");
+                return problem_name + "_" + it_1->first;
+                break;
+            };
+        case undeterministic:
+            {
+                cout << "In undeterministic branch" << endl;
+                // chose gate randomly
+                srand(time(0));
+                int idx_gate = rand() % wr.world_gates.size();
+                map<string, World_node>::const_iterator it_g = wr.world_gates.cbegin();
+                for (int i = 0; i < idx_gate; i++)
+                {
+                    ++it_g;
+                };
+                self->set_desire("( is_in " + self->ID + " " + it_g->first + " )");
+                string tmp_file = problem_file + "\t\t" + self->desire +
+                    "\n\t)\n\n)";
+                string tmp_problem_name = problem_name + "_" + it_g->first;
+                write_file(tmp_problem_name, tmp_file, ".pddl");
+                make_plan(true, domain_name, tmp_problem_name,
+                        tmp_problem_name);
 
-		// Compute distance from fugitive to gates
-		int counter = 0;
-		int idx_min_dist = 0;
-		int prev_dist = 0;
-		vector<string> gates_id;
-		cout << "Gates inside: " << wr.world_gates.size() << endl;
-		for (it_g = wr.world_gates.cbegin(); it_g != wr.world_gates.cend();
-			 it_g++)
-		{
-			cout << "Gating: " << it_g->first << endl;
+                // Remove useless files.
+                remove((filesPath + "/" + tmp_problem_name + ".plan").c_str());
+                to_log("End undeterministic behaviour");
+                return tmp_problem_name;
+                break;
+            };
+        case aware:
+            {
+                to_log("In aware behaviour");
+                // Check if behaviour can be done
+                if (antagonists.size() == 0)
+                {
+                    string msg = "No antagonist found, use method \""
+                                 "trade_fugitives()\" on the robot manager "
+                                 "if any antagonist exists";
+                        cout << msg << endl;
+                        to_log(msg);
+                    return "NaN";
+                };
 
-			string tmp_out = problem_file + "\t\t( is_in " + self->ID +
-							 " " + it_g->first + " )\n\t)\n\n)";
-			string tmp_name = problem_name + "_" + it_g->first;
-			write_file(tmp_name, tmp_out, ".pddl");
-			vector<string> plan = make_plan(false, "domain_" + self->ID,
-											tmp_name, tmp_name);
+                // Chose the gate which distance is less or equal than the
+                // distance from the fugitive to its antagonists.
+                map<string, World_node>::const_iterator it_g;
+                map<string, World_node>::const_iterator it_c;
 
-			// Remove useless files
-			remove((filesPath + "/" + tmp_name + ".plan").c_str());
+                vector<vector<string>> antagonists_plans;
+                vector<vector<string>> to_gates_plans;
 
-			cout << "Plan size for " << it_g->first << " : " << plan.size() << endl;
-			if (plan.size() > 0)
-			{
-				cout << "plan size: " << plan.size() << endl;
+                // Compute distance from fugitive to gates
+                int counter = 0;
+                int idx_min_dist = 0;
+                int prev_dist = 0;
+                vector<string> gates_id;
+                
+                cout << "Gates inside representation: " <<
+                        wr.world_gates.size() << endl;
+                for (it_g = wr.world_gates.cbegin(); it_g != wr.world_gates.cend();
+                        it_g++)
+                {
+                    cout << "Gating: " << it_g->first << endl;
+                    
+                    // Write goal in the problem file and its ending
 
-				if (gates_distance.size() > 0 &&
-					plan.size() < gates_distance[idx_min_dist].size())
-				{
-					cout << "plan size < gates distance\n";
-					idx_min_dist = counter;
-				}
-				gates_distance.push_back(plan);
-				gates_id.push_back(it_g->first);
-				counter++;
-			}
-		};
-		
-		// compute distance from fugitive to antagonists
-		for (int i = 0; i < antagonists.size(); i++)
-		{
+                    string tmp_out = problem_file +
+                                     "\t\t( is_in " + self->ID +
+                                     " " + it_g->first + " )\n\t)\n\n)";
+                    
+                    // Name the pddl and run the planner
+                    string tmp_name = problem_name + "_" + it_g->first;
+                    write_file(tmp_name, tmp_out, ".pddl");
+                    vector<string> plan = make_plan(false,
+                                                    "domain_" + self->ID,
+                                                    tmp_name, tmp_name);
 
-			// Goal: plan of the fugitive to reach catcher
-			string ant_id = upperify(antagonists[i]->ID);
-			string goal = "\t\t( is_in " +
-						  self->ID + " " +
-						  // it_c->first +
-						  antagonist_pddl_location[ant_id] +
-						  " )\n\t)\n\n)";
+                    // Remove useless files
+                    remove((filesPath + "/" + tmp_name + ".plan").c_str());
 
-			string tmp_out = problem_file + goal;
+                    cout << "Plan size for " << it_g->first << " : " <<
+                            plan.size() << endl;
+                    
+                    // If legal plan found save it
+                    if (plan.size() > 0)
+                    {
+                        /*
+                        if (gates_distance.size() > 0 &&
+                                plan.size() < gates_distance[idx_min_dist].size())
+                        {
+                            cout << "plan size < gates distance\n";
+                            idx_min_dist = counter;
+                        }
+                        */
+                        to_gates_plans.push_back(plan);
+                        gates_id.push_back(it_g->first);
+                        counter++;
+                    }
+                };
 
-			string tmp_name = problem_name + "_" +
-							  antagonists[i]->ID;
-			write_file(tmp_name, tmp_out, ".pddl");
-			antagonists_distance.push_back(make_plan(false,
-													 "domain_" + self->ID,
-													 tmp_name, tmp_name));
-			// Remove plan
-			remove((filesPath + "/" + tmp_name + ".plan").c_str());
-		};
+                // Suppose that the plan of the fugitive to reach the catcher
+                // is the same of the catcher to reach the fugitive.
+                // Compute plans from fugitive to antagonists.
+                for (int i = 0; i < antagonists.size(); i++)
+                {
+                    // Goal: fugitive in same position as catcher
+                    string ant_id = upperify(antagonists[i]->ID);
+                    string goal = "\t\t( is_in " + self->ID + " " +
+                                  antagonist_pddl_location[ant_id] +
+                                  " )\n\t)\n\n)";
+                    string tmp_out = problem_file + goal;
 
-		// Apply rule to chose which gate
-		// Step 1: find nearest catcher to the fugitive
+                    string tmp_name = problem_name + "_" +
+                                      antagonists[i]->ID;
+                    write_file(tmp_name, tmp_out, ".pddl");
+                    antagonists_plans.push_back(make_plan(false,
+                                                "domain_" + self->ID,
+                                                tmp_name, tmp_name));
+                    // Remove plan
+                    remove((filesPath + "/" + tmp_name + ".plan").c_str());
+                };
 
-		int idx_near = 0;
-		for (int i = 0; i < antagonists_distance.size(); i++)
-		{
-			if (antagonists_distance[i] < antagonists_distance[idx_near])
-			{
-				idx_near = i;
-			};
-		};
-		
-		// Step 2: find gate which distance is less or equal than the
-		// minimum distance between fugitive and antagonists.
-		int idx_gate = -1;
-		for (int i = 0; i < gates_distance.size(); i++)
-		{
-			if (gates_distance[i].size() < antagonists_distance[idx_near].size())
-			{
-				if (idx_gate == -1)
-				{
-					idx_gate = i;
-				}
-				else if (gates_distance[i].size() < gates_distance[idx_gate].size())
-				{
-					idx_gate = i;
-				}
-			};
-		};
+                // Filter results
+                // Step 1.1: translate fugitive plans to gates into sequences of
+                //         cells.
+                vector< vector<string> > plausible_plans;
+                for(int i=0; i < to_gates_plans.size(); i++)
+                {
+                    vector<string> plan = to_gates_plans[i];
+                    vector<string> cells = plan_in_sequence_of_cells(plan);
+                }
+                
+                // Step 1.2: translate fugitive plans to gates into sequences of
+                //         cells.
+                vector< vector<string> > antagonists_routes;
+                for(int i=0; i < antagonists_plans.size(); i++)
+                {
+                    vector<string> plan = antagonists_plans[i];
+                    vector<string> cells = plan_in_sequence_of_cells(plan);
+                }
+                
+                // Step 2: Check if in the plans of the antagonists there are
+                //         some cells in which both the fugitive and the cather
+                //         must go throigh, in case destroy that plan for the
+                //         gate because it is an unsafe one.  
+                for(int i=0; i < antagonists_plans.size(); i++)
+                {
+                    int gates_plans_size = plausible_plans.size();
+                    bool collision = false;
+                    for(int j=0; j < gates_plans_size && collision==false; j++)
+                    {
+                        vector<string> * c_p = &antagonists_plans[i];
+                        vector<string> * g_p = &plausible_plans[j];
 
-		if (idx_gate == -1)
-		{
-			idx_gate = idx_near;
-			cout << "No gates satisfying the needs found, relying on "
-					"minimum distance"
-				 << endl;
-		};
+                        map<string, pair<double, double>> int_res;
+                        int int_count = 0;
 
-		// set_plan
-		// cout << "Setting plan" << endl;
-		cout << gates_distance.size() << endl;
-		
-		self->set_plan(gates_distance[idx_gate]);
+                        tie(int_res, int_count) = string_vectors_intersection(*c_p, *g_p, true);
 
-		self->set_desire("( is_in " + self->ID + " " + gates_id[idx_gate] + " )");
-		to_log("End aware behaviour");
+                        if (int_count > 0)
+                        {
+                            map<string, pair<double, double>>::const_iterator cit;
+                            for(cit = int_res.cbegin();
+                                cit != int_res.cend() && collision == false;
+                                cit++)
+                            {
+                                if (cit->second.first <= cit->second.second)
+                                {
+                                    plausible_plans.erase(plausible_plans.begin()+j);
+                                    collision=true;
+                               }
+                            }
+                        }
+                    }
+                }
 
-		return problem_name + "_" + gates_id[idx_gate];
-		break;
-	};
-	default:
-	{
-		return "NaN";
-		break;
-	};
-	};
+                // Fugitive is doomed to fail whichever gates it selects
+                cout << "Fugitive is doomed" << endl;
+                int idx_gate = 0;
+                if(plausible_plans.size() == 0)
+                {
+                    for(int i=0; i<to_gates_plans.size(); i++)
+                    {
+                        int curr_min_size = to_gates_plans[idx_gate].size();
+                        int curr_plan_size = to_gates_plans[i].size();
+                        if(curr_plan_size < curr_min_size)
+                        {
+                            idx_gate = i;
+                        }
+                    }
+                }
+
+                /*
+                // Apply rule to chose which gate to go
+                // Step 1: find nearest catcher to the fugitive
+
+                int idx_near = 0;
+                for (int i = 0; i < antagonists_plans.size(); i++)
+                {
+                    if (antagonists_plans[i] < antagonists_plans[idx_near])
+                    {
+                        idx_near = i;
+                    };
+                };
+
+                // Step 2: find gate which distance is less or equal than the
+                // minimum distance between fugitive and antagonists.
+                int idx_gate = -1;
+                for (int i = 0; i < to_gates_plans.size(); i++)
+                {
+                    if (to_gates_plans[i].size() < antagonists_plans[idx_near].size())
+                    {
+                        if (idx_gate == -1)
+                        {
+                            idx_gate = i;
+                        }
+                        else if (to_gates_plans[i].size() < to_gates_plans[idx_gate].size())
+                        {
+                            idx_gate = i;
+                        }
+                    };
+                };
+
+                if (idx_gate == -1)
+                {
+                    idx_gate = idx_near;
+                    cout << "No gates satisfying the needs found, relying on "
+                        "minimum distance"
+                        << endl;
+                };
+                */
+
+                // set_plan
+                self->set_plan(to_gates_plans[idx_gate]);
+
+                self->set_desire("( is_in " + self->ID + " " + gates_id[idx_gate] + " )");
+                to_log("End aware behaviour");
+
+                return problem_name + "_" + gates_id[idx_gate];
+                break;
+            };
+        default:
+            {
+                return "NaN";
+                break;
+            };
+    };
 };
 
 vector<string> robot_fugitive::make_plan(bool apply, string domain_name,
@@ -1167,7 +1267,7 @@ string plan_in_pddl_conditional_effects(World_representation wr,
 					 cell_s[cell_s.size() - 1] + " ) )\n"
                      "\t\t\t\t\t\t( increase (" + cost_name + ") " +
                      to_string(cost_value) + " )\n"
-                     "\t\t\t\t\t( visited ?c_" + cell_e.back() + " )\n"
+                     "\t\t\t\t\t\t( visited ?c_" + cell_e.back() + " )\n"
                      "\t\t\t\t\t)\n"
                      "\t\t\t\t)";
 	};
@@ -1411,7 +1511,7 @@ void robot_catcher::make_pddl_files(World_representation wr,
                             "\t\t\t\t(and\n"
                             "\t\t\t\t\t( is_in ?r_catcher ?loc )\n"
                             "\t\t\t\t\t( visitable_fugitive ?loc )\n"
-                            "\t\t\t\t\t( not (visited ?loc ) )"
+                            "\t\t\t\t\t( not (visited ?loc ) )\n"
                             // "\t\t\t\t\t( < (catcher_cost) (fugitive_cost) ) \n"
                             "\t\t\t\t)\n"
                             "\t\t\t)\n"
@@ -1685,7 +1785,7 @@ vector<string> robot_catcher::make_plan(bool apply, string domain_name,
 		while (pddl_in)
 		{
 			getline(pddl_in, tmp_line);
-            cout << tmp_line << endl;
+            // cout << tmp_line << endl;
 			if (tmp_line.substr(0, tmp_line.find(" ")) == "step")
 			{
 				pushing = true;

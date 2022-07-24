@@ -1844,3 +1844,35 @@ point_list * order_pair_ascending(point_node * a, point_node * b, int axis)
     
     return ordered_pair;
 }
+
+tuple<map<string, pair<double, double>>, int> string_vectors_intersection(vector<string> a,
+                                                                         vector<string> b,
+                                                                         bool reverse)
+{
+    map<string, pair<double, double>> int_indexes;
+    set<string> unique_elements;
+
+    if (a.size() == 0 || b.size() == 0)
+    {
+        cout << "One vector is empty -> no intersections" << endl;
+    }
+
+    for(int i=0; i<a.size(); i++)
+    {
+        int index = i;
+        if(reverse = true)
+        {
+            int index = b.size()-i;
+        }
+
+        for(int j=0; j<b.size(); j++)
+        {
+            if (a[index] == b[j])
+            {
+                unique_elements.insert(b[j]);
+                int_indexes[b[j]] = pair<double, double>(i, j);
+            }
+        }
+    }
+    return std::make_tuple(int_indexes, unique_elements.size());
+}

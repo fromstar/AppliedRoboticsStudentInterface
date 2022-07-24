@@ -523,4 +523,7 @@ bool point_belong_to_edge(point_node *p, Edge * e);
 point_node * edge_has_vertex(Edge * e, polygon * pol);
 bool point_less_edge(Edge * e, point_node * p);
 point_list * order_pair_ascending(point_node * a, point_node* b, int axis=0);
+tuple<map<string, pair<double, double>>, int> string_vectors_intersection(vector<string> a,
+                                                                          vector<string> b,
+                                                                          bool reverse=false);
 #endif
