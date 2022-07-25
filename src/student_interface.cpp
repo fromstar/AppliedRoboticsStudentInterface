@@ -179,11 +179,11 @@ namespace student
 
     vector<curve> f_path;
     // Get the dubins path without intersection
-    // if(location_f.compare(location_c) != 0)
-    // {
-    //   f_path = get_dubins_path(arena, abstract_arena, f_1);
-    // }
-    f_path = get_dubins_path(arena, abstract_arena, f_1);
+    if(location_f.compare(location_c) != 0)
+    {
+      f_path = get_dubins_path(arena, abstract_arena, f_1);
+    }
+    // f_path = get_dubins_path(arena, abstract_arena, f_1);
     vector<curve> c_path = get_dubins_path(arena, abstract_arena, c_1);;
    
     /*

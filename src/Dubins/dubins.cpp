@@ -339,9 +339,9 @@ Mat plotarc(arc a, string c, Mat img)
 	}
 	else if (!strcmp(c.c_str(), "y") || !strcmp(c.c_str(), "yellow"))
 	{
-		r = 255;
-		g = 234;
-		b = 128;
+		r = 232;
+		g = 0;
+		b = 134;
 	}
 
 	img = plot_points(pl, img, Scalar(b, g, r), false);
@@ -442,20 +442,18 @@ vector<double> theta_discretization(double starting_angle, double search_angle)
 
 	vector<double> plausible_theta;
 	plausible_theta.push_back(starting_angle);
-	double res_steps = 10 * (M_PI / 180); // 1 degree converted in radiants
-
-	double theta = starting_angle - (search_angle / 2);
+	double theta = starting_angle;
 
 	int i = -1;
-	while (theta <= starting_angle)
+
+	while (theta < (starting_angle + (search_angle / 2)))
 	{
-		double val = starting_angle + (i * theta);
-		plausible_theta.push_back(val);
-
-		if (i > 0)
-			theta += res_steps;
-
-		i = -i;
+		plausible_theta.push_back(theta * i);
+		
+		if(i > 0)
+			theta += RESOLUTION_STEP;
+		
+		i = -1 * i;
 	}
 	return plausible_theta;
 }
@@ -697,7 +695,7 @@ Path push_path(curve c, Path p)
 	 */
 
 	arc a;
-	int n_samples = 1000;
+	int n_samples = 100;
 	a.x0 = c.a1.x0;
 	a.y0 = c.a1.y0;
 	a.th0 = c.a1.th0;
@@ -783,7 +781,6 @@ tuple<vector<double>, vector<vector<curve>>> get_dubins_path_recursive(vector<do
 	cout << "Ricevuto percorso di size: " << t_path.size() << endl;
 
 	int cnt = 0;
-	const int N_MAX_CURVES = 100;
 
 	if (first_iteration == true)
 	{
@@ -1053,7 +1050,7 @@ tuple<vector<double>, vector<double>> refine_path(vector<double> x_path, vector<
 		for (int i = 1; i < size; i++)
 		{
 			distance += sqrt(pow(x_path[i] - x_path[i - 1], 2) + pow(y_path[i] - y_path[i - 1], 2));
-			if (distance > 0.05 || i == size - 1)
+			if (distance > REFINE || i == size - 1)
 			{
 				new_x_path.push_back(x_path[i]);
 				new_y_path.push_back(y_path[i]);
@@ -1108,7 +1105,7 @@ vector<curve> get_dubins_path(points_map arena, World_representation abstract_ar
 	th_path = opti_theta(x_path, y_path);
 
 	/* Space where to search a minimum dubins curve */
-	double search_angle = M_PI;
+	double search_angle = SEARCH_ANGLE;
 
 	vector<double> all_lengths;
 	vector<vector<curve>> all_paths;
