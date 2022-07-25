@@ -1026,47 +1026,29 @@ string robot_fugitive::make_pddl_problem_file(World_representation wr)
                             idx_gate = i;
                         }
                     }
+                    // set_plan
+                    self->set_plan(to_gates_plans[idx_gate]);
+                    self->set_desire("( is_in " + self->ID + " " +
+                                     gates_id[idx_gate] + " )");
                 }
-
-                /*
-                // Apply rule to chose which gate to go
-                // Step 1: find nearest catcher to the fugitive
-
-                int idx_near = 0;
-                for (int i = 0; i < antagonists_plans.size(); i++)
+                else
                 {
-                    if (antagonists_plans[i] < antagonists_plans[idx_near])
+                    for(int i=0; i<plausible_plans.size(); i++)
                     {
-                        idx_near = i;
-                    };
-                };
-
-                // Step 2: find gate which distance is less or equal than the
-                // minimum distance between fugitive and antagonists.
-                int idx_gate = -1;
-                for (int i = 0; i < to_gates_plans.size(); i++)
-                {
-                    if (to_gates_plans[i].size() < antagonists_plans[idx_near].size())
-                    {
-                        if (idx_gate == -1)
+                        if (plausible_plans[i].size() <
+                            plausible_plans[idx_gate].size())
                         {
                             idx_gate = i;
                         }
-                        else if (to_gates_plans[i].size() < to_gates_plans[idx_gate].size())
-                        {
-                            idx_gate = i;
-                        }
-                    };
-                };
+                    }
+                    // set_plan
+                    self->set_plan(plausible_plans[idx_gate]);
+                    string last_action = plausible_plans[idx_gate].back();
+                    string gate_id = string_to_vector(last_action, " ")[3];
+                    self->set_desire("( is_in " + self->ID + " " +
+                                     gate_id + " )");
 
-                if (idx_gate == -1)
-                {
-                    idx_gate = idx_near;
-                    cout << "No gates satisfying the needs found, relying on "
-                        "minimum distance"
-                        << endl;
-                };
-                */
+                }
 
                 // set_plan
                 self->set_plan(to_gates_plans[idx_gate]);
