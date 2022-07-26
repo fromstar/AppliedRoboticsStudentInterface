@@ -695,7 +695,7 @@ Path push_path(curve c, Path p)
 	 */
 
 	arc a;
-	int n_samples = 100;
+	int n_samples = 500;
 	a.x0 = c.a1.x0;
 	a.y0 = c.a1.y0;
 	a.th0 = c.a1.th0;
@@ -778,7 +778,6 @@ tuple<vector<double>, vector<vector<curve>>> get_dubins_path_recursive(vector<do
 
 	// Recursive call. The dubins path is calculated backward.
 	tie(t_length, t_path) = get_dubins_path_recursive(sub_x, sub_y, sub_th, arena, inside_offset_arena, inside_offset_ob, search_angle, false);
-	cout << "Ricevuto percorso di size: " << t_path.size() << endl;
 
 	int cnt = 0;
 

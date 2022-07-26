@@ -195,9 +195,19 @@ namespace student
     if (push_first)
     {
       if (f_path.size() != 0)
+      {
         path[0] = push_path(f_path[0], path[0]);
+        if(f_path.size() > 1)
+          path[0] = push_path(f_path[1],path[0]);       
+      }
+
       if (c_path.size() != 0)
+      {
         path[1] = push_path(c_path[0], path[1]);
+        if(c_path.size() > 1)
+          path[1] = push_path(c_path[1], path[1]);
+          
+      }
     }
     else
     {
